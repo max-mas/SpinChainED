@@ -44,7 +44,7 @@ double N_sigma(int s, int N, int R, int k, int sigma, int m, int p);
 
 double hElement(int a, int b, int l, int q, int k, int p, int sigma);
 
-void printMatrix(const Eigen::MatrixXcd & M);
+void printMatrix(const Eigen::MatrixXd & M);
 
 void printEnergies(const Eigen::VectorXd & v);
 void printEnergies(const std::vector<double> & v);

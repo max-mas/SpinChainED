@@ -19,6 +19,8 @@
 
 #include "helperFunctions.h"
 
+Eigen::MatrixXd naiveHamiltonian(double J_ratio, int N);
+
 std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXcd> & H_list, int n);
 
 std::vector<double> getEnergiesFromBlocks(const std::list<std::list<Eigen::MatrixXcd>> & H_list, int N);

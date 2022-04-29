@@ -192,7 +192,7 @@ double hElement(int a, int b, int l, int q, int k, int p, int sigma) {
     return 0;
 }
 
-void printMatrix(const Eigen::MatrixXcd & M) {
+void printMatrix(const Eigen::MatrixXd & M) {
     for (int i = 0; i < M.rows(); i++ ) {
         for (int j = 0; j < M.cols(); j++) {
             std::cout << M(i, j) << "\t" ;

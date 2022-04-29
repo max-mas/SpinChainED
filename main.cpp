@@ -12,9 +12,46 @@ using Eigen::Dynamic;
 
 int main(int argc, char* argv[]) {
 
+    MatrixXd H = naiveHamiltonian(1, 6);
+    //printMatrix(H);
+    Eigen::VectorXd erg = H.eigenvalues().real();
+    std::sort(erg.begin(), erg.end());
+    printEnergies(erg);
 
-    
     return 0;
+}
+
+MatrixXd naiveHamiltonian(double J_ratio, int N) {
+    int matrixSize = pow(2, N); // N must be even or this no longer describes the correct system.
+    MatrixXd H = MatrixXd::Zero(matrixSize, matrixSize);
+
+    for (int a = 0; a < matrixSize; a++) {
+        for (int i = 0; i < N; i++) {
+            int j = (i+1) % N;
+            if (getBit(a, i) == getBit(a, j)) {
+                H(a, a) += 0.25;
+            } else {
+                H(a, a) += -0.25;
+                int b = a;
+                flipBit(b, i);
+                flipBit(b, j);
+                H(a, b) = 0.5;
+            }
+        }
+        for (int i = 0; i < N-1; i++) {
+            int j = (i+2) % N;
+            if (getBit(a, i) == getBit(a, j)) {
+                H(a, a) += J_ratio *  0.25;
+            } else {
+                H(a, a) += J_ratio * -0.25;
+                int b = a;
+                flipBit(b, i);
+                flipBit(b, j);
+                H(a, b) = J_ratio * 0.5;
+            }
+        }
+    }
+    return H;
 }
 
 vector<double> getEnergiesFromBlocks(const list<MatrixXcd> & H_list, int N) {
