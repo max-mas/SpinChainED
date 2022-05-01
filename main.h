@@ -23,6 +23,8 @@ Eigen::MatrixXd naiveHamiltonian(double J_ratio, int N);
 
 std::list<Eigen::MatrixXd> magnetizationHamiltonian(double J_ratio, int N);
 
+std::list<std::list<Eigen::MatrixXcd>> momentumHamiltonian(double J_ratio, int N);
+
 std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXcd> & H_list, int N);
 
 std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXd> & H_list, int N);
