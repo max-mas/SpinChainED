@@ -12,9 +12,11 @@ using Eigen::Dynamic;
 
 int main(int argc, char* argv[]) {
 
-    int N = 3;
+    int N = 4;
+    double j_ratio = 1;
 
-    MatrixXd H = naiveHamiltonian(2, N);
+
+    MatrixXd H = naiveHamiltonian(j_ratio, N);
     //printMatrix(H);
     Eigen::VectorXd erg = H.eigenvalues().real();
     std::sort(erg.begin(), erg.end());
@@ -22,14 +24,14 @@ int main(int argc, char* argv[]) {
 
     std::cout << std::endl;
 
-    list<MatrixXd> H2 = magnetizationHamiltonian(2, N);
+    list<MatrixXd> H2 = magnetizationHamiltonian(j_ratio, N);
     vector<double> erg2 = getEnergiesFromBlocks(H2, N);
     printEnergies(erg2);
 
     std::cout << std::endl;
 
-    list<list<MatrixXcd>> H3 = momentumHamiltonian(2, N);
-    vector<double> erg3 = getEnergiesFromBlocks(H2, N);
+    list<list<MatrixXcd>> H3 = momentumHamiltonian(j_ratio, N);
+    vector<double> erg3 = getEnergiesFromBlocks(H3, N);
     printEnergies(erg3);
 
     return 0;
