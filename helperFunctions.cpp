@@ -78,43 +78,23 @@ void cycleBits(int &s, const int N) {
     }
 }
 
+void cycleBits2(int &s, const int N) {
+    cycleBits(s, N);
+    cycleBits(s, N);
+}
+
 // Checks if state int s is smallest among its translations and compatible with momentum k.
 int checkState(const int s, const int k, const int N) {
     int t = s;
-    for (int i = 1; i <= N; i++) {
-        cycleBits(t, N); //translate state
+    for (int i = 1; i <= N/2; i++) {
+        cycleBits2(t, N); //translate state
         if (t < s) {return -1;}
         else if (t == s) {
-            if ( k % (int) std::trunc((double )N/i) ) {return -1;} // check compatibility with k
+            if ( k % (int) std::trunc((double )N/2/i) ) {return -1;} // check compatibility with k
             return i;
         }
     }
     return -1;
-}
-
-// jfc
-vector<int> checkState_parity(int s, int k, int N) {
-    vector<int> ret = {-1, -1};
-    // ret[0] = R, ret[1] = m
-    int t = s;
-    for (int i = 1; i<= N; i++) {
-        cycleBits(t, N);
-        if (t < s) { return ret;}
-        else if (t == s) {
-            if(k % (int) std::trunc((double )N/i)) {return ret;};
-            ret[0] = i;
-        }
-    }
-    t = s;
-    reflectBits(t, N);
-    for (int i = 0; i < ret[0]; i++) {
-        if (t < s) {ret[0] = -1; return ret;
-        } else if (t == s) {
-            ret[1] = i;
-        }
-        cycleBits(t, N);
-    }
-    return ret;
 }
 
 void reflectBits(int & s, int N) {
@@ -131,65 +111,11 @@ std::vector<int> representative(const int s, const int N) {
     int t = s;
     int l = 0;
 
-    for (int i = 1; i < N; i++) {
-        cycleBits(t, N);
+    for (int i = 1; i < N/2; i++) {
+        cycleBits2(t, N);
         if (t < r) {r = t; l = i;}
     }
     return {r, l};
-}
-
-std::vector<int> representative_parity(int s, int N) {
-    int r = s;
-    int t = s;
-    int l = 0;
-    int q = 0;
-
-    reflectBits(t, N);
-    for (int i = 1; i < N; i++) {
-        cycleBits(t, N);
-        if (t < r) {r = t; l = i; q = 1;}
-    }
-    return {r, l, q};
-}
-
-double E_z(int s, int N) {
-    double E = 0.0;
-    for (int i = 0; i < N; i++) {
-        int j = (i + 1) % N;
-        if (getBit(s, i) == getBit(s, j)) {
-            E += 0.25;
-        } else {
-            E += -0.25;
-        }
-    }
-    return E;
-}
-
-double N_sigma(int s, int N, int R, int k, int sigma, int m, int p) {
-    double k_actual = 2.0 * M_PI * (double) k / (double) N;
-    int g_k;
-    if (k_actual > epsilon && M_PI - k_actual > epsilon) {
-        g_k = 1;
-    } else {
-        g_k = 2;
-    }
-    int s_transl_refl = s;
-    reflectBits(s_transl_refl, N);
-    double num;
-    for (int i = 0; i < N; i++) {
-        cycleBits(s_transl_refl, N);
-        if (s_transl_refl == s) {
-            num = 1.0;
-            break;
-        }
-    }
-    if (num != 1.0) {num = 1.0 + (double) sigma * (double) p * cos(k_actual * (double) m);};
-    double N_ret = (double) pow(N, 2) * (double) g_k / (double) R * num;
-    return N_ret;
-}
-
-double hElement(int a, int b, int l, int q, int k, int p, int sigma) {
-    return 0;
 }
 
 void printMatrix(const Eigen::MatrixXd & M) {
@@ -200,6 +126,16 @@ void printMatrix(const Eigen::MatrixXd & M) {
         std::cout << std::endl;
     }
 }
+
+void printMatrix(const Eigen::MatrixXcd & M) {
+    for (int i = 0; i < M.rows(); i++ ) {
+        for (int j = 0; j < M.cols(); j++) {
+            std::cout << M(i, j) << "\t" ;
+        }
+        std::cout << std::endl;
+    }
+}
+
 
 void printEnergies(const Eigen::VectorXd & v) {
     for (int i = 0; i < v.size(); i++) {

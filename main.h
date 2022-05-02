@@ -31,10 +31,8 @@ std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXd> & H_l
 
 std::vector<double> getEnergiesFromBlocks(const std::list<std::list<Eigen::MatrixXcd>> & H_list, int N);
 
-Eigen::MatrixXcd blkdiag(const std::vector<Eigen::MatrixXcd>& matrix_list, int totalSize);
+Eigen::MatrixXcd blkdiag(const std::list<Eigen::MatrixXcd>& matrix_list, int totalSize);
 
-Eigen::MatrixXd blkdiag(const std::vector<Eigen::MatrixXd> & matrix_list, int totalSize);
-
-
+std::list<Eigen::MatrixXcd> blkdiag(const std::list<std::list<Eigen::MatrixXcd>> & matrix_doubleList);
 
 #endif //HEISENBERG_CHAIN_1D_C_MAIN_H

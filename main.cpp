@@ -13,14 +13,15 @@ using Eigen::Dynamic;
 int main(int argc, char* argv[]) {
 
     int N = 4;
-    double j_ratio = 1;
+    double j_ratio = 2;
 
 
     MatrixXd H = naiveHamiltonian(j_ratio, N);
     //printMatrix(H);
     Eigen::VectorXd erg = H.eigenvalues().real();
     std::sort(erg.begin(), erg.end());
-    printEnergies(erg);
+    //printEnergies(erg);
+    //printMatrix(H);
 
     std::cout << std::endl;
 
@@ -33,6 +34,11 @@ int main(int argc, char* argv[]) {
     list<list<MatrixXcd>> H3 = momentumHamiltonian(j_ratio, N);
     vector<double> erg3 = getEnergiesFromBlocks(H3, N);
     printEnergies(erg3);
+    //list<MatrixXcd> H3_1 = blkdiag(H3);
+    //MatrixXcd H3_2 = blkdiag(H3_1, pow(2, N));
+    //printMatrix(H3_2);
+    //MatrixXcd H3_2_tr = H3_2.transpose();
+    //printMatrix(H3_2_tr);
 
     return 0;
 }
@@ -138,14 +144,8 @@ list<list<MatrixXcd>> momentumHamiltonian(double J_ratio, int N) {
         int M = s_vector_m.size();
 
         list<MatrixXcd> H_subSubspace_list(N);
-        //int H_index_k = 0;
-        int N_prime;
-        if (getBit(N,0)) {
-            N_prime = -trunc( N/2.0);
-        } else { N_prime = -trunc(N/2.0) + 1;
-        }
 
-        for (int k = N_prime; k <= trunc(N/2.0); k++ ) {
+        for (int k = -trunc(N/4)+1 ; k <= trunc(N/4); k++ ) {
             vector<int> s_vector_k, R_vector;
             for (int i = 0; i < M; i++) {
                 int s = s_vector_m[i];
@@ -158,7 +158,6 @@ list<list<MatrixXcd>> momentumHamiltonian(double J_ratio, int N) {
             int K = s_vector_k.size();
 
             H_subSubspace_list.emplace_back(MatrixXcd::Zero(K, K));
-
 
             for (int l = 0; l < K; l++) {
                 int a = s_vector_k[l];
@@ -176,11 +175,9 @@ list<list<MatrixXcd>> momentumHamiltonian(double J_ratio, int N) {
                         int f = findState(s_vector_k, r_L[0]);
 
                         if (f >= 0) {
-                            complex<double> offDiagEl = 1.0/2.0 * std::sqrt((double)R_vector[l]
-                                                                            / (double) R_vector[f]) * std::exp( complex<double>(0,1) * 2.0 * M_PI
-                                                                                                                * (double) k * (double) r_L[1] / (double) N);
-                            H_subSubspace_list.back()(l, f) +=
-                                    offDiagEl;
+                            complex<double> offDiagEl = 0.5 * std::sqrt((double)R_vector[l] / (double) R_vector[f])
+                                    * std::exp(complex<double>(0,1) * 4.0 * M_PI * (double) k * (double) r_L[1] / (double) N);
+                            H_subSubspace_list.back()(l, f) += offDiagEl;
                         }
                     }
                 }
@@ -198,20 +195,15 @@ list<list<MatrixXcd>> momentumHamiltonian(double J_ratio, int N) {
                         int f = findState(s_vector_k, r_L[0]);
 
                         if (f >= 0) {
-                            complex<double> offDiagEl = 1.0/2.0 * std::sqrt((double)R_vector[l]
-                                                                            / (double) R_vector[f]) * std::exp( complex<double>(0,1) * 2.0 * M_PI
-                                                                                                                * (double) k * (double) r_L[1] / (double) N);
-                            H_subSubspace_list.back()(l, f) +=
-                                    J_ratio * offDiagEl;
+                            complex<double> offDiagEl = 0.5 * std::sqrt((double)R_vector[l] / (double) R_vector[f])
+                                    * std::exp( complex<double>(0,1) * 4.0 * M_PI * (double) k * (double) r_L[1] / (double) N);
+                            H_subSubspace_list.back()(l, f) += J_ratio * offDiagEl;
                         }
                     }
                 }
             }
-            //H_index_k += 1;
-
         }
         H_subspace_list.push_back(H_subSubspace_list);
-        //H_index += 1;
     }
     return H_subspace_list;
 }
@@ -257,7 +249,7 @@ vector<double> getEnergiesFromBlocks(const list<list<MatrixXcd>> & H_list, int N
 }
 
 
-MatrixXcd blkdiag(const vector<MatrixXcd> & matrix_list, int totalSize) {
+MatrixXcd blkdiag(const list<MatrixXcd> & matrix_list, int totalSize) {
     MatrixXcd bdm = MatrixXcd::Zero(totalSize, totalSize);
     int curr_index = 0;
     for (const MatrixXcd & mat : matrix_list)
@@ -271,20 +263,14 @@ MatrixXcd blkdiag(const vector<MatrixXcd> & matrix_list, int totalSize) {
     return bdm;
 }
 
-MatrixXd blkdiag(const vector<MatrixXd> & matrix_list, int totalSize) {
-    MatrixXd bdm = MatrixXd::Zero(totalSize, totalSize);
-    int curr_index = 0;
-    for (const MatrixXd & mat : matrix_list)
-    {
-        if (mat.cols() == 0) {
-            continue;
+list<MatrixXcd> blkdiag(const list<list<MatrixXcd>> & matrix_doubleList) {
+    list<MatrixXcd> bdmlist;
+    for (list<MatrixXcd> l : matrix_doubleList) {
+        int size = 0;
+        for (MatrixXcd m : l) {
+            size += m.rows();
         }
-        bdm.block(curr_index, curr_index, mat.rows(), mat.cols()) = mat;
-        curr_index += (int) mat.rows();
+        bdmlist.emplace_back( blkdiag(l, size) );
     }
-    return bdm;
+    return bdmlist;
 }
-
-
-
-
