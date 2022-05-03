@@ -90,7 +90,7 @@ int checkState(const int s, const int k, const int N) {
         cycleBits2(t, N); //translate state
         if (t < s) {return -1;}
         else if (t == s) {
-            if ( k % (int) std::trunc((double )N/2/i) ) {return -1;} // check compatibility with k
+            if ( k % (int) std::trunc((double )N/(2*i)) ) {return -1;} // check compatibility with k
             return i;
         }
     }

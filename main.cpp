@@ -12,7 +12,7 @@ using Eigen::Dynamic;
 
 int main(int argc, char* argv[]) {
 
-    int N = 4;
+    int N = 6;
     double j_ratio = 2;
 
 
@@ -20,7 +20,7 @@ int main(int argc, char* argv[]) {
     //printMatrix(H);
     Eigen::VectorXd erg = H.eigenvalues().real();
     std::sort(erg.begin(), erg.end());
-    //printEnergies(erg);
+    printEnergies(erg);
     //printMatrix(H);
 
     std::cout << std::endl;
@@ -61,7 +61,7 @@ MatrixXd naiveHamiltonian(double J_ratio, int N) {
                 H(a, b) = 0.5;
             }
         }
-        for (int i = 0; i < N-1; i++) {
+        for (int i = 0; i < N; i++) {
             int j = (i+2) % N;
             if (getBit(a, i) == getBit(a, j)) {
                 H(a, a) += J_ratio *  0.25;
@@ -110,7 +110,7 @@ list<MatrixXd> magnetizationHamiltonian(double J_ratio, int N) {
                     H_subspace_list.back()(k, l) = 0.5;
                 }
             }
-            for (int i = 0; i <N-1; i++) {
+            for (int i = 0; i < N; i++) {
                 int j = (i+2) % N;
                 if (getBit(a, i) == getBit(a, j)) {
                     H_subspace_list.back()(k, k) += J_ratio* 0.25;
@@ -145,7 +145,7 @@ list<list<MatrixXcd>> momentumHamiltonian(double J_ratio, int N) {
 
         list<MatrixXcd> H_subSubspace_list(N);
 
-        for (int k = -trunc(N/4)+1 ; k <= trunc(N/4); k++ ) {
+        for (int k = -trunc((N+2)/4) + 1 ; k <= trunc(N/4); k++ ) {
             vector<int> s_vector_k, R_vector;
             for (int i = 0; i < M; i++) {
                 int s = s_vector_m[i];
@@ -176,27 +176,25 @@ list<list<MatrixXcd>> momentumHamiltonian(double J_ratio, int N) {
 
                         if (f >= 0) {
                             complex<double> offDiagEl = 0.5 * std::sqrt((double)R_vector[l] / (double) R_vector[f])
-                                    * std::exp(complex<double>(0,1) * 4.0 * M_PI * (double) k * (double) r_L[1] / (double) N);
+                                    * std::exp(complex<double>(0,4.0 * M_PI * (double) k * (double) r_L[1] / (double) N));
                             H_subSubspace_list.back()(l, f) += offDiagEl;
                         }
                     }
-                }
-                for (int i = 0; i < N-1; i++) {
-                    int j = (i+2) % N;
-                    if (getBit(a, i) == getBit(a, j)) {
+                    int n = (i+2) % N;
+                    if (getBit(a, i) == getBit(a, n) && i < N) {
                         H_subSubspace_list.back()(l, l) += J_ratio * 0.25;
-                    } else {
+                    } else if (i < N) {
                         H_subSubspace_list.back()(l, l) += J_ratio * -0.25;
 
                         int b = a;
                         flipBit(b, i);
-                        flipBit(b, j);
+                        flipBit(b, n);
                         vector<int> r_L = representative(b, N);
                         int f = findState(s_vector_k, r_L[0]);
 
                         if (f >= 0) {
                             complex<double> offDiagEl = 0.5 * std::sqrt((double)R_vector[l] / (double) R_vector[f])
-                                    * std::exp( complex<double>(0,1) * 4.0 * M_PI * (double) k * (double) r_L[1] / (double) N);
+                                    * std::exp( complex<double>(0,4.0 * M_PI * (double) k * (double) r_L[1] / (double) N));
                             H_subSubspace_list.back()(l, f) += J_ratio * offDiagEl;
                         }
                     }
