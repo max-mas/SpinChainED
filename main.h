@@ -9,4 +9,8 @@
 #include "hamiltonianBuilders.h"
 #include "thermodynamics.h"
 
+std::vector<std::vector<double>> diagonalizeThreaded(const std::vector<double> & J_ratios, int N);
+
+void writeThreadSafe (std::vector<std::vector<double>> & writeTo, const std::vector<double> & writeFrom);
+
 #endif //HEISENBERG_CHAIN_1D_C_MAIN_H

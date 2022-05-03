@@ -1,6 +1,9 @@
 #include "main.h"
+
 #include <chrono>
 #include <utility>
+#include <thread>
+#include <mutex>
 
 using std::vector;
 using std::complex;
@@ -13,7 +16,8 @@ using Eigen::Dynamic;
 
 //#define saveErgs
 //#define saveExcitationErgs
-#define saveSpecificHeat
+//#define saveSpecificHeat
+#define parallelDiag
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -92,9 +96,36 @@ int main(int argc, char* argv[]) {
     }
     ergFile.close();
 #endif
+#ifdef parallelDiag
+    int dataPointNum = 500;
+    Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, 0, 2.5);
+    vector<double> J_ratios_stl(J_ratios.data(), J_ratios.data() + J_ratios.size());
+    double J_ratio = 2;
+    int N = 12;
+    vector<vector<double>> energies_for_different_betas = diagonalizeThreaded(J_ratios_stl, N);
+
+#endif
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count()
               << "[ms]" << std::endl;
     return 0;
+}
+
+vector<vector<double>> diagonalizeThreaded(const vector<double> & J_ratios, int N) {
+    const int num = J_ratios.size();
+    vector<vector<double>> v(num);
+#pragma omp parallel for default(none) shared(v, J_ratios, N) num_threads(16)
+    for (int i = 0; i < num; i++) {
+        list<list<MatrixXcd>> H = momentumHamiltonian(J_ratios[i], N);
+        vector<double> erg = getEnergiesFromBlocks(H, N);
+        writeThreadSafe(v, erg);
+    }
+    return v;
+}
+
+void writeThreadSafe (vector<vector<double>> & writeTo, const vector<double> & writeFrom) {
+    static std::mutex mu;
+    std::lock_guard<std::mutex> lock(mu);
+    writeTo.emplace_back(writeFrom);
 }
 
