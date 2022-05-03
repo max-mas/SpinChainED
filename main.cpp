@@ -12,11 +12,11 @@ using Eigen::MatrixXd;
 using Eigen::Dynamic;
 
 //#define saveErgs
-#define saveExcitationErgs
-//#define saveSpecificHeat
+//#define saveExcitationErgs
+#define saveSpecificHeat
 
 int main(int argc, char* argv[]) {
-
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 #ifdef saveErgs
     int N; double j_ratio; std::string path, method;
     if (argc > 4) {
@@ -30,7 +30,6 @@ int main(int argc, char* argv[]) {
         path = "ergs.txt";
         method = "momentum";
     }
-    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
     if (method == "naive") {
         MatrixXd H = naiveHamiltonian(j_ratio, N);
@@ -47,12 +46,9 @@ int main(int argc, char* argv[]) {
         saveEnergies(erg, path);
     }
 
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count()
-            << "[ms]" << std::endl;
 #endif
 #ifdef saveExcitationErgs
-    Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(1000, 0, 5);
+    Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(1000, 0, 1.5);
     int N = 10;
     vector<double> diffs;
     for (double J_ratio : J_ratios) {
@@ -67,16 +63,38 @@ int main(int argc, char* argv[]) {
     std::ofstream ergFile;
     ergFile.open("excitationEnergies.txt");
     for (std::pair<double, double> p : out) {
-        ergFile << p.first << "\t" << p.second << "\n";
+        ergFile << p.first << " " << p.second << "\n";
     }
     ergFile.close();
 
 #endif
 #ifdef saveSpecificHeat
-    list<list<MatrixXcd>> H = momentumHamiltonian(2, 12);
-    vector<double> erg = getEnergiesFromBlocks(H, 12);
-    std::cout << specificHeat(erg, 1)/12 << "\n";
-    return 0;
+    int dataPointNum = 500;
+    Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, 2.5);
+    double J_ratio = 2;
+    int N = 10;
+    vector<double> C(dataPointNum);
+    int i = 0;
+    list<list<MatrixXcd>> H = momentumHamiltonian(J_ratio, N);
+    vector<double> erg = getEnergiesFromBlocks(H, N);
+    for (double beta : betas) {
+        C[i] = specificHeat(erg, beta)/N ;
+        i++;
+    }
+    list<std::pair<double, double>> out;
+    for (int j = 0; j < dataPointNum; j++) {
+        out.emplace_back( std::pair<double, double>(betas[j], C[j]) );
+    }
+    std::ofstream ergFile;
+    ergFile.open("/home/mmaschke/BA_Code/Data/specHeatJ1BetaVar.txt");
+    for (std::pair<double, double> p : out) {
+        ergFile << p.first << " " << p.second << "\n";
+    }
+    ergFile.close();
 #endif
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count()
+              << "[ms]" << std::endl;
+    return 0;
 }
 
