@@ -14,4 +14,4 @@ endif (UNIX)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 ")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 ")
 
-add_executable(SpinChainED main.cpp main.h helperFunctions.cpp helperFunctions.h constants.h hamiltonianBuilders.cpp hamiltonianBuilders.h)
+add_executable(SpinChainED main.cpp main.h helperFunctions.cpp helperFunctions.h constants.h hamiltonianBuilders.cpp hamiltonianBuilders.h thermodynamics.cpp thermodynamics.h)

@@ -7,5 +7,6 @@
 
 #include "helperFunctions.h"
 #include "hamiltonianBuilders.h"
+#include "thermodynamics.h"
 
 #endif //HEISENBERG_CHAIN_1D_C_MAIN_H
