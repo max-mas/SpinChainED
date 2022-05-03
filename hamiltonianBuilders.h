@@ -12,6 +12,8 @@
 #include <list>
 
 #include <stdexcept>
+#include <fstream>
+#include <string>
 
 #include <cmath>
 #include <complex>
@@ -46,6 +48,8 @@ std::vector<double> getEnergiesFromBlocks(const std::list<std::list<Eigen::Matri
 Eigen::MatrixXcd blkdiag(const std::list<Eigen::MatrixXcd>& matrix_list, int totalSize);
 
 std::list<Eigen::MatrixXcd> blkdiag(const std::list<std::list<Eigen::MatrixXcd>> & matrix_doubleList);
+
+void saveEnergies(const std::vector<double> & ergs, const std::string & path);
 
 
 #endif //SPINCHAINED_HAMILTONIANBUILDERS_H

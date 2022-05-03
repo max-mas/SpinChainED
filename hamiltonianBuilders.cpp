@@ -279,12 +279,21 @@ MatrixXcd blkdiag(const list<MatrixXcd> & matrix_list, int totalSize) {
 
 list<MatrixXcd> blkdiag(const list<list<MatrixXcd>> & matrix_doubleList) {
     list<MatrixXcd> bdmlist;
-    for (list<MatrixXcd> l : matrix_doubleList) {
+    for (const list<MatrixXcd> & l : matrix_doubleList) {
         int size = 0;
-        for (MatrixXcd m : l) {
+        for (const MatrixXcd & m : l) {
             size += m.rows();
         }
         bdmlist.emplace_back( blkdiag(l, size) );
     }
     return bdmlist;
+}
+
+void saveEnergies(const vector<double> & ergs, const std::string & path) {
+    std::ofstream ergFile;
+    ergFile.open(path);
+    for (double d : ergs) {
+        ergFile << d << "\n";
+    }
+    ergFile.close();
 }
