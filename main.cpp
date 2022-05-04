@@ -15,10 +15,10 @@ using Eigen::MatrixXd;
 using Eigen::Dynamic;
 
 //#define saveErgs
-//#define saveExcitationErgs
+#define saveExcitationErgs
 //#define saveSpecificHeat
 //#define parallelDiag
-#define spinTest
+//#define spinTest
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -53,7 +53,7 @@ int main(int argc, char* argv[]) {
 
 #endif
 #ifdef saveExcitationErgs
-    Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(1000, 0, 1.5);
+    Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(200, 0, 2.5);
     int N = 10;
     vector<double> diffs;
     for (double J_ratio : J_ratios) {
@@ -66,12 +66,11 @@ int main(int argc, char* argv[]) {
         out.emplace_back( std::pair<double, double>(J_ratios[i], diffs[i]) );
     }
     std::ofstream ergFile;
-    ergFile.open("excitationEnergies.txt");
+    ergFile.open("/home/mmaschke/BA_Code/Data/excitationEnergies.txt");
     for (std::pair<double, double> p : out) {
         ergFile << p.first << " " << p.second << "\n";
     }
     ergFile.close();
-
 #endif
 #ifdef saveSpecificHeat
     int dataPointNum = 500;
@@ -98,12 +97,11 @@ int main(int argc, char* argv[]) {
     ergFile.close();
 #endif
 #ifdef parallelDiag
-    int dataPointNum = 500;
+    int dataPointNum = 100;
     Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, 0, 2.5);
     vector<double> J_ratios_stl(J_ratios.data(), J_ratios.data() + J_ratios.size());
-    double J_ratio = 2;
-    int N = 12;
-    vector<vector<double>> energies_for_different_betas = diagonalizeThreaded(J_ratios_stl, N)
+    int N = 14;
+    vector<vector<double>> energies_for_different_betas = diagonalizeThreaded(J_ratios_stl, N);
 #endif
 #ifdef spinTest
     int N = 6;
@@ -135,8 +133,8 @@ int main(int argc, char* argv[]) {
     ergFile.close();
 
 
-    MatrixXcd transform = U.adjoint()*S_2*U;
-    printMatrix(transform);
+    //MatrixXcd transform = U.adjoint()*S_2*U;
+    //printMatrix(transform);
 
 
 #endif
@@ -149,11 +147,12 @@ int main(int argc, char* argv[]) {
 vector<vector<double>> diagonalizeThreaded(const vector<double> & J_ratios, int N) {
     const int num = J_ratios.size();
     vector<vector<double>> v(num);
-#pragma omp parallel for default(none) shared(v, J_ratios, N) num_threads(16)
+#pragma omp parallel for default(none) shared(v, J_ratios, N, std::cout) num_threads(16)
     for (int i = 0; i < num; i++) {
         list<list<MatrixXcd>> H = momentumHamiltonian(J_ratios[i], N);
         vector<double> erg = getEnergiesFromBlocks(H, N);
         writeThreadSafe(v, erg);
+        std::cout << "1 done" << "\n";
     }
     return v;
 }
