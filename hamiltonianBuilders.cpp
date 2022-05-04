@@ -13,6 +13,27 @@ using Eigen::MatrixXcd;
 using Eigen::MatrixXd;
 using Eigen::Dynamic;
 
+MatrixXd spinOperator_sq(int N) {
+    int matSize = pow(2, N);
+    MatrixXd S_2 = N*0.75*MatrixXd::Identity(matSize, matSize);
+    for (int a = 0; a < matSize; a++) {
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < i; j++) {
+                if (getBit(a, i) == getBit(a, j)) {
+                    S_2(a, a) += 0.5;
+                } else {
+                    S_2(a, a) += -0.5;
+                    int b = a;
+                    flipBit(b, i);
+                    flipBit(b, j);
+                    S_2(a, b) += 1;
+                }
+            }
+        }
+    }
+    return S_2;
+}
+
 MatrixXd naiveHamiltonian(double J_ratio, int N) {
     // N must be even and > 6 or this no longer describes the correct system.
     if (N < 6 || N%2 == 1) {

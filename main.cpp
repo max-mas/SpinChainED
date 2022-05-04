@@ -17,7 +17,8 @@ using Eigen::Dynamic;
 //#define saveErgs
 //#define saveExcitationErgs
 //#define saveSpecificHeat
-#define parallelDiag
+//#define parallelDiag
+#define spinTest
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -75,7 +76,7 @@ int main(int argc, char* argv[]) {
 #ifdef saveSpecificHeat
     int dataPointNum = 500;
     Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, 2.5);
-    double J_ratio = 2;
+    double J_ratio = 1;
     int N = 10;
     vector<double> C(dataPointNum);
     int i = 0;
@@ -102,7 +103,41 @@ int main(int argc, char* argv[]) {
     vector<double> J_ratios_stl(J_ratios.data(), J_ratios.data() + J_ratios.size());
     double J_ratio = 2;
     int N = 12;
-    vector<vector<double>> energies_for_different_betas = diagonalizeThreaded(J_ratios_stl, N);
+    vector<vector<double>> energies_for_different_betas = diagonalizeThreaded(J_ratios_stl, N)
+#endif
+#ifdef spinTest
+    int N = 6;
+    double j_ratio = 1;
+    int dataPointNum = 200;
+    Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, 2.5);
+    MatrixXd S_2 = spinOperator_sq(N);
+
+    MatrixXd H = naiveHamiltonian(j_ratio, N);
+    Eigen::ComplexEigenSolver<MatrixXd> sol(H);
+    Eigen::VectorXd erg = sol.eigenvalues().real();
+    vector<double> ergs_stl(erg.data(), erg.data() + erg.size());
+    const Eigen::MatrixXcd & U = sol.eigenvectors();
+
+    vector<double> susceptibilities(dataPointNum);
+    for (int i = 0; i < dataPointNum; i++) {
+        susceptibilities[i] =  susceptibility(ergs_stl, betas[i],  U, S_2) / (double) N ;
+    }
+
+    list<std::pair<double, double>> out;
+    for (int j = 0; j < dataPointNum; j++) {
+        out.emplace_back( std::pair<double, double>(betas[j], susceptibilities[j]) );
+    }
+    std::ofstream ergFile;
+    ergFile.open("/home/mmaschke/BA_Code/Data/suscTest.txt");
+    for (std::pair<double, double> p : out) {
+        ergFile << p.first << " " << p.second << "\n";
+    }
+    ergFile.close();
+
+
+    MatrixXcd transform = U.adjoint()*S_2*U;
+    printMatrix(transform);
+
 
 #endif
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();

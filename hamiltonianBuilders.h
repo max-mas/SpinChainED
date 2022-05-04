@@ -23,6 +23,8 @@
 
 #include "helperFunctions.h"
 
+Eigen::MatrixXd spinOperator_sq(int N);
+
 Eigen::MatrixXd naiveHamiltonian(double J_ratio, int N);
 
 void setHElement_naive(double J_ratio, int N, Eigen::MatrixXd &H, int a);

@@ -27,4 +27,18 @@ double specificHeat(const vector<double> & ergs, double beta) {
     return pow(beta,2) * ( avg_H_sq - pow(avg_H, 2) );
 }
 
+double susceptibility(const vector<double> & ergs, double beta, const Eigen::MatrixXcd & U,const Eigen::MatrixXd & S_2) {
+    std::complex<double> S_2_avg = 0;
+    Eigen::MatrixXcd S_2_transform =  U.adjoint() * S_2 * U;
+    double Z = partitionFunction(ergs, beta);
+
+    for (double erg : ergs) {
+        for (int i = 0; i < S_2.cols(); i++) {
+            S_2_avg += std::exp(-beta * erg) * S_2_transform(i, i);
+        }
+    }
+    double S_2_avg_real = (S_2_avg / 3.0 / Z).real();
+    return beta * S_2_avg_real;
+}
+
 
