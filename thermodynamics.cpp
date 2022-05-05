@@ -63,8 +63,8 @@ double susceptibilityOld(const vector<double> & ergs, double betaOrT, bool isBet
 
 double susceptibility(const vector<double> & ergs, double betaOrT, bool isBeta, const Eigen::MatrixXcd & U,const Eigen::MatrixXd & S_2) {
     double S_2_avg = 0;
+    double Z = 0;
     Eigen::MatrixXcd S_2_transform =  U.adjoint() * S_2 * U;
-    double Z = partitionFunction(ergs, betaOrT, isBeta);
 
     double temp_representative;
     if (isBeta) {
@@ -75,7 +75,8 @@ double susceptibility(const vector<double> & ergs, double betaOrT, bool isBeta, 
 
     for (int i = 0; i < S_2.cols(); i++) {
         double S = -0.5 + sqrt(0.25 + S_2_transform(i, i).real());
-        S_2_avg += std::exp(-temp_representative * ergs[i]) * S_2_transform(i, i).real() * (2*S + 1) ;
+        Z += std::exp( -temp_representative * ergs[i] ) * (2 * S + 1);
+        S_2_avg += std::exp(-temp_representative * ergs[i]) * S * (S + 1) * (2 * S + 1);
     }
 
     S_2_avg = S_2_avg/(3.0*Z);

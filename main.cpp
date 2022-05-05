@@ -139,8 +139,9 @@ int main(int argc, char* argv[]) {
     int N = 8;
     double j_ratio = 0;
     int dataPointNum = 200;
-    Eigen::VectorXd Ts = Eigen::VectorXd::LinSpaced(dataPointNum, 0, 2.5);
-    MatrixXd S_2 = spinOperator_sq(getStates_m(N, 0), N);
+    Eigen::VectorXd Ts = Eigen::VectorXd::LinSpaced(dataPointNum, 0.001, 2.5);
+    vector<int> states = getStates_m(N, N/2);
+    MatrixXd S_2 = spinOperator_sq(states, N);
 
     MatrixXd H_m0 = getMagnetizationBlock(j_ratio, 0, N);
     Eigen::ComplexEigenSolver<MatrixXd> sol(H_m0);
@@ -152,6 +153,7 @@ int main(int argc, char* argv[]) {
     for (int i = 0; i < dataPointNum; i++) {
         susceptibilities[i] =  susceptibility(ergs_stl, Ts[i], false, U, S_2) / (double) N ;
     }
+
 
     list<std::pair<double, double>> out;
     for (int j = 0; j < dataPointNum; j++) {

@@ -35,19 +35,22 @@ MatrixXd spinOperator_sq(int N) {
 }
 
 MatrixXd spinOperator_sq(vector<int> states, int N) {
-    int matSize = pow(2, states.size());
+    int matSize = states.size();
     MatrixXd S_2 = N*0.75*MatrixXd::Identity(matSize, matSize);
-    for (int a : states) {
+    for (int k = 0; k < matSize; k++) {
+        int a = states[k];
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < i; j++) {
                 if (getBit(a, i) == getBit(a, j)) {
-                    S_2(a, a) += 0.5;
+                    S_2(k, k) += 0.5;
                 } else {
-                    S_2(a, a) += -0.5;
+                    S_2(k, k) += -0.5;
+
                     int b = a;
                     flipBit(b, i);
                     flipBit(b, j);
-                    S_2(a, b) += 1;
+                    int l = findState(states, b);
+                    S_2(k, l) += 1;
                 }
             }
         }
@@ -107,7 +110,7 @@ MatrixXd getMagnetizationBlock(double J_ratio, double m, int N) {
     vector<int> s_vector_m = getStates_m(N, n_up);
     int M = s_vector_m.size();
 
-    MatrixXd m_block(MatrixXd::Zero(M,M));
+    MatrixXd m_block =MatrixXd::Zero(M,M);
     for (int k = 0; k < M; k++) {
         setHElement_magnetization(J_ratio, N, m_block, s_vector_m, k);
     }
