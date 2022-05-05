@@ -255,6 +255,17 @@ vector<double> getEnergiesFromBlocks(const list<MatrixXcd> & H_list, int N) {
     return energies;
 }
 
+vector<double> getEnergiesFromBlocks(const list<MatrixXcd> & H_list) {
+    vector<double> energies;
+    for (const MatrixXcd & mat : H_list) {
+        Eigen::VectorXcd blockEnergies = mat.eigenvalues();
+        std::for_each(blockEnergies.begin(), blockEnergies.end(),
+                      [&](complex<double> & d){energies.emplace_back( d.real() );});
+    }
+    std::sort(energies.begin(), energies.end());
+    return energies;
+}
+
 vector<double> getEnergiesFromBlocks(const list<MatrixXd> & H_list, int N) {
     vector<double> energies(pow(2, N), 0);
     int j = 0;
@@ -262,6 +273,17 @@ vector<double> getEnergiesFromBlocks(const list<MatrixXd> & H_list, int N) {
         Eigen::VectorXcd blockEnergies = mat.eigenvalues();
         std::for_each(blockEnergies.begin(), blockEnergies.end(),
                       [&](complex<double> & d){energies[j] = d.real(); j++;});
+    }
+    std::sort(energies.begin(), energies.end());
+    return energies;
+}
+
+vector<double> getEnergiesFromBlocks(const list<MatrixXd> & H_list) {
+    vector<double> energies;
+    for (const MatrixXd & mat : H_list) {
+        Eigen::VectorXcd blockEnergies = mat.eigenvalues();
+        std::for_each(blockEnergies.begin(), blockEnergies.end(),
+                      [&](complex<double> & d){energies.emplace_back( d.real() );});
     }
     std::sort(energies.begin(), energies.end());
     return energies;

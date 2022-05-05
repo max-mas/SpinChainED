@@ -76,7 +76,7 @@ int main(int argc, char* argv[]) {
     int dataPointNum = 200;
     Eigen::VectorXd Ts = Eigen::VectorXd::LinSpaced(dataPointNum, 0.001, 2.5);
     double J_ratio = 2;
-    int N = 18;
+    int N = 16;
     vector<double> C(dataPointNum);
     int i = 0;
     list<list<MatrixXcd>> H = momentumHamiltonian(J_ratio, N);
@@ -90,7 +90,7 @@ int main(int argc, char* argv[]) {
         out.emplace_back( std::pair<double, double>(Ts[j], C[j]) );
     }
     std::ofstream ergFile;
-    ergFile.open("/home/mmaschke/BA_Code/Data/specHeatJ2N14.txt");
+    ergFile.open("/home/mmaschke/BA_Code/Data/specHeatJ2N16.txt");
     for (std::pair<double, double> p : out) {
         ergFile << p.first << " " << p.second << "\n";
     }
@@ -147,7 +147,7 @@ vector<double> getMomentumErgsThreaded(const list<list<MatrixXcd>> & H_list, int
     vector<double> ergs;
 #pragma omp parallel for default(none) shared(ergs, H_vector, N, std::cout) num_threads(16)
     for (int i = 0; i < H_vector.size(); i++) {
-        vector<double> blockErgs = getEnergiesFromBlocks(H_vector[i], N);
+        vector<double> blockErgs = getEnergiesFromBlocks(H_vector[i]);
         writeThreadSafe(ergs, blockErgs);
         std::cout << "1 done" << "\n";
     }

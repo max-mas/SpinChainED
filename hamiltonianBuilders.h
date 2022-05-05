@@ -43,6 +43,10 @@ void setHElement_momentum(double J_ratio, int N, std::list<Eigen::MatrixXcd> &H_
 
 std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXcd> & H_list, int N);
 
+std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXcd> & H_list);
+
+std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXd> & H_list);
+
 std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXd> & H_list, int N);
 
 std::vector<double> getEnergiesFromBlocks(const std::list<std::list<Eigen::MatrixXcd>> & H_list, int N);
