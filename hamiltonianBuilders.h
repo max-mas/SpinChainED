@@ -25,15 +25,19 @@
 
 Eigen::MatrixXd spinOperator_sq(int N);
 
+Eigen::MatrixXd spinOperator_sq(std::vector<int> states, int N);
+
 Eigen::MatrixXd naiveHamiltonian(double J_ratio, int N);
 
 void setHElement_naive(double J_ratio, int N, Eigen::MatrixXd &H, int a);
+
+Eigen::MatrixXd getMagnetizationBlock(double J_ratio, double m, int N);
 
 std::list<Eigen::MatrixXd> magnetizationHamiltonian(double J_ratio, int N);
 
 std::vector<int> getStates_m(int N, int n_up);
 
-void setHElement_magnetization(double J_ratio, int N, std::list<Eigen::MatrixXd> &H_subspace_list,
+void setHElement_magnetization(double J_ratio, int N, Eigen::MatrixXd & H_subspace_block,
                                const std::vector<int> &s_vector_m, int k);
 
 std::list<std::list<Eigen::MatrixXcd>> momentumHamiltonian(double J_ratio, int N);

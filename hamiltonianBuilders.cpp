@@ -34,6 +34,27 @@ MatrixXd spinOperator_sq(int N) {
     return S_2;
 }
 
+MatrixXd spinOperator_sq(vector<int> states, int N) {
+    int matSize = pow(2, states.size());
+    MatrixXd S_2 = N*0.75*MatrixXd::Identity(matSize, matSize);
+    for (int a : states) {
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < i; j++) {
+                if (getBit(a, i) == getBit(a, j)) {
+                    S_2(a, a) += 0.5;
+                } else {
+                    S_2(a, a) += -0.5;
+                    int b = a;
+                    flipBit(b, i);
+                    flipBit(b, j);
+                    S_2(a, b) += 1;
+                }
+            }
+        }
+    }
+    return S_2;
+}
+
 MatrixXd naiveHamiltonian(double J_ratio, int N) {
     // N must be even and > 6 or this no longer describes the correct system.
     if (N < 6 || N%2 == 1) {
@@ -81,6 +102,18 @@ void setHElement_naive(double J_ratio, int N, MatrixXd & H, int a) {
     }
 }
 
+MatrixXd getMagnetizationBlock(double J_ratio, double m, int N) {
+    int n_up = round( m + N/2.0);
+    vector<int> s_vector_m = getStates_m(N, n_up);
+    int M = s_vector_m.size();
+
+    MatrixXd m_block(MatrixXd::Zero(M,M));
+    for (int k = 0; k < M; k++) {
+        setHElement_magnetization(J_ratio, N, m_block, s_vector_m, k);
+    }
+    return m_block;
+}
+
 list<MatrixXd> magnetizationHamiltonian(double J_ratio, int N) {
     // N must be even and > 6 or this no longer describes the correct system.
     if (N < 6 || N%2 == 1) {
@@ -103,7 +136,7 @@ list<MatrixXd> magnetizationHamiltonian(double J_ratio, int N) {
         // Generate Block with correct size and fill elements.
         H_subspace_list.emplace_back(MatrixXd::Zero(M,M));
         for (int k = 0; k < M; k++) {
-            setHElement_magnetization(J_ratio, N, H_subspace_list, s_vector_m, k);
+            setHElement_magnetization(J_ratio, N, H_subspace_list.back(), s_vector_m, k);
         }
     }
     return H_subspace_list;
@@ -117,35 +150,35 @@ vector<int> getStates_m(int N, int n_up) {
     return s_vector_m;
 }
 
-void setHElement_magnetization(double J_ratio, int N, list<MatrixXd> &H_subspace_list, const vector<int> &s_vector_m,
+void setHElement_magnetization(double J_ratio, int N, MatrixXd & H_subspace_block, const vector<int> &s_vector_m,
                                int k) {
     int a = s_vector_m[k];
     for (int i = 0; i <N; i++) {
         int j = (i+1) % N;
         if (getBit(a, i) == getBit(a, j)) {
-            H_subspace_list.back()(k, k) += 0.25;
+            H_subspace_block(k, k) += 0.25;
         } else {
-            H_subspace_list.back()(k, k) += -0.25;
+            H_subspace_block(k, k) += -0.25;
 
             int b = a;
             flipBit(b, i);
             flipBit(b, j);
             int l = findState(s_vector_m, b);
-            H_subspace_list.back()(k, l) = 0.5;
+            H_subspace_block(k, l) = 0.5;
         }
     }
     for (int i = 0; i < N; i++) {
         int j = (i+2) % N;
         if (getBit(a, i) == getBit(a, j)) {
-            H_subspace_list.back()(k, k) += J_ratio* 0.25;
+            H_subspace_block(k, k) += J_ratio* 0.25;
         } else {
-            H_subspace_list.back()(k, k) += J_ratio * -0.25;
+            H_subspace_block(k, k) += J_ratio * -0.25;
 
             int b = a;
             flipBit(b, i);
             flipBit(b, j);
             int l = findState(s_vector_m, b);
-            H_subspace_list.back()(k, l) = J_ratio * 0.5;
+            H_subspace_block(k, l) = J_ratio * 0.5;
         }
     }
 }

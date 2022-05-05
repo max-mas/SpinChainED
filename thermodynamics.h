@@ -14,6 +14,8 @@ double partitionFunction(const std::vector<double> & ergs, double beta, bool isB
 
 double specificHeat(const std::vector<double> & ergs, double betaOrT, bool isBeta) ;
 
+double susceptibilityOld(const std::vector<double> & ergs, double betaOrT, bool isBeta, const Eigen::MatrixXcd & U,const Eigen::MatrixXd & S_2);
+
 double susceptibility(const std::vector<double> & ergs, double betaOrT, bool isBeta, const Eigen::MatrixXcd & U,const Eigen::MatrixXd & S_2);
 
 
