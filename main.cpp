@@ -15,8 +15,8 @@ using Eigen::MatrixXd;
 using Eigen::Dynamic;
 
 //#define saveErgs
-#define saveExcitationErgs
-//#define saveSpecificHeat
+//#define saveExcitationErgs
+#define saveSpecificHeat
 //#define parallelDiag
 //#define spinTest
 
@@ -73,24 +73,24 @@ int main(int argc, char* argv[]) {
     ergFile.close();
 #endif
 #ifdef saveSpecificHeat
-    int dataPointNum = 500;
-    Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, 2.5);
-    double J_ratio = 1;
-    int N = 10;
+    int dataPointNum = 200;
+    Eigen::VectorXd Ts = Eigen::VectorXd::LinSpaced(dataPointNum, 0.001, 2.5);
+    double J_ratio = 2;
+    int N = 18;
     vector<double> C(dataPointNum);
     int i = 0;
     list<list<MatrixXcd>> H = momentumHamiltonian(J_ratio, N);
-    vector<double> erg = getEnergiesFromBlocks(H, N);
-    for (double beta : betas) {
-        C[i] = specificHeat(erg, beta)/N ;
+    vector<double> erg = getMomentumErgsThreaded(H, N);
+    for (double beta : Ts) {
+        C[i] = specificHeat(erg, beta, false)/N ;
         i++;
     }
     list<std::pair<double, double>> out;
     for (int j = 0; j < dataPointNum; j++) {
-        out.emplace_back( std::pair<double, double>(betas[j], C[j]) );
+        out.emplace_back( std::pair<double, double>(Ts[j], C[j]) );
     }
     std::ofstream ergFile;
-    ergFile.open("/home/mmaschke/BA_Code/Data/specHeatJ1BetaVar.txt");
+    ergFile.open("/home/mmaschke/BA_Code/Data/specHeatJ2N14.txt");
     for (std::pair<double, double> p : out) {
         ergFile << p.first << " " << p.second << "\n";
     }
@@ -104,10 +104,10 @@ int main(int argc, char* argv[]) {
     vector<vector<double>> energies_for_different_betas = diagonalizeThreaded(J_ratios_stl, N);
 #endif
 #ifdef spinTest
-    int N = 6;
-    double j_ratio = 1;
+    int N = 12;
+    double j_ratio = 2;
     int dataPointNum = 200;
-    Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, 2.5);
+    Eigen::VectorXd Ts = Eigen::VectorXd::LinSpaced(dataPointNum, 0.001, 2.5);
     MatrixXd S_2 = spinOperator_sq(N);
 
     MatrixXd H = naiveHamiltonian(j_ratio, N);
@@ -118,23 +118,21 @@ int main(int argc, char* argv[]) {
 
     vector<double> susceptibilities(dataPointNum);
     for (int i = 0; i < dataPointNum; i++) {
-        susceptibilities[i] =  susceptibility(ergs_stl, betas[i],  U, S_2) / (double) N ;
+        susceptibilities[i] =  susceptibility(ergs_stl, Ts[i], false, U, S_2) / (double) N ;
     }
 
     list<std::pair<double, double>> out;
     for (int j = 0; j < dataPointNum; j++) {
-        out.emplace_back( std::pair<double, double>(betas[j], susceptibilities[j]) );
+        out.emplace_back( std::pair<double, double>(Ts[j], susceptibilities[j]) );
     }
     std::ofstream ergFile;
-    ergFile.open("/home/mmaschke/BA_Code/Data/suscTest.txt");
+    ergFile.open("/home/mmaschke/BA_Code/Data/suscN10J2.txt");
     for (std::pair<double, double> p : out) {
         ergFile << p.first << " " << p.second << "\n";
     }
     ergFile.close();
 
-
-    //MatrixXcd transform = U.adjoint()*S_2*U;
-    //printMatrix(transform);
+    //printMatrix(U);
 
 
 #endif
@@ -142,6 +140,19 @@ int main(int argc, char* argv[]) {
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count()
               << "[ms]" << std::endl;
     return 0;
+}
+
+vector<double> getMomentumErgsThreaded(const list<list<MatrixXcd>> & H_list, int N) {
+    vector<list<MatrixXcd>> H_vector(H_list.begin(), H_list.end());
+    vector<double> ergs;
+#pragma omp parallel for default(none) shared(ergs, H_vector, N, std::cout) num_threads(16)
+    for (int i = 0; i < H_vector.size(); i++) {
+        vector<double> blockErgs = getEnergiesFromBlocks(H_vector[i], N);
+        writeThreadSafe(ergs, blockErgs);
+        std::cout << "1 done" << "\n";
+    }
+    std::sort(ergs.begin(), ergs.end());
+    return ergs;
 }
 
 vector<vector<double>> diagonalizeThreaded(const vector<double> & J_ratios, int N) {
@@ -161,5 +172,13 @@ void writeThreadSafe (vector<vector<double>> & writeTo, const vector<double> & w
     static std::mutex mu;
     std::lock_guard<std::mutex> lock(mu);
     writeTo.emplace_back(writeFrom);
+}
+
+void writeThreadSafe (vector<double> & writeTo, const vector<double> & writeFrom) {
+    static std::mutex mu;
+    std::lock_guard<std::mutex> lock(mu);
+    for (double d : writeFrom) {
+        writeTo.emplace_back(d);
+    }
 }
 

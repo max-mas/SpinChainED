@@ -10,12 +10,11 @@
 #include <Eigen/Dense>
 #include <complex>
 
-double partitionFunction(const std::vector<double> & ergs, double beta);
+double partitionFunction(const std::vector<double> & ergs, double beta, bool isBeta);
 
-double specificHeat(const std::vector<double> & ergs, double beta);
+double specificHeat(const std::vector<double> & ergs, double betaOrT, bool isBeta) ;
 
-double susceptibility(const std::vector<double> & ergs, double beta, const Eigen::MatrixXcd & U,
-                      const Eigen::MatrixXd & S_2);
+double susceptibility(const std::vector<double> & ergs, double betaOrT, bool isBeta, const Eigen::MatrixXcd & U,const Eigen::MatrixXd & S_2);
 
 
 #endif //SPINCHAINED_THERMODYNAMICS_H
