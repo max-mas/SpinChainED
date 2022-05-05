@@ -16,7 +16,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 ")
 
 find_package(OpenMP)
 
-add_executable(SpinChainED main.cpp main.h helperFunctions.cpp helperFunctions.h constants.h hamiltonianBuilders.cpp hamiltonianBuilders.h thermodynamics.cpp thermodynamics.h)
+add_executable(SpinChainED main.cpp main.h helperFunctions.cpp helperFunctions.h constants.h hamiltonianBuilders.cpp hamiltonianBuilders.h thermodynamics.cpp thermodynamics.h dataGenerators.cpp dataGenerators.h)
 
 if(OpenMP_CXX_FOUND)
     target_link_libraries(SpinChainED PUBLIC OpenMP::OpenMP_CXX)

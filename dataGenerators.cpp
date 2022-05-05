@@ -1,0 +1,160 @@
+//
+// Created by mmaschke on 05/05/22.
+//
+
+#include "dataGenerators.h"
+
+using std::complex;
+using std::list;
+using std::pow;
+using std::vector;
+
+using Eigen::MatrixXcd;
+using Eigen::MatrixXd;
+using Eigen::Dynamic;
+
+void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double end, std::string path) {
+    Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
+    vector<double> diffs;
+    for (double J_ratio : J_ratios) {
+        list<list<MatrixXcd>> H = momentumHamiltonian(J_ratio, N);
+        vector<double> erg = getMomentumErgsThreaded(H, N);
+        diffs.emplace_back( abs(erg[0]-erg[1]) );
+    }
+    list<std::pair<double, double>> out;
+    for (int i = 0; i < diffs.size(); i++) {
+        out.emplace_back( std::pair<double, double>(J_ratios[i], diffs[i]) );
+    }
+    savePairsToFile(out, path);
+}
+
+void saveSpecificHeatForVaryingJ(int N, int dataPointNum, double betaOrT, double start, double end, bool isBeta, std::string path) {
+    Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
+    vector<double> C;
+    for (double J_ratio : J_ratios) {
+        list<list<MatrixXcd>> H = momentumHamiltonian(J_ratio, N);
+        vector<double> erg = getMomentumErgsThreaded(H, N);
+        C.emplace_back(specificHeat(erg, betaOrT, isBeta) / N);
+    }
+    list<std::pair<double, double>> out;
+    for (int i = 0; i < C.size(); i++) {
+        out.emplace_back( std::pair<double, double>(J_ratios[i], C[i]) );
+    }
+    savePairsToFile(out, path);
+}
+
+void saveSpecificHeatsForVaryingTemp(int N, int dataPointNum, double J_ratio, double start, double end,
+                                     bool isBeta, std::string path) {
+    Eigen::VectorXd Ts = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
+    vector<double> C;
+    list<list<MatrixXcd>> H = momentumHamiltonian(J_ratio, N);
+    vector<double> erg = getMomentumErgsThreaded(H, N);
+    for (int i = 0; i < Ts.size(); i++) {
+        C.emplace_back( specificHeat(erg, Ts[i], isBeta) /N );
+    }
+
+    list<std::pair<double, double>> out;
+    for (int j = 0; j < dataPointNum; j++) {
+        out.emplace_back( std::pair<double, double>(Ts[j], C[j]) );
+    }
+    savePairsToFile(out, path);
+}
+
+void saveSusceptibilitiesForVaryingJ(int N, int dataPointNum, double betaOrT, double start, double end,
+                                     bool isBeta, std::string path) {
+    Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
+    vector<int> states = getStates_m(N, N/2);
+    MatrixXd S_2 = spinOperator_sq(states, N);
+
+    vector<double> susceptibilities;
+    for (double J_ratio : J_ratios) {
+
+        MatrixXd H_m0 = getMagnetizationBlock(J_ratio, 0, N);
+        Eigen::ComplexEigenSolver<MatrixXd> sol(H_m0);
+        Eigen::VectorXd erg = sol.eigenvalues().real();
+        vector<double> ergs_stl(erg.data(), erg.data() + erg.size());
+        const Eigen::MatrixXcd & U = sol.eigenvectors();
+
+        susceptibilities.emplace_back( susceptibility(ergs_stl, betaOrT, isBeta, U, S_2) / (double) N );
+    }
+    list<std::pair<double, double>> out;
+    for (int i = 0; i < susceptibilities.size(); i++) {
+        out.emplace_back( std::pair<double, double>(J_ratios[i], susceptibilities[i]) );
+    }
+    savePairsToFile(out, path);
+}
+
+void saveSusceptibilitesForVaryingTemp(int N, int dataPointNum, double J_ratio, double start, double end,
+                                       bool isBeta, std::string path) {
+    Eigen::VectorXd Ts = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
+    vector<int> states = getStates_m(N, N/2);
+    MatrixXd S_2 = spinOperator_sq(states, N);
+
+    MatrixXd H_m0 = getMagnetizationBlock(J_ratio, 0, N);
+    Eigen::ComplexEigenSolver<MatrixXd> sol(H_m0);
+    Eigen::VectorXd erg = sol.eigenvalues().real();
+    vector<double> ergs_stl(erg.data(), erg.data() + erg.size());
+    const Eigen::MatrixXcd & U = sol.eigenvectors();
+
+    vector<double> susceptibilities(dataPointNum);
+    for (int i = 0; i < dataPointNum; i++) {
+        susceptibilities[i] =  susceptibility(ergs_stl, Ts[i], isBeta, U, S_2) / N ;
+    }
+
+    list<std::pair<double, double>> out;
+    for (int j = 0; j < dataPointNum; j++) {
+        out.emplace_back( std::pair<double, double>(Ts[j], susceptibilities[j]) );
+    }
+    savePairsToFile(out, path);
+}
+
+template <typename T, typename U>
+void savePairsToFile(list<std::pair<T, U>> pairList, std::string path) {
+    std::ofstream File;
+    File.open(path);
+    for (std::pair<T, U> p : pairList) {
+        File << p.first << " " << p.second << "\n";
+    }
+    File.close();
+}
+
+vector<double> getMomentumErgsThreaded(const list<list<MatrixXcd>> & H_list, int N) {
+    vector<list<MatrixXcd>> H_vector(H_list.begin(), H_list.end());
+    vector<double> ergs;
+#pragma omp parallel for default(none) shared(ergs, H_vector, N, std::cout) num_threads(16)
+    for (int i = 0; i < H_vector.size(); i++) {
+        vector<double> blockErgs = getEnergiesFromBlocks(H_vector[i]);
+        writeThreadSafe(ergs, blockErgs);
+        //std::cout << "1 done" << "\n";
+    }
+    std::sort(ergs.begin(), ergs.end());
+    return ergs;
+}
+
+vector<vector<double>> diagonalizeThreaded(const vector<double> & J_ratios, int N) {
+    const int num = J_ratios.size();
+    vector<vector<double>> v(num);
+#pragma omp parallel for default(none) shared(v, J_ratios, N, std::cout) num_threads(16)
+    for (int i = 0; i < num; i++) {
+        list<list<MatrixXcd>> H = momentumHamiltonian(J_ratios[i], N);
+        vector<double> erg = getEnergiesFromBlocks(H, N);
+        writeThreadSafe(v, erg);
+        std::cout << "1 done" << "\n";
+    }
+    return v;
+}
+
+void writeThreadSafe (vector<vector<double>> & writeTo, const vector<double> & writeFrom) {
+    static std::mutex mu;
+    std::lock_guard<std::mutex> lock(mu);
+    writeTo.emplace_back(writeFrom);
+}
+
+void writeThreadSafe (vector<double> & writeTo, const vector<double> & writeFrom) {
+    static std::mutex mu;
+    std::lock_guard<std::mutex> lock(mu);
+    for (double d : writeFrom) {
+        writeTo.emplace_back(d);
+    }
+}
+
