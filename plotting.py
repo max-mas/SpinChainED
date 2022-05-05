@@ -12,6 +12,27 @@ for T in Ts:
     fig, ax = plt.subplots()
     
     for N in np.linspace(6, 12, 4):
+        path = "/home/mmaschke/BA_Code/Data/SusceptibilitiesForJ/SuscN"+str(int(N))+"T"+T+".txt"
+        file = open(path)
+        Js = []
+        chi = []
+        for i in range(200) :
+            stri = file.readline()
+            data = stri.split(" ")
+            Js.append( float( data[0]) )
+            chi.append( float( data[1].replace("\n", "") ) )
+        lab = "$N$ = "+ str( int(N) )
+        ax.plot(Js, chi, label=lab)
+    ax.legend()
+    T = T.replace("_", ".")
+    ax.set(xlabel="$J_1/J_2$", ylabel="Susceptibility per Spin $C$ ($1/J_2$)", title="$T =\\,$"+T)
+    plt.show()
+
+"""
+for T in Ts:
+    fig, ax = plt.subplots()
+    
+    for N in np.linspace(6, 12, 4):
         path = "/home/mmaschke/BA_Code/Data/SpecificHeatsForJ/SpecHeatN"+str(int(N))+"T"+T+".txt"
         file = open(path)
         Js = []
@@ -28,7 +49,6 @@ for T in Ts:
     ax.set(xlabel="$J_1/J_2$", ylabel="Specific heat per Spin $C/N$", title="$T =\\,$"+T)
     plt.show()
 
-"""
 for J_ratio in J_ratios:
     fig, ax = plt.subplots()
     
