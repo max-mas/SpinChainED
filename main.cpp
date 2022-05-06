@@ -7,7 +7,7 @@ using std::vector;
 //#define saveSpecificHeat
 //#define saveSpecificHeatForJ
 //#define saveSusceptibility
-#define saveSusceptibilityForJ
+//define saveSusceptibilityForJ
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -95,7 +95,7 @@ int main(int argc, char* argv[]) {
             std::replace(b.begin(), b.end(), '.', '_');
             std::string path = "/home/mmaschke/BA_Code/Data/SusceptibilitiesForJ/SuscN" + std::to_string(N)+ std::string("T") +
                                b + ".txt";
-            saveSusceptibilitesForVaryingTemp(N, dataPointNum, T, start, endP, isBeta, path);
+            saveSusceptibilitiesForVaryingJ(N, dataPointNum, T, start, endP, isBeta, path);
         }
     }
 #endif

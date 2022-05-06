@@ -1,5 +1,6 @@
 //
-// Created by mmaschke on 26/04/22.
+// This cpp file contains functions used to manipulate integers in the way needed for the chosen numerical
+// representation of spin states, as well as functions used for console output.
 //
 #include <iostream>
 
@@ -11,9 +12,8 @@ using std::complex;
 using Eigen::MatrixXcd;
 using Eigen::Dynamic;
 
-// Helper functions
 
-// Get bit in integer s at index i.
+// Gets bit in integer s at index i.
 bool getBit(const int s, const int i) {
     if (s & (1 << i)) {
         return true;
@@ -22,12 +22,12 @@ bool getBit(const int s, const int i) {
     }
 }
 
-// Flip bit in int s at index i using bitwise XOR.
+// Flips bit in int s at index i using bitwise XOR.
 void flipBit(int &s, const int i) {
     s ^= (1 << i);
 }
 
-// Set bit in int s at index i using bitwise AND.
+// Sets bit in int s at index i using bitwise AND.
 void setBit(int & s, const int i, const bool val) {
     if (val) {
         s |= (1 << i);
@@ -36,7 +36,7 @@ void setBit(int & s, const int i, const bool val) {
     }
 }
 
-// Count set (=1) bits in int s using bitwise AND.
+// Counts set (=1) bits in int s using bitwise AND.
 int bitSum(const int s) {
     int count = 0;
     for (int i = 0; i <= 31; i++) {
@@ -47,7 +47,7 @@ int bitSum(const int s) {
     return count;
 }
 
-// Return index of first occurrence of int s in s_list. Return -1 if not found.
+// Returns index of first occurrence of int s in s_list. Returns -1 if not found.
 int findState(const std::vector<int> &s_list, const int s) {
     for (int i = 0; i < s_list.size(); i++) {
         if ( s_list[i] == s ) {return i;}
@@ -78,6 +78,7 @@ void cycleBits(int &s, const int N) {
     }
 }
 
+// Calls cycleBits twice.
 void cycleBits2(int &s, const int N) {
     cycleBits(s, N);
     cycleBits(s, N);
@@ -97,6 +98,7 @@ int checkState(const int s, const int k, const int N) {
     return -1;
 }
 
+// Reflects bits about the center of the chain.
 void reflectBits(int & s, int N) {
     int t;
     for (int i = 0; i < N; i++) {
@@ -105,7 +107,8 @@ void reflectBits(int & s, int N) {
     s = t;
 }
 
-// Generate representative for given state int s. 1st return: representative. 2nd return: Needed number of translations.
+// Generates representative for given state int s. 1st return: representative. 2nd return:
+// Needed number of translations.
 std::vector<int> representative(const int s, const int N) {
     int r = s;
     int t = s;
@@ -118,6 +121,7 @@ std::vector<int> representative(const int s, const int N) {
     return {r, l};
 }
 
+// Prints real-valued matrix to console.
 void printMatrix(const Eigen::MatrixXd & M) {
     for (int i = 0; i < M.rows(); i++ ) {
         for (int j = 0; j < M.cols(); j++) {
@@ -127,6 +131,7 @@ void printMatrix(const Eigen::MatrixXd & M) {
     }
 }
 
+// Prints complex-valued matrix to console.
 void printMatrix(const Eigen::MatrixXcd & M) {
     for (int i = 0; i < M.rows(); i++ ) {
         for (int j = 0; j < M.cols(); j++) {
@@ -136,13 +141,14 @@ void printMatrix(const Eigen::MatrixXcd & M) {
     }
 }
 
-
+// Prints doubles to console from Eigen::Vector.
 void printEnergies(const Eigen::VectorXd & v) {
     for (int i = 0; i < v.size(); i++) {
         std::cout << v(i) << std::endl;
     }
 }
 
+// Prints doubles to console from std::vector.
 void printEnergies(const vector<double> & v) {
     for (int i = 0; i < v.size(); i++) {
         std::cout << v[i] << std::endl;

@@ -1,5 +1,6 @@
 //
-// Created by mmaschke on 03/05/22.
+// This cpp file contains functions used to generate the Hamiltonian using different approaches, as well as the spin
+// operator S². Also included: Functions to get eigenvalues and generate full matrices from blocks.
 //
 
 #include "hamiltonianBuilders.h"
@@ -13,6 +14,7 @@ using Eigen::MatrixXcd;
 using Eigen::MatrixXd;
 using Eigen::Dynamic;
 
+// Generate full-size S² for given N.
 MatrixXd spinOperator_sq(int N) {
     int matSize = pow(2, N);
     MatrixXd S_2 = N*0.75*MatrixXd::Identity(matSize, matSize);
@@ -34,6 +36,7 @@ MatrixXd spinOperator_sq(int N) {
     return S_2;
 }
 
+// Generate S² for a given subset of states (in practice: m = 0 states).
 MatrixXd spinOperator_sq(vector<int> states, int N) {
     int matSize = states.size();
     MatrixXd S_2 = N*0.75*MatrixXd::Identity(matSize, matSize);
@@ -58,6 +61,7 @@ MatrixXd spinOperator_sq(vector<int> states, int N) {
     return S_2;
 }
 
+// Generate full-size hamiltonian using the naive approach.
 MatrixXd naiveHamiltonian(double J_ratio, int N) {
     // N must be even and > 6 or this no longer describes the correct system.
     if (N < 6 || N%2 == 1) {
@@ -75,6 +79,7 @@ MatrixXd naiveHamiltonian(double J_ratio, int N) {
     return H;
 }
 
+// Set matrix element for a given state (naive approach).
 void setHElement_naive(double J_ratio, int N, MatrixXd & H, int a) {
     // J2 coupling
     for (int i = 0; i < N; i++) {
@@ -105,6 +110,7 @@ void setHElement_naive(double J_ratio, int N, MatrixXd & H, int a) {
     }
 }
 
+// For a given m, get the corresponding block of the Hamiltonian.
 MatrixXd getMagnetizationBlock(double J_ratio, double m, int N) {
     int n_up = round( m + N/2.0);
     vector<int> s_vector_m = getStates_m(N, n_up);
@@ -117,6 +123,7 @@ MatrixXd getMagnetizationBlock(double J_ratio, double m, int N) {
     return m_block;
 }
 
+// Get a list of all magnetization-blocks for a given N.
 list<MatrixXd> magnetizationHamiltonian(double J_ratio, int N) {
     // N must be even and > 6 or this no longer describes the correct system.
     if (N < 6 || N%2 == 1) {
@@ -145,6 +152,7 @@ list<MatrixXd> magnetizationHamiltonian(double J_ratio, int N) {
     return H_subspace_list;
 }
 
+// Get vector containing all states corresponding to a given m.
 vector<int> getStates_m(int N, int n_up) {
     vector<int> s_vector_m;
     for (int s = 0; s < pow(2, N); s++) {
@@ -153,6 +161,7 @@ vector<int> getStates_m(int N, int n_up) {
     return s_vector_m;
 }
 
+// Set matrix element for a given state (magnetization approach).
 void setHElement_magnetization(double J_ratio, int N, MatrixXd & H_subspace_block, const vector<int> &s_vector_m,
                                int k) {
     int a = s_vector_m[k];
@@ -186,6 +195,7 @@ void setHElement_magnetization(double J_ratio, int N, MatrixXd & H_subspace_bloc
     }
 }
 
+// Generate list of list of (m, k)-blocks of the Hamiltonian for a given N.
 list<list<MatrixXcd>> momentumHamiltonian(double J_ratio, int N) {
     // N must be even and > 6 or this no longer describes the correct system.
     if (N < 6 || N%2 == 1) {
@@ -234,6 +244,7 @@ list<list<MatrixXcd>> momentumHamiltonian(double J_ratio, int N) {
     return H_subspace_list;
 }
 
+// Set matrix element for a given state (momentum-approach).
 void setHElement_momentum(double J_ratio, int N, list<MatrixXcd> &H_subSubspace_list, int k,
                           const vector<int> &s_vector_k, const vector<int> &R_vector, int K) {
     for (int l = 0; l < K; l++) {
@@ -279,6 +290,7 @@ void setHElement_momentum(double J_ratio, int N, list<MatrixXcd> &H_subSubspace_
     }
 }
 
+// Diagonalization-methods for a number of cases.
 vector<double> getEnergiesFromBlocks(const list<MatrixXcd> & H_list, int N) {
     vector<double> energies(pow(2, N), 0);
     int j = 0;
@@ -342,6 +354,7 @@ vector<double> getEnergiesFromBlocks(const list<list<MatrixXcd>> & H_list, int N
 }
 
 
+// Generate full-sized matrix from blocks.
 MatrixXcd blkdiag(const list<MatrixXcd> & matrix_list, int totalSize) {
     MatrixXcd bdm = MatrixXcd::Zero(totalSize, totalSize);
     int curr_index = 0;
@@ -368,6 +381,7 @@ list<MatrixXcd> blkdiag(const list<list<MatrixXcd>> & matrix_doubleList) {
     return bdmlist;
 }
 
+// Save vector containing eigenvalues to file.
 void saveEnergies(const vector<double> & ergs, const std::string & path) {
     std::ofstream ergFile;
     ergFile.open(path);

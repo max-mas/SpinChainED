@@ -1,11 +1,13 @@
 //
-// Created by mmaschke on 03/05/22.
+// This cpp file contains functions used to calculate thermodynamic quantities (partition function, specific heat
+// and susceptibility).
 //
 
 #include "thermodynamics.h"
 
 using std::vector;
 
+// Calculates the partition function at a given temperature/beta for a given vector of eigenenergies.
 double partitionFunction(const vector<double> & ergs, double betaOrT, bool isBeta) {
     double Z = 0;
     double temp_representative;
@@ -20,6 +22,8 @@ double partitionFunction(const vector<double> & ergs, double betaOrT, bool isBet
     return Z;
 }
 
+// Calculates the specific heat for a given vector of eigenenergies at a given temperature/beta.
+// Note: This could be made more efficient by using only the m = 0 block (TODO)
 double specificHeat(const vector<double> & ergs, double betaOrT, bool isBeta) {
     double Z = partitionFunction(ergs, betaOrT, isBeta);
 
@@ -41,26 +45,8 @@ double specificHeat(const vector<double> & ergs, double betaOrT, bool isBeta) {
     return pow(temp_representative,2) * ( avg_H_sq - pow(avg_H, 2) );
 }
 
-double susceptibilityOld(const vector<double> & ergs, double betaOrT, bool isBeta, const Eigen::MatrixXcd & U,const Eigen::MatrixXd & S_2) {
-    double S_2_avg = 0;
-    Eigen::MatrixXcd S_2_transform =  U.adjoint() * S_2 * U;
-    double Z = partitionFunction(ergs, betaOrT, isBeta);
-
-    double temp_representative;
-    if (isBeta) {
-        temp_representative = betaOrT;
-    } else {
-        temp_representative = 1/betaOrT;
-    }
-
-    for (int i = 0; i < S_2.cols(); i++) {
-        S_2_avg += std::exp(-temp_representative * ergs[i]) * S_2_transform(i, i).real();
-    }
-
-    double S_2_avg_real = S_2_avg/(3.0*Z);
-    return temp_representative * S_2_avg_real;
-}
-
+// Calculates the magnetic susceptibility at a given temperature/beta using <m_z²> = <S²>. U is the transformation
+// matrix containing all eigenvectors of H.
 double susceptibility(const vector<double> & ergs, double betaOrT, bool isBeta, const Eigen::MatrixXcd & U,const Eigen::MatrixXd & S_2) {
     double S_2_avg = 0;
     double Z = 0;

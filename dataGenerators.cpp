@@ -1,5 +1,6 @@
 //
-// Created by mmaschke on 05/05/22.
+// This cpp file contains functions used for generating data of interest (excitation energies, specific heat and
+// susceptibilities) for later plotting in Python.
 //
 
 #include "dataGenerators.h"
@@ -13,6 +14,8 @@ using Eigen::MatrixXcd;
 using Eigen::MatrixXd;
 using Eigen::Dynamic;
 
+// Saves excitation energy (i.e. energy difference between ground and 1st excited state) vor varying values of J1/J2.
+// Note: If ground state is degenerate, zero is returned.
 void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double end, std::string path) {
     Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
     vector<double> diffs;
@@ -28,6 +31,7 @@ void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double
     savePairsToFile(out, path);
 }
 
+// Saves specific heat at given temperature/beta for varying values of J1/J2.
 void saveSpecificHeatForVaryingJ(int N, int dataPointNum, double betaOrT, double start, double end, bool isBeta, std::string path) {
     Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
     vector<double> C;
@@ -43,6 +47,7 @@ void saveSpecificHeatForVaryingJ(int N, int dataPointNum, double betaOrT, double
     savePairsToFile(out, path);
 }
 
+// Saves specific heat for a given value of J1/J2 for varying temperature/beta.
 void saveSpecificHeatsForVaryingTemp(int N, int dataPointNum, double J_ratio, double start, double end,
                                      bool isBeta, std::string path) {
     Eigen::VectorXd Ts = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
@@ -60,6 +65,7 @@ void saveSpecificHeatsForVaryingTemp(int N, int dataPointNum, double J_ratio, do
     savePairsToFile(out, path);
 }
 
+// Saves susceptibilities at a given temperature/beta for varying values of J1/J2.
 void saveSusceptibilitiesForVaryingJ(int N, int dataPointNum, double betaOrT, double start, double end,
                                      bool isBeta, std::string path) {
     Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
@@ -84,6 +90,7 @@ void saveSusceptibilitiesForVaryingJ(int N, int dataPointNum, double betaOrT, do
     savePairsToFile(out, path);
 }
 
+// Saves susceptibilities for a given value of J1/J2 for varying temperature/beta.
 void saveSusceptibilitesForVaryingTemp(int N, int dataPointNum, double J_ratio, double start, double end,
                                        bool isBeta, std::string path) {
     Eigen::VectorXd Ts = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
@@ -108,6 +115,7 @@ void saveSusceptibilitesForVaryingTemp(int N, int dataPointNum, double J_ratio, 
     savePairsToFile(out, path);
 }
 
+// Used to write data tuples to a file at path.
 template <typename T, typename U>
 void savePairsToFile(list<std::pair<T, U>> pairList, std::string path) {
     std::ofstream File;
@@ -118,6 +126,7 @@ void savePairsToFile(list<std::pair<T, U>> pairList, std::string path) {
     File.close();
 }
 
+// Threaded version of getEnergiesFromBlocks for the momentum state ansatz.
 vector<double> getMomentumErgsThreaded(const list<list<MatrixXcd>> & H_list, int N) {
     vector<list<MatrixXcd>> H_vector(H_list.begin(), H_list.end());
     vector<double> ergs;
@@ -131,6 +140,7 @@ vector<double> getMomentumErgsThreaded(const list<list<MatrixXcd>> & H_list, int
     return ergs;
 }
 
+// Returns all eigenvalues for a given vector of values of J1/J2. Threaded.
 vector<vector<double>> diagonalizeThreaded(const vector<double> & J_ratios, int N) {
     const int num = J_ratios.size();
     vector<vector<double>> v(num);
@@ -144,12 +154,14 @@ vector<vector<double>> diagonalizeThreaded(const vector<double> & J_ratios, int 
     return v;
 }
 
+// Enables threaded writing to a vector.
 void writeThreadSafe (vector<vector<double>> & writeTo, const vector<double> & writeFrom) {
     static std::mutex mu;
     std::lock_guard<std::mutex> lock(mu);
     writeTo.emplace_back(writeFrom);
 }
 
+// Enables threaded writing to a vector.
 void writeThreadSafe (vector<double> & writeTo, const vector<double> & writeFrom) {
     static std::mutex mu;
     std::lock_guard<std::mutex> lock(mu);
