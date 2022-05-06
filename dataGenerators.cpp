@@ -21,7 +21,7 @@ void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double
     vector<double> diffs;
     for (double J_ratio : J_ratios) {
         list<list<MatrixXcd>> H = momentumHamiltonian(J_ratio, N);
-        vector<double> erg = getMomentumErgsThreaded(H, N);
+        vector<double> erg = getEnergiesFromBlocks(H, N);
         diffs.emplace_back( abs(erg[0]-erg[1]) );
     }
     list<std::pair<double, double>> out;
