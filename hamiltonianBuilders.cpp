@@ -295,7 +295,12 @@ vector<double> getEnergiesFromBlocks(const list<MatrixXcd> & H_list, int N) {
     vector<double> energies(pow(2, N), 0);
     int j = 0;
     for (const MatrixXcd & mat : H_list) {
-        Eigen::VectorXcd blockEnergies = mat.eigenvalues();
+        Eigen::SelfAdjointEigenSolver<MatrixXcd> sol;
+        if (mat.cols() == 0) {
+            continue;
+        }
+        sol.compute(mat);
+        Eigen::VectorXcd blockEnergies = sol.eigenvalues();
         std::for_each(blockEnergies.begin(), blockEnergies.end(),
                       [&](complex<double> & d){energies[j] = d.real(); j++;});
     }
@@ -306,7 +311,12 @@ vector<double> getEnergiesFromBlocks(const list<MatrixXcd> & H_list, int N) {
 vector<double> getEnergiesFromBlocks(const list<MatrixXcd> & H_list) {
     vector<double> energies;
     for (const MatrixXcd & mat : H_list) {
-        Eigen::VectorXcd blockEnergies = mat.eigenvalues();
+        Eigen::SelfAdjointEigenSolver<MatrixXcd> sol;
+        if (mat.cols() == 0) {
+            continue;
+        }
+        sol.compute(mat);
+        Eigen::VectorXcd blockEnergies = sol.eigenvalues();
         std::for_each(blockEnergies.begin(), blockEnergies.end(),
                       [&](complex<double> & d){energies.emplace_back( d.real() );});
     }
@@ -318,7 +328,12 @@ vector<double> getEnergiesFromBlocks(const list<MatrixXd> & H_list, int N) {
     vector<double> energies(pow(2, N), 0);
     int j = 0;
     for (const MatrixXd & mat : H_list) {
-        Eigen::VectorXcd blockEnergies = mat.eigenvalues();
+        Eigen::SelfAdjointEigenSolver<MatrixXd> sol;
+        if (mat.cols() == 0) {
+            continue;
+        }
+        sol.compute(mat);
+        Eigen::VectorXcd blockEnergies = sol.eigenvalues();
         std::for_each(blockEnergies.begin(), blockEnergies.end(),
                       [&](complex<double> & d){energies[j] = d.real(); j++;});
     }
@@ -329,7 +344,12 @@ vector<double> getEnergiesFromBlocks(const list<MatrixXd> & H_list, int N) {
 vector<double> getEnergiesFromBlocks(const list<MatrixXd> & H_list) {
     vector<double> energies;
     for (const MatrixXd & mat : H_list) {
-        Eigen::VectorXcd blockEnergies = mat.eigenvalues();
+        Eigen::SelfAdjointEigenSolver<MatrixXd> sol;
+        if (mat.cols() == 0) {
+            continue;
+        }
+        sol.compute(mat);
+        Eigen::VectorXcd blockEnergies = sol.eigenvalues();
         std::for_each(blockEnergies.begin(), blockEnergies.end(),
                       [&](complex<double> & d){energies.emplace_back( d.real() );});
     }
@@ -342,7 +362,12 @@ vector<double> getEnergiesFromBlocks(const list<list<MatrixXcd>> & H_list, int N
     int j = 0;
     for (const list<MatrixXcd> & subList : H_list) {
         for (const MatrixXcd & mat : subList) {
-            Eigen::VectorXcd blockEnergies = mat.eigenvalues();
+            Eigen::SelfAdjointEigenSolver<MatrixXcd> sol;
+            if (mat.cols() == 0) {
+                continue;
+            }
+            sol.compute(mat);
+            Eigen::VectorXcd blockEnergies = sol.eigenvalues();
             std::for_each(blockEnergies.begin(), blockEnergies.end(),
                           [&](complex<double> &d) {
                               energies[j] = d.real();

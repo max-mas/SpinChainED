@@ -31,6 +31,10 @@ void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double
     savePairsToFile(out, path);
 }
 
+void saveExcitationEnergiesByK() {
+
+}
+
 // Saves specific heat at given temperature/beta for varying values of J1/J2.
 void saveSpecificHeatForVaryingJ(int N, int dataPointNum, double betaOrT, double start, double end, bool isBeta, std::string path) {
     Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);

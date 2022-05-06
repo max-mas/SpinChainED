@@ -4,15 +4,16 @@ using std::vector;
 
 //#define saveErgs
 //#define saveExcitationErgs
-//#define saveSpecificHeat
+#define saveSpecificHeat
 //#define saveSpecificHeatForJ
 //#define saveSusceptibility
-//define saveSusceptibilityForJ
+//#define saveSusceptibilityForJ
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
     int dataPointNum = 200;
+    int nMax = 14;
     vector<double> J_ratios = {0.1, 1, 2, 5};
     vector<double> Ts = {0.2, 0.5, 1};
     bool isBeta = false;
@@ -46,45 +47,46 @@ int main(int argc, char* argv[]) {
         vector<double> erg = getEnergiesFromBlocks(H, N);
         saveEnergies(erg, path);
     }
-
 #endif
 #ifdef saveExcitationErgs
-    for (int N = 6; N <= 12; N+= 2) {
+    for (int N = 6; N <= nMax; N+= 2) {
         std::string path = "/home/mmaschke/BA_Code/Data/ExcitationErgs/ExcErgs" + std::to_string(N) + ".txt";
         saveExcitationErgsForVaryingJ(N, dataPointNum, start, endP, path);
     }
-
 #endif
 #ifdef saveSpecificHeat
     for (double J_ratio : J_ratios) {
-        for (int N = 6; N <= 12; N+= 2) {
+        for (int N = 6; N <= nMax; N+= 2) {
             std::string j = std::to_string(J_ratio);
             std::replace(j.begin(), j.end(), '.', '_');
             std::string path = "/home/mmaschke/BA_Code/Data/SpecificHeats/SpecHeatN" + std::to_string(N)+ std::string("J") +
                     j + ".txt";
             saveSpecificHeatsForVaryingTemp(N, dataPointNum, J_ratio, start, endP, isBeta, path);
+            std::cout << std::string("N") + std::to_string(N)+ std::string("J") + j << std::endl;
         }
     }
 #endif
 #ifdef saveSpecificHeatForJ
     for (double T : Ts) {
-        for (int N = 6; N <= 12; N+= 2) {
+        for (int N = 6; N <= nMax; N+= 2) {
             std::string b = std::to_string(T);
             std::replace(b.begin(), b.end(), '.', '_');
             std::string path = "/home/mmaschke/BA_Code/Data/SpecificHeatsForJ/SpecHeatN" + std::to_string(N)+ std::string("T") +
                                b + ".txt";
             saveSpecificHeatForVaryingJ(N, dataPointNum, T, start, endP, isBeta, path);
+            std::cout << std::string("N") + std::to_string(N)+ std::string("T") + b << std::endl;
         }
     }
 #endif
 #ifdef saveSusceptibility
     for (double J_ratio : J_ratios) {
-        for (int N = 6; N <= 12; N+= 2) {
+        for (int N = 6; N <= nMax; N+= 2) {
             std::string j = std::to_string(J_ratio);
             std::replace(j.begin(), j.end(), '.', '_');
             std::string path = "/home/mmaschke/BA_Code/Data/Susceptibilities/SuscN" + std::to_string(N)+ std::string("J") +
                                j + ".txt";
             saveSusceptibilitesForVaryingTemp(N, dataPointNum, J_ratio, start, endP, isBeta, path);
+            std::cout << std::string("N") + std::to_string(N)+ std::string("J") + j << std::endl;
         }
     }
 #endif
@@ -96,6 +98,7 @@ int main(int argc, char* argv[]) {
             std::string path = "/home/mmaschke/BA_Code/Data/SusceptibilitiesForJ/SuscN" + std::to_string(N)+ std::string("T") +
                                b + ".txt";
             saveSusceptibilitiesForVaryingJ(N, dataPointNum, T, start, endP, isBeta, path);
+            std::cout << std::string("N") + std::to_string(N)+ std::string("T") + b << std::endl;
         }
     }
 #endif
