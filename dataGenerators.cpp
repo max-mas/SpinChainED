@@ -80,12 +80,14 @@ void saveSusceptibilitiesForVaryingJ(int N, int dataPointNum, double betaOrT, do
     for (double J_ratio : J_ratios) {
 
         MatrixXd H_m0 = getMagnetizationBlock(J_ratio, 0, N);
-        Eigen::ComplexEigenSolver<MatrixXd> sol(H_m0);
+        Eigen::SelfAdjointEigenSolver<MatrixXd> sol(H_m0);
         Eigen::VectorXd erg = sol.eigenvalues().real();
         vector<double> ergs_stl(erg.data(), erg.data() + erg.size());
         const Eigen::MatrixXcd & U = sol.eigenvectors();
 
-        susceptibilities.emplace_back( susceptibility(ergs_stl, betaOrT, isBeta, U, S_2) / (double) N );
+        MatrixXcd T = U.adjoint() * H_m0 * U;
+
+        susceptibilities.emplace_back( susceptibility(ergs_stl, betaOrT, isBeta, T) / (double) N );
     }
     list<std::pair<double, double>> out;
     for (int i = 0; i < susceptibilities.size(); i++) {
@@ -102,14 +104,16 @@ void saveSusceptibilitesForVaryingTemp(int N, int dataPointNum, double J_ratio, 
     MatrixXd S_2 = spinOperator_sq(states, N);
 
     MatrixXd H_m0 = getMagnetizationBlock(J_ratio, 0, N);
-    Eigen::ComplexEigenSolver<MatrixXd> sol(H_m0);
+    Eigen::SelfAdjointEigenSolver<MatrixXd> sol(H_m0);
     Eigen::VectorXd erg = sol.eigenvalues().real();
     vector<double> ergs_stl(erg.data(), erg.data() + erg.size());
     const Eigen::MatrixXcd & U = sol.eigenvectors();
 
+    MatrixXcd T = U.adjoint() * H_m0 * U;
+
     vector<double> susceptibilities(dataPointNum);
     for (int i = 0; i < dataPointNum; i++) {
-        susceptibilities[i] =  susceptibility(ergs_stl, Ts[i], isBeta, U, S_2) / N ;
+        susceptibilities[i] =  susceptibility(ergs_stl, Ts[i], isBeta, T) / N ;
     }
 
     list<std::pair<double, double>> out;

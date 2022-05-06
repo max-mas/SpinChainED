@@ -20,7 +20,7 @@ double specificHeat(const std::vector<double> & ergs, double betaOrT, bool isBet
 
 // Calculates the magnetic susceptibility at a given temperature/beta using <m_z²> = <S²>. U is the transformation
 // matrix containing all eigenvectors of H.
-double susceptibility(const std::vector<double> & ergs, double betaOrT, bool isBeta, const Eigen::MatrixXcd & U,const Eigen::MatrixXd & S_2);
+double susceptibility(const std::vector<double> & ergs, double betaOrT, bool isBeta, const Eigen::MatrixXcd & T);
 
 
 #endif //SPINCHAINED_THERMODYNAMICS_H

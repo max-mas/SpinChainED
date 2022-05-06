@@ -4,9 +4,9 @@ using std::vector;
 
 //#define saveErgs
 //#define saveExcitationErgs
-#define saveSpecificHeat
+//#define saveSpecificHeat
 //#define saveSpecificHeatForJ
-//#define saveSusceptibility
+#define saveSusceptibility
 //#define saveSusceptibilityForJ
 
 int main(int argc, char* argv[]) {
