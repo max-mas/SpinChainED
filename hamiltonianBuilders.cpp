@@ -290,7 +290,200 @@ void setHElement_momentum(double J_ratio, int N, list<MatrixXcd> &H_subSubspace_
     }
 }
 
+list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
+    // N must be even and > 6 or this no longer describes the correct system.
+    if (N < 6 || N%2 == 1) {
+        throw std::invalid_argument("N must be larger than 6 and even.");
+    }
+
+    // init list of block lists
+    list<list<list<MatrixXd>>> H_subspace_list;
+
+    // loop over all magnetizations m
+    for (int m_setter = 0; m_setter <= N; m_setter++) {
+        // Calculate magnetization and number of "up"-states for given magnetization.
+        double mag = -N/2.0 + m_setter;
+        int n_up = round(mag + N/2.0);
+
+        // Find states compatible with m and store them in list.
+        vector<int> s_vector_m = getStates_m(N, n_up);
+        int M = s_vector_m.size();
+
+        // init list of blocks
+        list<list<MatrixXd>> H_subSubspace_list;
+
+        // loop over all possible semi-momenta k and parity numbers p = +-1
+        for (int k = 0; k <= trunc(N/4); k++ ) {
+            list<MatrixXd> H_subSubSubspace_list;
+            for (int p : {-1, 1}) {
+                if ((k != 0 && k != trunc(N/4)) && p == -1) continue;
+
+                vector<int> s_vector_k, R_vector, m_vector;
+                for (int s: s_vector_m) {
+                    vector<int> R_m = checkState_parity(s, k, N);
+                    for (int sigma : {-1, 1}) {
+                        if ((k == 0 || k == trunc(N/4)) && sigma == -1) continue;
+                        if (R_m[1] != -1) {
+                            complex<double> v = (double) sigma * (double) p * std::cos(
+                                    complex<double>(0,1) * (double) k * (double) R_m[1] * 4.0 * M_PI
+                                    / (double) N);
+                            if (std::abs( 1.0 + v ) < epsilon ) R_m[0] = -1;
+                            if (sigma == -1 && std::abs( 1.0 - v ) > epsilon ) R_m[0] = -1;
+                        }
+                        if (R_m[0] > 0) {
+                            s_vector_k.emplace_back(s);
+                            R_vector.emplace_back(sigma * R_m[0]);
+                            m_vector.emplace_back(R_m[1]);
+                        }
+                    }
+                }
+                int K = s_vector_k.size();
+
+                MatrixXd H = MatrixXd::Zero(K, K);
+
+                for (int a = 0; a < K; a++) {
+                    int s = s_vector_k[a];
+                    int n;
+                    if (a > 0 && s_vector_k[a] == s_vector_k[a-1]) continue;
+                    if (a < K-1 && s_vector_k[a] == s_vector_k[a+1]) {n = 2;
+                    } else n = 1;
+
+                    for (int u = a; u < a + n; u++) {
+                        H(a, a) += E_z_parity(s, J_ratio, N);
+                    }
+
+                    for (int i = 0; i < N; i++) {
+                        int j = (i + 1) % N;
+                        flipBit(s, i);
+                        flipBit(s, j);
+                        vector<int> r_l_q = representative_parity(s, N);
+                        int b = findState(s_vector_k, r_l_q[0]);
+                        int m;
+                        if (b >= 0) {
+                            if ( b > 0 && s_vector_k[b] == s_vector_k[b-1]) {
+                                m = 2;
+                                b += -1;
+                            } else if ( b < K-1 && s_vector_k[b] == s_vector_k[b+1]) {m = 2;
+                            } else m = 1;
+                            for (int j_mat = b; j_mat < b + m; j_mat++) {
+                                for (int i_mat = a; i_mat < a + n; i_mat++) {
+                                    H(i_mat, j_mat) += h_Element_parity(i_mat, j_mat, r_l_q[1], r_l_q[2], k, p, N, s_vector_k, R_vector, m_vector);
+                                }
+                            }
+
+                        }
+
+                    }
+                    for (int i = 0; i < N; i++) {
+                        int j = (i + 2) % N;
+                        flipBit(s, i);
+                        flipBit(s, j);
+                        vector<int> r_l_q = representative_parity(s, N);
+                        int b = findState(s_vector_k, r_l_q[0]);
+                        int m;
+                        if (b >= 0) {
+                            if ( b > 0 && s_vector_k[b] == s_vector_k[b-1]) {
+                                m = 2;
+                                b += -1;
+                            } else if ( b < K-1 && s_vector_k[b] == s_vector_k[b+1]) {m = 2;
+                            } else m = 1;
+                            for (int j_mat = b; j_mat < b + m; j_mat++) {
+                                for (int i_mat = a; i_mat < a + n; i_mat++) {
+                                    H(i_mat, j_mat) += J_ratio * h_Element_parity(i_mat, j_mat, r_l_q[1], r_l_q[2], k, p, N, s_vector_k, R_vector, m_vector);
+                                }
+                            }
+
+                        }
+
+                    }
+                }
+                H_subSubSubspace_list.emplace_back(H);
+            }
+            H_subSubspace_list.emplace_back(H_subSubSubspace_list);
+        }
+        H_subspace_list.emplace_back(H_subSubspace_list);
+    }
+    return H_subspace_list;
+}
+
+double h_Element_parity(int a, int b, int l, int q, int k, int p, int N,
+                        const vector<int> & s_vec, const vector<int> & R_vec, const vector<int> & m_vec) {
+    double sigma = R_vec[b]/R_vec[b];
+    double Na = N_a_sigma(g_k(k, N), N, R_vec[a], p, k, m_vec[a] );
+    double Nb = N_a_sigma(g_k(k, N), N, R_vec[b], p, k, m_vec[b] );
+    if (R_vec[a] * R_vec[b] > 0) {
+        if (m_vec[b] == -1) {
+            return 0.5 * pow(sigma * p, q) * sqrt(Na/Nb) * cos(k*l);
+        } else {
+            return 0.5 * pow(sigma * p, q) * sqrt(Na/Nb) * (cos(k*l) + sigma * p * cos(k*(l-m_vec[b])))
+                / (1 + sigma * p * cos(k * m_vec[b]));
+        }
+    } else {
+        if (m_vec[b] == -1) {
+            0.5 * pow(sigma * p, q) * sqrt(Na/Nb) * -sigma * sin(k*l);
+        } else {
+            0.5 * pow(sigma * p, q) * sqrt(Na/Nb) * (-sigma * sin(k*l) + p * sin(k*(l-m_vec[b])))
+            / (1 - sigma * p * cos(k * m_vec[b]));
+        }
+    }
+}
+
+double g_k(int k, int N) {
+    if (k==0 || k == trunc(N/4)) {
+        return 2;
+    } else {
+        return 1;
+    }
+}
+
+double N_a_sigma(int g, int N, int sigmaR, int p, int k, int m) {
+    if (m == -1) {
+        return (double) N * N * g / abs(sigmaR);
+    } else {
+        return (double) N * N * g / abs(sigmaR) * (1 + (float) sigmaR/abs(sigmaR) * p * cos(k*m));
+    }
+}
+
+double E_z_parity(const int s, double J_ratio, const int N) {
+    double E_z = 0;
+    for (int i = 0; i < N; i++) {
+        int j = (i + 1) % N;
+        if (getBit(s, i) == getBit(s, j)) {
+            E_z += 0.25;
+        } else {
+            E_z += -0.25;
+        }
+        j = (i + 2) % N;
+        if (getBit(s, i) == getBit(s, j)) {
+            E_z += J_ratio * 0.25;
+        } else {
+            E_z += J_ratio * -0.25;
+        }
+    }
+    return E_z;
+}
+
 // Diagonalization-methods for a number of cases.
+vector<double> getEnergiesFromBlocks(const list<list<list<MatrixXd>>> & H_list, int N) {
+    vector<double> energies;
+    for (const list<list<MatrixXd>> & H_sublist : H_list) {
+        for (const list<MatrixXd> & H_subSubList : H_sublist) {
+            for (const MatrixXd & mat : H_subSubList) {
+                Eigen::SelfAdjointEigenSolver<MatrixXcd> sol;
+                if (mat.cols() == 0) {
+                    continue;
+                }
+                sol.compute(mat);
+                Eigen::VectorXcd blockEnergies = sol.eigenvalues();
+                std::for_each(blockEnergies.begin(), blockEnergies.end(),
+                              [&](complex<double> & d){energies.emplace_back(d.real());});
+            }
+        }
+    }
+    std::sort(energies.begin(), energies.end());
+    return energies;
+}
+
 vector<double> getEnergiesFromBlocks(const list<MatrixXcd> & H_list, int N) {
     vector<double> energies(pow(2, N), 0);
     int j = 0;
@@ -377,6 +570,8 @@ vector<double> getEnergiesFromBlocks(const list<list<MatrixXcd>> & H_list, int N
     std::sort(energies.begin(), energies.end());
     return energies;
 }
+
+
 
 vector<vector<vector<double>>> getEnergiesFromBlocksByK(const list<list<MatrixXcd>> & H_list) {
     vector<vector<vector<double>>> energies;

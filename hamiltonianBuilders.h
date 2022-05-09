@@ -56,7 +56,21 @@ std::list<std::list<Eigen::MatrixXcd>> momentumHamiltonian(double J_ratio, int N
 void setHElement_momentum(double J_ratio, int N, std::list<Eigen::MatrixXcd> &H_subSubspace_list, int k,
                           const std::vector<int> &s_vector_k, const std::vector<int> &R_vector, int K);
 
+std::list<std::list<std::list<Eigen::MatrixXd>>> parityHamiltonian(double J_ratio, int N);
+
+double h_Element_parity(int a, int b, int l, int q, int k, int p, int N,
+                        const std::vector<int> & s_vec, const std::vector<int> & R_vec, const std::vector<int> & m_vec);
+
+double g_k(int k, int N);
+
+double N_a_sigma(int g, int N, int sigmaR, int p, int k, int m);
+
+double E_z_parity(const int s, double J_ratio, const int N);
+
+double h_Element_parity(int a, int b, int l, int q, int k, int p);
+
 // Diagonalization-methods for a number of cases.
+std::vector<double> getEnergiesFromBlocks(const std::list<std::list<std::list<Eigen::MatrixXd>>> & H_list, int N);
 std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXcd> & H_list, int N);
 std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXcd> & H_list);
 std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXd> & H_list);

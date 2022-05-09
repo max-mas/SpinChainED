@@ -8,13 +8,13 @@ using std::vector;
 //#define saveSpecificHeatForJ
 //#define saveSusceptibility
 //#define saveSusceptibilityForJ
-#define saveDispersion
+//#define saveDispersion
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
     int dataPointNum = 200;
-    int nMax = 12;
+    int nMax = 16;
     vector<double> J_ratios = {0.1, 1, 2, 5};
     vector<double> Ts = {0.2, 0.5, 1};
     bool isBeta = false;
@@ -117,6 +117,15 @@ int main(int argc, char* argv[]) {
         }
     }
 #endif
+    std::list<std::list<Eigen::MatrixXcd>> H1 = momentumHamiltonian(0, 6);
+    vector<double> erg1 = getEnergiesFromBlocks(H1, 6);
+    printEnergies(erg1);
+    std::cout << "\n\n";
+    std::list<std::list<std::list<Eigen::MatrixXd>>> H = parityHamiltonian(0, 6);
+    vector<double> erg = getEnergiesFromBlocks(H, 6);
+    printEnergies(erg);
+
+
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count()
               << "[ms]" << std::endl;

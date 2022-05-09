@@ -98,9 +98,39 @@ int checkState(const int s, const int k, const int N) {
     return -1;
 }
 
+std::vector<int> checkState_parity(const int s, const int k, const int N) {
+    int t = s;
+    int R = -1;
+    int m = -1;
+    for (int i = 1; i <= N/2; i++) {
+        cycleBits2(t, N); //translate state
+        if (t < s) {return {R, m};}
+        else if (t == s) {
+            if ( k % (int) std::trunc((double )N/(2*i)) ) {return {R, m};} // check compatibility with k
+            R = i;
+            break;
+        }
+    }
+    t = s;
+
+    reflectBits(t, N);
+    for (int i = 0; i < R; i++) {
+        if (t < s) {
+            R = -1;
+            return {R, m};
+        } else if (t == s) {
+            m = i;
+            return {R, m};
+        }
+        cycleBits2(t, N);
+    }
+    return {R, m};
+}
+
 // Reflects bits about the center of the chain.
 void reflectBits(int & s, int N) {
-    int t;
+    int t = s;
+    cycleBits(t, N);
     for (int i = 0; i < N; i++) {
         setBit(t, i, getBit(s, N - 1 - i));
     }
@@ -119,6 +149,30 @@ std::vector<int> representative(const int s, const int N) {
         if (t < r) {r = t; l = i;}
     }
     return {r, l};
+}
+
+std::vector<int> representative_parity(const int s, const int N) {
+    int r = s;
+    int t = s;
+    int l = 0;
+
+    for (int i = 1; i < N/2; i++) {
+        cycleBits2(t, N);
+        if (t < r) {r = t; l = i;}
+    }
+    t = s;
+
+    reflectBits(t, N);
+    int q = 0;
+    for (int i = 1; i < N; i++) {
+        cycleBits2(t, N);
+        if (t < r) {
+            t = t;
+            l = i;
+            q = 1;
+        }
+    }
+    return {r, l, q};
 }
 
 // Prints real-valued matrix to console.
