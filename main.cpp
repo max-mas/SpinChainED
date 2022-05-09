@@ -119,11 +119,13 @@ int main(int argc, char* argv[]) {
 #endif
     std::list<std::list<Eigen::MatrixXcd>> H1 = momentumHamiltonian(0, 6);
     vector<double> erg1 = getEnergiesFromBlocks(H1, 6);
-    printEnergies(erg1);
-    std::cout << "\n\n";
+    //printEnergies(erg1);
+
+    //std::cout << "\n\n";
+
     std::list<std::list<std::list<Eigen::MatrixXd>>> H = parityHamiltonian(0, 6);
     vector<double> erg = getEnergiesFromBlocks(H, 6);
-    printEnergies(erg);
+    //printEnergies(erg);
 
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();

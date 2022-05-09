@@ -316,7 +316,6 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
         for (int k = 0; k <= trunc(N/4); k++ ) {
             list<MatrixXd> H_subSubSubspace_list;
             for (int p : {-1, 1}) {
-                if ((k != 0 && k != trunc(N/4)) && p == -1) continue;
 
                 vector<int> s_vector_k, R_vector, m_vector;
                 for (int s: s_vector_m) {
@@ -343,6 +342,7 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
 
                 for (int a = 0; a < K; a++) {
                     int s = s_vector_k[a];
+                    std::cout << s << " " << mag << " " << k << " " << p << std::endl;
                     int n;
                     if (a > 0 && s_vector_k[a] == s_vector_k[a-1]) continue;
                     if (a < K-1 && s_vector_k[a] == s_vector_k[a+1]) {n = 2;

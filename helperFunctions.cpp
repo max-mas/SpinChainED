@@ -129,8 +129,7 @@ std::vector<int> checkState_parity(const int s, const int k, const int N) {
 
 // Reflects bits about the center of the chain.
 void reflectBits(int & s, int N) {
-    int t = s;
-    cycleBits(t, N);
+    int t = 0;
     for (int i = 0; i < N; i++) {
         setBit(t, i, getBit(s, N - 1 - i));
     }
