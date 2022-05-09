@@ -4,11 +4,12 @@ using std::vector;
 
 //#define saveErgs
 //#define saveExcitationErgs
-//#define saveSpecificHeat
+#define saveSpecificHeat
 //#define saveSpecificHeatForJ
 //#define saveSusceptibility
 //#define saveSusceptibilityForJ
 //#define saveDispersion
+//#define fuckParity
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -117,6 +118,7 @@ int main(int argc, char* argv[]) {
         }
     }
 #endif
+#ifdef fuckParity
     std::list<std::list<Eigen::MatrixXcd>> H1 = momentumHamiltonian(0, 6);
     vector<double> erg1 = getEnergiesFromBlocks(H1, 6);
     //printEnergies(erg1);
@@ -126,7 +128,7 @@ int main(int argc, char* argv[]) {
     std::list<std::list<std::list<Eigen::MatrixXd>>> H = parityHamiltonian(0, 6);
     vector<double> erg = getEnergiesFromBlocks(H, 6);
     //printEnergies(erg);
-
+#endif
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count()

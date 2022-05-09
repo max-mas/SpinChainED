@@ -469,7 +469,7 @@ vector<double> getEnergiesFromBlocks(const list<list<list<MatrixXd>>> & H_list, 
     for (const list<list<MatrixXd>> & H_sublist : H_list) {
         for (const list<MatrixXd> & H_subSubList : H_sublist) {
             for (const MatrixXd & mat : H_subSubList) {
-                Eigen::SelfAdjointEigenSolver<MatrixXcd> sol;
+                Eigen::SelfAdjointEigenSolver<MatrixXd> sol;
                 if (mat.cols() == 0) {
                     continue;
                 }
