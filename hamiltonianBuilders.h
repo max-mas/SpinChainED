@@ -63,6 +63,9 @@ std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXd> & H_l
 std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXd> & H_list, int N);
 std::vector<double> getEnergiesFromBlocks(const std::list<std::list<Eigen::MatrixXcd>> & H_list, int N);
 
+std::vector<std::vector<std::vector<double>>> getEnergiesFromBlocksByK(
+        const std::list<std::list<Eigen::MatrixXcd>> & H_list);
+
 // Generate full-sized matrix from blocks.
 Eigen::MatrixXcd blkdiag(const std::list<Eigen::MatrixXcd>& matrix_list, int totalSize);
 std::list<Eigen::MatrixXcd> blkdiag(const std::list<std::list<Eigen::MatrixXcd>> & matrix_doubleList);

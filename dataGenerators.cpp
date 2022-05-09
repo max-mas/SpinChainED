@@ -123,6 +123,22 @@ void saveSusceptibilitesForVaryingTemp(int N, int dataPointNum, double J_ratio, 
     savePairsToFile(out, path);
 }
 
+void saveEnergyDispersion(int N, double J_ratio, std::string path) {
+    list<list<MatrixXcd>> H_list = momentumHamiltonian(J_ratio, N);
+    vector<vector<vector<double>>> ergs = getEnergiesFromBlocksByK(H_list);
+    list<std::pair<int, double>> out;
+    for (vector<vector<double>> m_block : ergs) {
+        int k = -trunc((N+2)/4) + 1;
+        for (vector<double> k_block : m_block) {
+            for (double erg : k_block) {
+                out.emplace_back( std::pair<int, double>(k, erg) );
+            }
+            k++;
+        }
+    }
+    savePairsToFile(out, path);
+}
+
 // Used to write data tuples to a file at path.
 template <typename T, typename U>
 void savePairsToFile(list<std::pair<T, U>> pairList, std::string path) {

@@ -40,6 +40,8 @@ void saveSusceptibilitiesForVaryingJ(int N, int dataPointNum, double betaOrT, do
 void saveSusceptibilitesForVaryingTemp(int N, int dataPointNum, double J_ratio, double start, double end,
                                        bool isBeta, std::string path);
 
+void saveEnergyDispersion(int N, double J_ratio, std::string path);
+
 // Used to write data tuples to a file at path. Operator << must be defined correctly.
 template <typename T, typename U>
 void savePairsToFile(std::list<std::pair<T, U>> pairList, std::string path);

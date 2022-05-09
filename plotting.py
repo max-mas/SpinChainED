@@ -7,6 +7,26 @@ plt.rc('axes', titlesize=20)
 
 J_ratios = ["0_100000", "1_000000", "2_000000", "5_000000"]
 Ts = ["0_200000", "0_500000", "1_000000"]
+
+for J_ratio in J_ratios:
+    for N in np.linspace(6, 12, 4):
+        fig, ax = plt.subplots()
+        path = "/home/mmaschke/BA_Code/Data/Dispersion/DispN"+str(int(N))+"J"+J_ratio+".txt"
+        file = open(path)
+        lines = file.readlines();
+        ks = []
+        ergs = []
+        for line in lines:
+            data = line.split(" ")
+            ks.append( float( data[0]) )
+            ergs.append( float( data[1].replace("\n", "") ) )
+        lab = "$N$ = "+ str( int(N) )
+        ax.scatter(ks, ergs, label=lab, marker="_", linewidths=0.5)
+        ax.legend()
+        J_ratioNum = J_ratio.replace("_", ".")
+        ax.set(xlabel="Momentum quantum number $k$", ylabel="State Energy $E$ ($J_2$)", title="$J_1/J_2 =\\,$"+J_ratioNum+", $N= $ "+str(N))
+        plt.show()
+
 """
 for T in Ts:
     fig, ax = plt.subplots()
@@ -27,9 +47,7 @@ for T in Ts:
     T = T.replace("_", ".")
     ax.set(xlabel="$J_1/J_2$", ylabel="Susceptibility per Spin $C$ ($1/J_2$)", title="$T =\\,$"+T)
     plt.show()
-"""
 
-"""
 for T in Ts:
     fig, ax = plt.subplots()
     
@@ -49,7 +67,7 @@ for T in Ts:
     T = T.replace("_", ".")
     ax.set(xlabel="$J_1/J_2$", ylabel="Specific heat per Spin $C/N$", title="$T =\\,$"+T)
     plt.show()
-"""
+
 
 for J_ratio in J_ratios:
     fig, ax = plt.subplots()
@@ -91,7 +109,7 @@ for J_ratio in J_ratios:
     J_ratio = J_ratio.replace("_", ".")
     ax.set(xlabel="$T$ ($J_2$)", ylabel="Susceptibility per Spin $C$ ($1/J_2$)", title="$J_1/J_2 =\\,$"+J_ratio)
     plt.show()
-"""
+
 fig, ax = plt.subplots()
 for N in np.linspace(6, 12, 4):
     path = "/home/mmaschke/BA_Code/Data/ExcitationErgs/ExcErgs"+str(int(N))+".txt"

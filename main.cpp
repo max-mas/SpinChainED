@@ -3,11 +3,12 @@
 using std::vector;
 
 //#define saveErgs
-#define saveExcitationErgs
+//#define saveExcitationErgs
 //#define saveSpecificHeat
 //#define saveSpecificHeatForJ
 //#define saveSusceptibility
 //#define saveSusceptibilityForJ
+#define saveDispersion
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -100,6 +101,19 @@ int main(int argc, char* argv[]) {
                                b + ".txt";
             saveSusceptibilitiesForVaryingJ(N, dataPointNum, T, start, endP, isBeta, path);
             std::cout << std::string("N") + std::to_string(N)+ std::string("T") + b << std::endl;
+        }
+    }
+#endif
+#ifdef saveDispersion
+    for (double J_ratio : J_ratios) {
+        for (int N = 6; N <= nMax; N+= 2) {
+            std::string j = std::to_string(J_ratio);
+            std::replace(j.begin(), j.end(), '.', '_');
+
+            std::string path = "/home/mmaschke/BA_Code/Data/Dispersion/DispN" + std::to_string(N)
+                    + std::string("J") + j + ".txt";
+            saveEnergyDispersion(N, J_ratio, path);
+            std::cout << std::string("N") + std::to_string(N)+ std::string("J") + j << std::endl;
         }
     }
 #endif

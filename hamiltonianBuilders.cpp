@@ -378,6 +378,26 @@ vector<double> getEnergiesFromBlocks(const list<list<MatrixXcd>> & H_list, int N
     return energies;
 }
 
+vector<vector<vector<double>>> getEnergiesFromBlocksByK(const list<list<MatrixXcd>> & H_list) {
+    vector<vector<vector<double>>> energies;
+
+    for (const list<MatrixXcd> & subList : H_list) {
+        vector<vector<double>> m_ergs;
+        for (const MatrixXcd & mat : subList) {
+            Eigen::SelfAdjointEigenSolver<MatrixXcd> sol;
+            if (mat.cols() == 0) {
+                continue;
+            }
+            sol.compute(mat);
+            Eigen::VectorXd blockEnergies = sol.eigenvalues().real();
+            vector<double> k_ergs(blockEnergies.begin(), blockEnergies.end());
+            m_ergs.emplace_back(k_ergs);
+        }
+        energies.emplace_back(m_ergs);
+    }
+    return energies;
+}
+
 
 // Generate full-sized matrix from blocks.
 MatrixXcd blkdiag(const list<MatrixXcd> & matrix_list, int totalSize) {
