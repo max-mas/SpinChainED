@@ -42,9 +42,14 @@ void saveSusceptibilitesForVaryingTemp(int N, int dataPointNum, double J_ratio, 
 
 void saveEnergyDispersion(int N, double J_ratio, std::string path);
 
+void saveEnergyDispersionWithMag(int N, double J_ratio, std::string path);
+
 // Used to write data tuples to a file at path. Operator << must be defined correctly.
 template <typename T, typename U>
-void savePairsToFile(std::list<std::pair<T, U>> pairList, std::string path);
+void savePairsToFile(const std::list<std::pair<T, U>> & pairList, std::string path);
+
+template <typename T, typename U, typename V>
+void saveTripleToFile(const std::list<std::tuple<T, U, V>> & pairList, std::string path);
 
 // Threaded version of getEnergiesFromBlocks for the momentum state ansatz.
 std::vector<double> getMomentumErgsThreaded(const std::list<std::list<Eigen::MatrixXcd>> & H_list, int N);

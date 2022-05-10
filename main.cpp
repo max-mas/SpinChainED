@@ -4,18 +4,18 @@ using std::vector;
 
 //#define saveErgs
 //#define saveExcitationErgs
-#define saveSpecificHeat
+//#define saveSpecificHeat
 //#define saveSpecificHeatForJ
 //#define saveSusceptibility
 //#define saveSusceptibilityForJ
 //#define saveDispersion
-//#define fuckParity
+#define fuckParity
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
     int dataPointNum = 200;
-    int nMax = 16;
+    int nMax = 14;
     vector<double> J_ratios = {0.1, 1, 2, 5};
     vector<double> Ts = {0.2, 0.5, 1};
     bool isBeta = false;
@@ -113,21 +113,22 @@ int main(int argc, char* argv[]) {
 
             std::string path = "/home/mmaschke/BA_Code/Data/Dispersion/DispN" + std::to_string(N)
                     + std::string("J") + j + ".txt";
-            saveEnergyDispersion(N, J_ratio, path);
+            saveEnergyDispersionWithMag(N, J_ratio, path);
             std::cout << std::string("N") + std::to_string(N)+ std::string("J") + j << std::endl;
         }
     }
 #endif
 #ifdef fuckParity
     std::list<std::list<Eigen::MatrixXcd>> H1 = momentumHamiltonian(0, 6);
-    vector<double> erg1 = getEnergiesFromBlocks(H1, 6);
-    //printEnergies(erg1);
 
-    //std::cout << "\n\n";
+    std::cout << "\n\n";
 
     std::list<std::list<std::list<Eigen::MatrixXd>>> H = parityHamiltonian(0, 6);
     vector<double> erg = getEnergiesFromBlocks(H, 6);
     //printEnergies(erg);
+    //int s = 16;
+    //reflectBits(s, 6);
+    //std::cout << s << std::endl;
 #endif
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();

@@ -106,7 +106,7 @@ std::vector<int> checkState_parity(const int s, const int k, const int N) {
         cycleBits2(t, N); //translate state
         if (t < s) {return {R, m};}
         else if (t == s) {
-            if ( k % (int) std::trunc((double )N/(2*i)) ) {return {R, m};} // check compatibility with k
+            if ( k % (int) trunc(N/(2*i)) ) {return {R, m};} // check compatibility with k
             R = i;
             break;
         }

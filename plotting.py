@@ -1,5 +1,6 @@
 from matplotlib import pyplot as plt
 import numpy as np
+from matplotlib.ticker import MaxNLocator
 
 plt.rcParams['text.usetex'] = True
 plt.rc('axes', labelsize=16)
@@ -9,22 +10,26 @@ J_ratios = ["0_100000", "1_000000", "2_000000", "5_000000"]
 Ts = ["0_200000", "0_500000", "1_000000"]
 
 for J_ratio in J_ratios:
-    for N in np.linspace(6, 12, 4):
+    for N in np.linspace(6, 14, 5):
         fig, ax = plt.subplots()
         path = "/home/mmaschke/BA_Code/Data/Dispersion/DispN"+str(int(N))+"J"+J_ratio+".txt"
         file = open(path)
-        lines = file.readlines();
+        lines = file.readlines()
+        ms = []
         ks = []
         ergs = []
         for line in lines:
             data = line.split(" ")
-            ks.append( float( data[0]) )
-            ergs.append( float( data[1].replace("\n", "") ) )
+            ms.append( float( data[0]) )
+            ks.append( float( data[1]) )
+            ergs.append( float( data[2].replace("\n", "") ) )
         lab = "$N$ = "+ str( int(N) )
-        ax.scatter(ks, ergs, label=lab, marker="_", linewidths=0.5)
+        sc = ax.scatter(ks, ergs, s=400, c=ms, cmap="hsv", marker="_", linewidths=0.5)
         ax.legend()
         J_ratioNum = J_ratio.replace("_", ".")
         ax.set(xlabel="Momentum quantum number $k$", ylabel="State Energy $E$ ($J_2$)", title="$J_1/J_2 =\\,$"+J_ratioNum+", $N= $ "+str(N))
+        ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+        fig.colorbar(sc, cmap="hsv", values=ms, label="Magnetization $m$")
         plt.show()
 
 """
