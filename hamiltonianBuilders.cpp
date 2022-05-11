@@ -299,6 +299,7 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
 
     // init list of block lists
     list<list<list<MatrixXd>>> H_subspace_list;
+    int g = 0;
 
     // loop over all magnetizations m
     for (int m_setter = 0; m_setter <= N; m_setter++) {
@@ -320,7 +321,7 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
                 vector<int> s_vector_k, R_vector, m_vector;
                 for (int s: s_vector_m) {
                     for (int sigma : {-1, 1}) {
-                        if ((k == 0 || k == trunc(N/4)) && sigma == -1) continue;
+                        if ((k == 0 || k == trunc(N/4) ) && sigma == -1) continue; //
                         vector<int> R_m = checkState_parity(s, k, N);
                         if (R_m[1] != -1) {
                             complex<double> v = sigma * (double) p * std::cos(
@@ -342,6 +343,7 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
 
                 for (int a = 0; a < K; a++) {
                     int s = s_vector_k[a];
+                    g++;
                     std::cout << s << " " << mag << " " << k << " " << p << " " << R_vector[a] << std::endl;
                     int n;
                     if (a > 0 && s_vector_k[a] == s_vector_k[a-1]) continue;
@@ -404,6 +406,7 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
         }
         H_subspace_list.emplace_back(H_subSubspace_list);
     }
+    std::cout << g << "\n";
     return H_subspace_list;
 }
 
