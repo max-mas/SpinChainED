@@ -455,7 +455,7 @@ double g_k(double k, double N) {
 }
 
 double N_a_sigma(double g, double N, double sigmaR, double p, double k, double m) {
-    if (m == -1) {
+    if ((m + 1) < epsilon) {
         return N * N * g /abs(sigmaR);
     } else {
         return N * N * g / abs(sigmaR) * (1.0 + sigmaR / abs(sigmaR)
