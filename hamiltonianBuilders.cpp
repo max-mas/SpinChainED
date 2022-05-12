@@ -302,22 +302,19 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
     int g = 0;
 
     // loop over all magnetizations m
-    for (int m_setter = 0; m_setter <= N; m_setter++) {
+    for (int n_up = 0; n_up <= N; n_up++) {
 
         int y = 0;
         // Calculate magnetization and number of "up"-states for given magnetization.
-        double mag = -N/2.0 + m_setter;
-        int n_up = round(mag + N/2.0);
 
         // Find states compatible with m and store them in list.
         vector<int> s_vector_m = getStates_m(N, n_up);
-        int M = s_vector_m.size();
 
         // init list of blocks
         list<list<MatrixXd>> H_subSubspace_list;
 
         // loop over all possible semi-momenta k and parity numbers p = +-1
-        for (int k = 0; k <= trunc(N/4); k++ ) {
+        for (int k = 0; k <= trunc(N/4); k++) {
             list<MatrixXd> H_subSubSubspace_list;
             for (int p : {-1, 1}) {
                 vector<int> s_vector_k, R_vector, m_vector;
@@ -354,7 +351,7 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
                     } else n = 1;
 
                     for (int u = a; u < a + n; u++) {
-                        H(a, a) += E_z_parity(s, J_ratio, N);
+                        H(u, u) += E_z_parity(s, J_ratio, N);
                     }
 
                     for (int i = 0; i < N; i++) {
@@ -373,18 +370,18 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
                                 } else if (b < K - 1 && s_vector_k[b] == s_vector_k[b + 1]) {
                                     m = 2;
                                 } else m = 1;
-                                for (int j_mat = b; j_mat < b + m; j_mat++) {
-                                    for (int i_mat = a; i_mat < a + n; i_mat++) {
-
-                                        H(i_mat, j_mat) += h_Element_parity(i_mat, j_mat, r_l_q[1], r_l_q[2], k, p, N,
-                                                                            s_vector_k, R_vector, m_vector);
+                                for (int i_mat = a; i_mat < a + n; i_mat++) {
+                                    for (int j_mat = b; j_mat < b + m; j_mat++) {
+                                        double val = h_Element_parity(i_mat, j_mat, r_l_q[1], r_l_q[2], k, p, N,
+                                                                      s_vector_k, R_vector, m_vector);
+                                        H(i_mat, j_mat) += val;
                                     }
                                 }
                             }
                         }
                     }
 
-                    for (int i = 0; i < N; i++) {
+                    /*for (int i = 0; i < N; i++) {
                         int s_prime = s;
                         int j = (i + 2) % N;
                         if (getBit(s_prime, i) != getBit(s_prime, j)) {
@@ -402,14 +399,15 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
                                 } else m = 1;
                                 for (int j_mat = b; j_mat < b + m; j_mat++) {
                                     for (int i_mat = a; i_mat < a + n; i_mat++) {
-                                        H(i_mat, j_mat) += J_ratio *
-                                                           h_Element_parity(i_mat, j_mat, r_l_q[1], r_l_q[2], k, p, N,
-                                                                            s_vector_k, R_vector, m_vector);
+                                        double val = h_Element_parity(i_mat, j_mat, r_l_q[1], r_l_q[2], k, p, N,
+                                                                      s_vector_k, R_vector, m_vector);
+                                        H(i_mat, j_mat) += J_ratio * val;
+
                                     }
                                 }
                             }
                         }
-                    }
+                    }*/
                 }
                 H_subSubSubspace_list.emplace_back(H);
             }
@@ -422,46 +420,50 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
     return H_subspace_list;
 }
 
-double h_Element_parity(int a, int b, int l, int q, int k, int p, int N,
+double h_Element_parity(int a, int b, double l, double q, double k, double p, double N,
                         const vector<int> & s_vec, const vector<int> & R_vec, const vector<int> & m_vec) {
-    double sigma = R_vec[b]/abs(R_vec[b]);
-    double Na = N_a_sigma(g_k(k, N), N, R_vec[a], p, k, m_vec[a] );
-    double Nb = N_a_sigma(g_k(k, N), N, R_vec[b], p, k, m_vec[b] );
-    double k_actual = (double) k*4*M_PI/N;
-    if (R_vec[a] * R_vec[b] > 0) {
+    double sigma_a = (double) R_vec[a]/abs(R_vec[a]);
+    double sigma_b = (double) R_vec[b]/abs(R_vec[b]);
+    double Na = N_a_sigma(g_k(k, N), N, R_vec[a], p, k, m_vec[a]);
+    double Nb = N_a_sigma(g_k(k, N), N, R_vec[b], p, k, m_vec[b]);
+    double k_actual = (double) k*4.0*M_PI/ (double) N;
+    double ret = 0;
+    if (sigma_a == sigma_b) {
         if (m_vec[b] == -1) {
-            return 0.5 * pow(sigma * p, q) * sqrt(Nb/Na) * cos(k_actual*l);
+            ret = 0.5 * pow(sigma_a * p, q) * sqrt(Nb/Na) * cos(k_actual*l);
         } else {
-            return 0.5 * pow(sigma * p, q) * sqrt(Nb/Na) * (cos(k_actual*l) + sigma * p * cos(k_actual*(l-m_vec[b]))
-                / (1.0 + sigma * p * cos(k_actual * m_vec[b])));
+            ret = 0.5 * pow(sigma_a * p, q) * sqrt(Nb/Na) * (cos(k_actual*l) + sigma_a * p * cos(k_actual*(l-m_vec[b])))
+                / (1.0 + sigma_a * p * cos(k_actual * m_vec[b]));
         }
     } else {
         if (m_vec[b] == -1) {
-            0.5 * pow(sigma * p, q) * sqrt(Nb/Na) * -sigma * sin(k_actual*l);
+            ret = 0.5 * pow(sigma_a * p, q) * sqrt(Nb/Na) * -sigma_a * sin(k_actual*l);
         } else {
-            0.5 * pow(sigma * p, q) * sqrt(Nb/Na) * (-sigma * sin(k_actual*l) + p * sin(k_actual*(l-m_vec[b]))
-            / (1.0 - sigma * p * cos(k_actual*l * m_vec[b])));
+            ret = 0.5 * pow(sigma_a * p, q) * sqrt(Nb/Na) * (-sigma_a * sin(k_actual*l) + p * sin(k_actual*(l-m_vec[b])))
+                / (1.0 - sigma_a * p * cos(k_actual * m_vec[b]));
         }
     }
+    return ret;
 }
 
-int g_k(int k, int N) {
-    if (k==0 || k == trunc(N/4)) {
+double g_k(double k, double N) {
+    if (k < epsilon || (k - trunc(N/4)) < epsilon) {
         return 2;
     } else {
         return 1;
     }
 }
 
-double N_a_sigma(int g, int N, int sigmaR, int p, int k, int m) {
+double N_a_sigma(double g, double N, double sigmaR, double p, double k, double m) {
     if (m == -1) {
-        return (double) N * N * g / abs(sigmaR);
+        return N * N * g /abs(sigmaR);
     } else {
-        return (double) N * N * g / abs(sigmaR) * (1 + (float) sigmaR/abs(sigmaR) * p * cos((double)k*m*4*M_PI/N));
+        return N * N * g / abs(sigmaR) * (1.0 + sigmaR / abs(sigmaR)
+                * p * cos(k*m*4*M_PI/N));
     }
 }
 
-double E_z_parity(const int s, double J_ratio, const int N) {
+double E_z_parity(const int s, const double J_ratio, const int N) {
     double E_z = 0;
     for (int i = 0; i < N; i++) {
         int j = (i + 1) % N;
@@ -480,7 +482,7 @@ double E_z_parity(const int s, double J_ratio, const int N) {
     return E_z;
 }
 
-// Diagonalization-methods for a number of cases.
+// Diagonalization methods for a number of cases.
 vector<double> getEnergiesFromBlocks(const list<list<list<MatrixXd>>> & H_list, int N) {
     vector<double> energies;
     for (const list<list<MatrixXd>> & H_sublist : H_list) {

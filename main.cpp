@@ -15,7 +15,7 @@ int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
     int dataPointNum = 200;
-    int nMax = 14;
+    int nMax = 20;
     vector<double> J_ratios = {0.1, 1, 2, 5};
     vector<double> Ts = {0.2, 0.5, 1};
     bool isBeta = false;
@@ -120,10 +120,10 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef fuckParity
     int N = 8;
-    Eigen::MatrixXd H2 = naiveHamiltonian(0, N);
-    Eigen::VectorXd erg2 = H2.eigenvalues().real();
-    std::sort(erg2.begin(), erg2.end());
-    printEnergies(erg2);
+    //Eigen::MatrixXd H2 = naiveHamiltonian(0, N);
+    //Eigen::VectorXd erg2 = H2.eigenvalues().real();
+    //std::sort(erg2.begin(), erg2.end());
+    //printEnergies(erg2);
     //std::list<std::list<Eigen::MatrixXcd>> H1 = momentumHamiltonian(0, N);
     //vector<double> erg1 = getEnergiesFromBlocks(H1, N);
     //printEnergies(erg1);
@@ -137,6 +137,13 @@ int main(int argc, char* argv[]) {
     //int s = 16;
     //reflectBits(s, 6);
     //std::cout << s << std::endl;
+    /*for (std::list<std::list<Eigen::MatrixXd>> & a : H) {
+        for (std::list<Eigen::MatrixXd> & b : a) {
+            for (Eigen::MatrixXd & c : b) {
+                printMatrix(c);
+            }
+        }
+    }*/
 #endif
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();

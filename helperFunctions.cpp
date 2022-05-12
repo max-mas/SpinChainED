@@ -178,7 +178,12 @@ std::vector<int> representative_parity(const int s, const int N) {
 void printMatrix(const Eigen::MatrixXd & M) {
     for (int i = 0; i < M.rows(); i++ ) {
         for (int j = 0; j < M.cols(); j++) {
-            std::cout << M(i, j) << "\t" ;
+            if (M(i,j) < epsilon) {
+                std::cout << 0.0 << "\t\t\t" ;
+            } else {
+                std::cout << M(i, j) << "\t\t\t" ;
+            }
+
         }
         std::cout << std::endl;
     }
@@ -188,7 +193,11 @@ void printMatrix(const Eigen::MatrixXd & M) {
 void printMatrix(const Eigen::MatrixXcd & M) {
     for (int i = 0; i < M.rows(); i++ ) {
         for (int j = 0; j < M.cols(); j++) {
-            std::cout << M(i, j) << "\t" ;
+            if (abs(M(i,j)) < epsilon) {
+                std::cout << 0.0 << "\t\t\t" ;
+            } else {
+                std::cout << M(i, j) << "\t\t\t" ;
+            }
         }
         std::cout << std::endl;
     }
