@@ -61,7 +61,7 @@ std::list<std::list<std::list<Eigen::MatrixXd>>> parityHamiltonian(double J_rati
 double h_Element_parity(int a, int b, int l, int q, int k, int p, int N,
                         const std::vector<int> & s_vec, const std::vector<int> & R_vec, const std::vector<int> & m_vec);
 
-double g_k(int k, int N);
+int g_k(int k, int N);
 
 double N_a_sigma(int g, int N, int sigmaR, int p, int k, int m);
 

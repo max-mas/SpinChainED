@@ -249,7 +249,7 @@ void setHElement_momentum(double J_ratio, int N, list<MatrixXcd> &H_subSubspace_
                           const vector<int> &s_vector_k, const vector<int> &R_vector, int K) {
     for (int l = 0; l < K; l++) {
         int a = s_vector_k[l];
-        std::cout << a << " " << k << " " << R_vector[l] << std::endl;
+        //std::cout << a << " " << k << " " << R_vector[l] << std::endl;
         for (int i = 0; i < N; i++) {
             int j = (i+1) % N;
             if (getBit(a, i) == getBit(a, j)) {
@@ -303,6 +303,8 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
 
     // loop over all magnetizations m
     for (int m_setter = 0; m_setter <= N; m_setter++) {
+
+        int y = 0;
         // Calculate magnetization and number of "up"-states for given magnetization.
         double mag = -N/2.0 + m_setter;
         int n_up = round(mag + N/2.0);
@@ -328,7 +330,7 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
                                     (double) k * (double) R_m[1] * 4.0 * M_PI
                                     / (double) N);
                             if (std::abs( 1.0 + v ) < epsilon ) R_m[0] = -1;
-                            if (sigma == -1 && std::abs( 1.0 + v ) > epsilon ) R_m[0] = -1;
+                            if (sigma == -1 && std::abs( 1.0 - v ) > epsilon ) R_m[0] = -1;
                         }
                         if (R_m[0] > 0) {
                             s_vector_k.emplace_back(s);
@@ -342,9 +344,10 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
                 MatrixXd H = MatrixXd::Zero(K, K);
 
                 for (int a = 0; a < K; a++) {
-                    int s = s_vector_k[a];
+                    const int s = s_vector_k[a];
                     g++;
-                    std::cout << s << " " << mag << " " << k << " " << p << " " << R_vector[a] << std::endl;
+                    y++;
+                    //std::cout << s << " " << mag << " " << k << " " << p << " " << R_vector[a] << std::endl;
                     int n;
                     if (a > 0 && s_vector_k[a] == s_vector_k[a-1]) continue;
                     if (a < K-1 && s_vector_k[a] == s_vector_k[a+1]) {n = 2;
@@ -355,49 +358,57 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
                     }
 
                     for (int i = 0; i < N; i++) {
+                        int s_prime = s;
                         int j = (i + 1) % N;
-                        flipBit(s, i);
-                        flipBit(s, j);
-                        vector<int> r_l_q = representative_parity(s, N);
-                        int b = findState(s_vector_k, r_l_q[0]);
-                        int m;
-                        if (b >= 0) {
-                            if ( b > 0 && s_vector_k[b] == s_vector_k[b-1]) {
-                                m = 2;
-                                b += -1;
-                            } else if ( b < K-1 && s_vector_k[b] == s_vector_k[b+1]) {m = 2;
-                            } else m = 1;
-                            for (int j_mat = b; j_mat < b + m; j_mat++) {
-                                for (int i_mat = a; i_mat < a + n; i_mat++) {
+                        if (getBit(s_prime, i) != getBit(s_prime, j)) {
+                            flipBit(s_prime, i);
+                            flipBit(s_prime, j);
+                            vector<int> r_l_q = representative_parity(s_prime, N);
+                            int b = findState(s_vector_k, r_l_q[0]);
+                            int m;
+                            if (b >= 0) {
+                                if (b > 0 && s_vector_k[b] == s_vector_k[b - 1]) {
+                                    m = 2;
+                                    b += -1;
+                                } else if (b < K - 1 && s_vector_k[b] == s_vector_k[b + 1]) {
+                                    m = 2;
+                                } else m = 1;
+                                for (int j_mat = b; j_mat < b + m; j_mat++) {
+                                    for (int i_mat = a; i_mat < a + n; i_mat++) {
 
-                                    H(i_mat, j_mat) += h_Element_parity(i_mat, j_mat, r_l_q[1], r_l_q[2], k, p, N, s_vector_k, R_vector, m_vector);
+                                        H(i_mat, j_mat) += h_Element_parity(i_mat, j_mat, r_l_q[1], r_l_q[2], k, p, N,
+                                                                            s_vector_k, R_vector, m_vector);
+                                    }
                                 }
                             }
-
                         }
-
                     }
+
                     for (int i = 0; i < N; i++) {
+                        int s_prime = s;
                         int j = (i + 2) % N;
-                        flipBit(s, i);
-                        flipBit(s, j);
-                        vector<int> r_l_q = representative_parity(s, N);
-                        int b = findState(s_vector_k, r_l_q[0]);
-                        int m;
-                        if (b >= 0) {
-                            if ( b > 0 && s_vector_k[b] == s_vector_k[b-1]) {
-                                m = 2;
-                                b += -1;
-                            } else if ( b < K-1 && s_vector_k[b] == s_vector_k[b+1]) {m = 2;
-                            } else m = 1;
-                            for (int j_mat = b; j_mat < b + m; j_mat++) {
-                                for (int i_mat = a; i_mat < a + n; i_mat++) {
-                                    H(i_mat, j_mat) += J_ratio * h_Element_parity(i_mat, j_mat, r_l_q[1], r_l_q[2], k, p, N, s_vector_k, R_vector, m_vector);
+                        if (getBit(s_prime, i) != getBit(s_prime, j)) {
+                            flipBit(s_prime, i);
+                            flipBit(s_prime, j);
+                            vector<int> r_l_q = representative_parity(s_prime, N);
+                            int b = findState(s_vector_k, r_l_q[0]);
+                            int m;
+                            if (b >= 0) {
+                                if (b > 0 && s_vector_k[b] == s_vector_k[b - 1]) {
+                                    m = 2;
+                                    b += -1;
+                                } else if (b < K - 1 && s_vector_k[b] == s_vector_k[b + 1]) {
+                                    m = 2;
+                                } else m = 1;
+                                for (int j_mat = b; j_mat < b + m; j_mat++) {
+                                    for (int i_mat = a; i_mat < a + n; i_mat++) {
+                                        H(i_mat, j_mat) += J_ratio *
+                                                           h_Element_parity(i_mat, j_mat, r_l_q[1], r_l_q[2], k, p, N,
+                                                                            s_vector_k, R_vector, m_vector);
+                                    }
                                 }
                             }
-
                         }
-
                     }
                 }
                 H_subSubSubspace_list.emplace_back(H);
@@ -405,34 +416,36 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
             H_subSubspace_list.emplace_back(H_subSubSubspace_list);
         }
         H_subspace_list.emplace_back(H_subSubspace_list);
+        //std::cout << y << "\n";
     }
-    std::cout << g << "\n";
+    //std::cout << g << "\n";
     return H_subspace_list;
 }
 
 double h_Element_parity(int a, int b, int l, int q, int k, int p, int N,
                         const vector<int> & s_vec, const vector<int> & R_vec, const vector<int> & m_vec) {
-    double sigma = R_vec[b]/R_vec[b];
+    double sigma = R_vec[b]/abs(R_vec[b]);
     double Na = N_a_sigma(g_k(k, N), N, R_vec[a], p, k, m_vec[a] );
     double Nb = N_a_sigma(g_k(k, N), N, R_vec[b], p, k, m_vec[b] );
+    double k_actual = (double) k*4*M_PI/N;
     if (R_vec[a] * R_vec[b] > 0) {
         if (m_vec[b] == -1) {
-            return 0.5 * pow(sigma * p, q) * sqrt(Na/Nb) * cos((double)k*l*4*M_PI/N);
+            return 0.5 * pow(sigma * p, q) * sqrt(Nb/Na) * cos(k_actual*l);
         } else {
-            return 0.5 * pow(sigma * p, q) * sqrt(Na/Nb) * (cos((double)k*l*4*M_PI/N) + sigma * p * cos((double)k*(l-m_vec[b])*4*M_PI/N))
-                / (1.0 + sigma * p * cos((double)k * m_vec[b]*4*M_PI/N));
+            return 0.5 * pow(sigma * p, q) * sqrt(Nb/Na) * (cos(k_actual*l) + sigma * p * cos(k_actual*(l-m_vec[b]))
+                / (1.0 + sigma * p * cos(k_actual * m_vec[b])));
         }
     } else {
         if (m_vec[b] == -1) {
-            0.5 * pow(sigma * p, q) * sqrt(Na/Nb) * -sigma * sin((double)k*l*4*M_PI/N);
+            0.5 * pow(sigma * p, q) * sqrt(Nb/Na) * -sigma * sin(k_actual*l);
         } else {
-            0.5 * pow(sigma * p, q) * sqrt(Na/Nb) * (-sigma * sin((double)k*l*4*M_PI/N) + p * sin(k*((double)l-m_vec[b])*4*M_PI/N))
-            / (1.0 - sigma * p * cos((double)k * m_vec[b]*4*M_PI/N));
+            0.5 * pow(sigma * p, q) * sqrt(Nb/Na) * (-sigma * sin(k_actual*l) + p * sin(k_actual*(l-m_vec[b]))
+            / (1.0 - sigma * p * cos(k_actual*l * m_vec[b])));
         }
     }
 }
 
-double g_k(int k, int N) {
+int g_k(int k, int N) {
     if (k==0 || k == trunc(N/4)) {
         return 2;
     } else {

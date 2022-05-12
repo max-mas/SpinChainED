@@ -119,13 +119,21 @@ int main(int argc, char* argv[]) {
     }
 #endif
 #ifdef fuckParity
-    std::list<std::list<Eigen::MatrixXcd>> H1 = momentumHamiltonian(0, 6);
+    int N = 8;
+    Eigen::MatrixXd H2 = naiveHamiltonian(0, N);
+    Eigen::VectorXd erg2 = H2.eigenvalues().real();
+    std::sort(erg2.begin(), erg2.end());
+    printEnergies(erg2);
+    //std::list<std::list<Eigen::MatrixXcd>> H1 = momentumHamiltonian(0, N);
+    //vector<double> erg1 = getEnergiesFromBlocks(H1, N);
+    //printEnergies(erg1);
 
     std::cout << "\n\n";
 
-    std::list<std::list<std::list<Eigen::MatrixXd>>> H = parityHamiltonian(0, 6);
-    vector<double> erg = getEnergiesFromBlocks(H, 6);
-    //printEnergies(erg);
+    std::list<std::list<std::list<Eigen::MatrixXd>>> H = parityHamiltonian(0, N);
+    vector<double> erg = getEnergiesFromBlocks(H, N);
+    printEnergies(erg);
+    std::cout << erg.size() << "\n";
     //int s = 16;
     //reflectBits(s, 6);
     //std::cout << s << std::endl;

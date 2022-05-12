@@ -159,14 +159,14 @@ std::vector<int> representative_parity(const int s, const int N) {
         cycleBits2(t, N);
         if (t < r) {r = t; l = i;}
     }
-    t = s;
 
+    t = s;
     reflectBits(t, N);
     int q = 0;
-    for (int i = 1; i < N; i++) {
+    for (int i = 1; i < N/2; i++) {
         cycleBits2(t, N);
         if (t < r) {
-            t = t;
+            r = t;
             l = i;
             q = 1;
         }
