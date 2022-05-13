@@ -1,7 +1,7 @@
-//
-// This cpp file contains functions used for generating data of interest (excitation energies, specific heat and
-// susceptibilities) for later plotting in Python.
-//
+/**
+ * This cpp file contains functions used for generating data of interest (excitation energies, specific heat and
+ * susceptibilities) for later plotting in Python.
+*/
 
 #include "dataGenerators.h"
 
@@ -123,6 +123,7 @@ void saveSusceptibilitesForVaryingTemp(int N, int dataPointNum, double J_ratio, 
     savePairsToFile(out, path);
 }
 
+// Saves tuples of (E, k) to file.
 void saveEnergyDispersion(int N, double J_ratio, std::string path) {
     list<list<MatrixXcd>> H_list = momentumHamiltonian(J_ratio, N);
     vector<vector<vector<double>>> ergs = getEnergiesFromBlocksByK(H_list);
@@ -139,6 +140,7 @@ void saveEnergyDispersion(int N, double J_ratio, std::string path) {
     savePairsToFile(out, path);
 }
 
+// Saves tuples of (E, m, k) to file.
 void saveEnergyDispersionWithMag(int N, double J_ratio, std::string path) {
     list<list<MatrixXcd>> H_list = momentumHamiltonian(J_ratio, N);
     vector<vector<vector<double>>> ergs = getEnergiesFromBlocksByK(H_list);

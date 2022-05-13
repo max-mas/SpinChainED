@@ -1,6 +1,7 @@
-//
-// Created by MaxM on 13/05/2022.
-//
+/**
+ * This file contains methods used to construct (m, k) H-blocks using momentum conservation and translational lattice
+ * symmetry.
+ */
 
 #ifndef SPINCHAINED_MOMENTUMHAMILTONIAN_H
 #define SPINCHAINED_MOMENTUMHAMILTONIAN_H

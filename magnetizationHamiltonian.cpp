@@ -1,6 +1,6 @@
-//
-// Created by MaxM on 13/05/2022.
-//
+/**
+ * This file contains the methods used to construct the (m) H-blocks using magnetization conservation.
+ */
 
 #include "magnetizationHamiltonian.h"
 

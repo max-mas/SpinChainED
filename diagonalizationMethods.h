@@ -1,6 +1,6 @@
-//
-// Created by MaxM on 13/05/2022.
-//
+/**
+ * This cpp file contains methods used to get Eigenvalues from lists of self-adjoint H-blocks.
+*/
 
 #ifndef SPINCHAINED_DIAGONALIZATIONMETHODS_H
 #define SPINCHAINED_DIAGONALIZATIONMETHODS_H
@@ -23,12 +23,17 @@ std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXcd> & H_
 std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXd> & H_list);
 std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXd> & H_list, int N);
 std::vector<double> getEnergiesFromBlocks(const std::list<std::list<Eigen::MatrixXcd>> & H_list, int N);
+std::vector<double> getEnergiesFromBlocks(const std::list<std::list<Eigen::MatrixXd>> & H_list, int N);
 
+// Returns energies sorted by m and k, used for generation of dispersion plots.
 std::vector<std::vector<std::vector<double>>> getEnergiesFromBlocksByK(
         const std::list<std::list<Eigen::MatrixXcd>> & H_list);
 
 // Threaded version of getEnergiesFromBlocks for the momentum state ansatz.
 std::vector<double> getMomentumErgsThreaded(const std::list<std::list<Eigen::MatrixXcd>> & H_list, int N);
+
+// Threaded version of getEnergiesFromBlocks for the semi-momentum/parity state ansatz.
+std::vector<double> getParityErgsThreaded(const std::list<std::list<std::list<Eigen::MatrixXd>>> & H_list, int N);
 
 // Returns all eigenvalues for a given vector of values of J1/J2. Threaded.
 std::vector<std::vector<double>> diagonalizeThreaded(const std::vector<double> & J_ratios, int N);

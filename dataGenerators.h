@@ -1,7 +1,7 @@
-//
-// This cpp file contains functions used for generating data of interest (excitation energies, specific heat and
-// susceptibilities) for later plotting in Python.
-//
+/**
+ * This cpp file contains functions used for generating data of interest (excitation energies, specific heat and
+ * susceptibilities) for later plotting in Python.
+*/
 
 #ifndef SPINCHAINED_DATAGENERATORS_H
 #define SPINCHAINED_DATAGENERATORS_H
@@ -44,8 +44,10 @@ void saveSusceptibilitiesForVaryingJ(int N, int dataPointNum, double betaOrT, do
 void saveSusceptibilitesForVaryingTemp(int N, int dataPointNum, double J_ratio, double start, double end,
                                        bool isBeta, std::string path);
 
+// Saves tuples of (E, k) to file.
 void saveEnergyDispersion(int N, double J_ratio, std::string path);
 
+// Saves tuples of (E, m, k) to file.
 void saveEnergyDispersionWithMag(int N, double J_ratio, std::string path);
 
 // Used to write data tuples to a file at path. Operator << must be defined correctly.

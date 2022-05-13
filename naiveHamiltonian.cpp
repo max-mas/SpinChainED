@@ -1,6 +1,6 @@
-//
-// Created by MaxM on 13/05/2022.
-//
+/**
+* This file contains methods used to construct the full-sized Hamiltonian as well as the total-spin operator S².
+*/
 
 #include "naiveHamiltonian.h"
 

@@ -119,21 +119,25 @@ int main(int argc, char* argv[]) {
     }
 #endif
 #ifdef fuckParity
-    int N = 8;
+    int N = 16;
     //Eigen::MatrixXd H2 = naiveHamiltonian(0, N);
     //Eigen::VectorXd erg2 = H2.eigenvalues().real();
     //std::sort(erg2.begin(), erg2.end());
     //printEnergies(erg2);
     std::list<std::list<Eigen::MatrixXcd>> H1 = momentumHamiltonian(1, N);
-    vector<double> erg1 = getEnergiesFromBlocks(H1, N);
-    printEnergies(erg1);
+    vector<double> erg1 = getMomentumErgsThreaded(H1, N);
+    //printEnergies(erg1);
 
-    std::cout << "\n\n";
+    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count()
+              << "[ms]" << std::endl;
+
+    begin = std::chrono::steady_clock::now();
 
     std::list<std::list<std::list<Eigen::MatrixXd>>> H = parityHamiltonian(1, N);
-    vector<double> erg = getEnergiesFromBlocks(H, N);
-    printEnergies(erg);
-    std::cout << erg.size() << "\n";
+    vector<double> erg = getParityErgsThreaded(H, N);
+    //printEnergies(erg);
+    //std::cout << erg.size() << "\n";
     //int s = 16;
     //reflectBits(s, 6);
     //std::cout << s << std::endl;
@@ -146,7 +150,7 @@ int main(int argc, char* argv[]) {
     }*/
 #endif
 
-    std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+    end = std::chrono::steady_clock::now();
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count()
               << "[ms]" << std::endl;
     return 0;

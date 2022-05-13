@@ -1,6 +1,7 @@
-//
-// Created by MaxM on 13/05/2022.
-//
+/**
+ * This file contains methods used to construct (m, k) H-blocks using momentum conservation and translational lattice
+ * symmetry.
+ */
 
 #include "momentumHamiltonian.h"
 
@@ -22,12 +23,8 @@ list<list<MatrixXcd>> momentumHamiltonian(double J_ratio, int N) {
 
     // loop over all magnetizations m
     for (int m_setter = 0; m_setter <= N; m_setter++) {
-        // Calculate magnetization and number of "up"-states for given magnetization.
-        double m = -N/2.0 + m_setter;
-        int n_up = round( m + N/2.0);
-
         // Find states compatible with m and store them in list.
-        vector<int> s_vector_m = getStates_m(N, n_up);
+        vector<int> s_vector_m = getStates_m(N, m_setter);
         int M = s_vector_m.size();
 
         // init list of blocks

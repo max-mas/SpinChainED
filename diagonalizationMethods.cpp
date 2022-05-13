@@ -1,6 +1,6 @@
-//
-// Created by MaxM on 13/05/2022.
-//
+/**
+ * This cpp file contains methods used to get Eigenvalues from lists of self-adjoint H-blocks.
+*/
 
 #include "diagonalizationMethods.h"
 
@@ -119,8 +119,28 @@ vector<double> getEnergiesFromBlocks(const list<list<MatrixXcd>> & H_list, int N
     return energies;
 }
 
+vector<double> getEnergiesFromBlocks(const list<list<MatrixXd>> & H_list, int N) {
+    vector<double> energies(pow(2, N), 0);
+    int j = 0;
+    for (const list<MatrixXd> & subList : H_list) {
+        for (const MatrixXd & mat : subList) {
+            Eigen::SelfAdjointEigenSolver<MatrixXd> sol;
+            if (mat.cols() == 0) {
+                continue;
+            }
+            sol.compute(mat);
+            Eigen::VectorXcd blockEnergies = sol.eigenvalues();
+            std::for_each(blockEnergies.begin(), blockEnergies.end(),
+                          [&](complex<double> &d) {
+                              energies[j] = d.real();
+                              j++; });
+        }
+    }
+    std::sort(energies.begin(), energies.end());
+    return energies;
+}
 
-
+// Returns energies sorted by m and k, used for generation of dispersion plots.
 vector<vector<vector<double>>> getEnergiesFromBlocksByK(const list<list<MatrixXcd>> & H_list) {
     vector<vector<vector<double>>> energies;
 
@@ -155,6 +175,20 @@ vector<double> getMomentumErgsThreaded(const list<list<MatrixXcd>> & H_list, int
     return ergs;
 }
 
+// Threaded version of getEnergiesFromBlocks for the semi-momentum/parity state ansatz.
+vector<double> getParityErgsThreaded(const list<list<list<MatrixXd>>> & H_list, int N) {
+    vector<list<list<MatrixXd>>> H_vector(H_list.begin(), H_list.end());
+    vector<double> ergs;
+#pragma omp parallel for default(none) shared(ergs, H_vector, N, std::cout) num_threads(16)
+    for (int i = 0; i < H_vector.size(); i++) {
+        vector<double> blockErgs = getEnergiesFromBlocks(H_vector[i], N);
+        writeThreadSafe(ergs, blockErgs);
+        //std::cout << "1 done" << "\n";
+    }
+    std::sort(ergs.begin(), ergs.end());
+    return ergs;
+}
+
 // Returns all eigenvalues for a given vector of values of J1/J2. Threaded.
 vector<vector<double>> diagonalizeThreaded(const vector<double> & J_ratios, int N) {
     const int num = J_ratios.size();
@@ -168,7 +202,6 @@ vector<vector<double>> diagonalizeThreaded(const vector<double> & J_ratios, int 
     }
     return v;
 }
-
 
 // Generate full-sized matrix from blocks.
 MatrixXcd blkdiag(const list<MatrixXcd> & matrix_list, int totalSize) {

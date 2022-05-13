@@ -1,7 +1,7 @@
-//
-// This cpp file contains functions used to manipulate integers in the way needed for the chosen numerical
-// representation of spin states, as well as functions used for console output.
-//
+/**
+    This cpp file contains functions used to manipulate integers in the way needed for the chosen numerical
+    representation of spin states, as well as functions used for console output.
+*/
 #include <iostream>
 
 #include "helperFunctions.h"
