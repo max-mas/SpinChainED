@@ -15,10 +15,10 @@ using Eigen::Dynamic;
 
 
 list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
-    // N must be even and > 6 or this no longer describes the correct system.
-    //if (N < 6 || N%2 == 1) {
-    //    throw std::invalid_argument("N must be larger than 6 and even.");
-    //}
+    // N must be a multiple of 4 and >=8.
+    if (N < 8 || N%4 != 0) {
+        throw std::invalid_argument("N must be larger than 8 and a multiple of 4.");
+    }
 
     // init list of block lists
     list<list<list<MatrixXd>>> H_subspace_list;
@@ -104,7 +104,7 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
                         }
                     }
 
-                    /*for (int i = 0; i < N; i++) {
+                    for (int i = 0; i < N; i++) {
                         int s_prime = s;
                         int j = (i + 2) % N;
                         if (getBit(s_prime, i) != getBit(s_prime, j)) {
@@ -120,26 +120,23 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
                                 } else if (b < K - 1 && s_vector_k[b] == s_vector_k[b + 1]) {
                                     m = 2;
                                 } else m = 1;
-                                for (int j_mat = b; j_mat < b + m; j_mat++) {
-                                    for (int i_mat = a; i_mat < a + n; i_mat++) {
+                                for (int i_mat = a; i_mat < a + n; i_mat++) {
+                                    for (int j_mat = b; j_mat < b + m; j_mat++) {
                                         double val = h_Element_parity(i_mat, j_mat, r_l_q[1], r_l_q[2], k, p, N,
                                                                       s_vector_k, R_vector, m_vector);
                                         H(i_mat, j_mat) += J_ratio * val;
-
                                     }
                                 }
                             }
                         }
-                    }*/
+                    }
                 }
                 H_subSubSubspace_list.emplace_back(H);
             }
             H_subSubspace_list.emplace_back(H_subSubSubspace_list);
         }
         H_subspace_list.emplace_back(H_subSubspace_list);
-        //std::cout << y << "\n";
     }
-    //std::cout << g << "\n";
     return H_subspace_list;
 }
 
@@ -203,4 +200,58 @@ double E_z_parity(const int s, const double J_ratio, const int N) {
         }
     }
     return E_z;
+}
+
+
+std::vector<int> checkState_parity(const int s, const int k, const int N) {
+    int t = s;
+    int R = -1;
+    int m = -1;
+    for (int i = 1; i <= N/2; i++) {
+        cycleBits2(t, N); //translate state
+        if (t < s) {return {R, m};}
+        else if (t == s) {
+            if ( k % (int) trunc(N/(2*i)) ) {return {R, m};} // check compatibility with k
+            R = i;
+            break;
+        }
+    }
+    t = s;
+
+    reflectBits(t, N);
+    for (int i = 0; i < R; i++) {
+        if (t < s) {
+            R = -1;
+            return {R, m};
+        } else if (t == s) {
+            m = i;
+            return {R, m};
+        }
+        cycleBits2(t, N);
+    }
+    return {R, m};
+}
+
+std::vector<int> representative_parity(const int s, const int N) {
+    int r = s;
+    int t = s;
+    int l = 0;
+
+    for (int i = 1; i <= N/2; i++) {
+        cycleBits2(t, N);
+        if (t < r) {r = t; l = i;}
+    }
+
+    //t = s;
+    reflectBits(t, N);
+    int q = 0;
+    for (int i = 0; i <= N/2; i++) {
+        if (t < r) {
+            r = t;
+            l = i;
+            q = 1;
+        }
+        cycleBits2(t, N);
+    }
+    return {r, l, q};
 }

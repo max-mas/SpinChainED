@@ -21,9 +21,6 @@
 
 #include "helperFunctions.h"
 
-
-
-
 std::list<std::list<std::list<Eigen::MatrixXd>>> parityHamiltonian(double J_ratio, int N);
 
 double h_Element_parity(int a, int b, double l, double q, double k, double p, double N,
@@ -34,5 +31,9 @@ double g_k(double k, double N);
 double N_a_sigma(double g, double N, double sigmaR, double p, double k, double m);
 
 double E_z_parity(int s, double J_ratio, int N);
+
+std::vector<int> checkState_parity(const int s, const int k, const int N);
+
+std::vector<int> representative_parity(const int s, const int N);
 
 #endif //SPINCHAINED_PARITYHAMILTONIAN_H

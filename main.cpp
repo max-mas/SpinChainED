@@ -124,13 +124,13 @@ int main(int argc, char* argv[]) {
     //Eigen::VectorXd erg2 = H2.eigenvalues().real();
     //std::sort(erg2.begin(), erg2.end());
     //printEnergies(erg2);
-    //std::list<std::list<Eigen::MatrixXcd>> H1 = momentumHamiltonian(0, N);
-    //vector<double> erg1 = getEnergiesFromBlocks(H1, N);
-    //printEnergies(erg1);
+    std::list<std::list<Eigen::MatrixXcd>> H1 = momentumHamiltonian(1, N);
+    vector<double> erg1 = getEnergiesFromBlocks(H1, N);
+    printEnergies(erg1);
 
     std::cout << "\n\n";
 
-    std::list<std::list<std::list<Eigen::MatrixXd>>> H = parityHamiltonian(0, N);
+    std::list<std::list<std::list<Eigen::MatrixXd>>> H = parityHamiltonian(1, N);
     vector<double> erg = getEnergiesFromBlocks(H, N);
     printEnergies(erg);
     std::cout << erg.size() << "\n";

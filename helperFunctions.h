@@ -41,13 +41,8 @@ void cycleBits2(int &s, const int N);
 // Get vector containing all states corresponding to a given m.
 std::vector<int> getStates_m(int N, int n_up);
 
-
-std::vector<int> checkState_parity(const int s, const int k, const int N);
-
 // Reflects bits about the center of the chain.
 void reflectBits(int & s, int N);
-
-std::vector<int> representative_parity(const int s, const int N);
 
 // Prints real-valued matrix to console.
 void printMatrix(const Eigen::MatrixXd & M);
