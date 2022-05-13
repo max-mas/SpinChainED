@@ -84,18 +84,13 @@ void cycleBits2(int &s, const int N) {
     cycleBits(s, N);
 }
 
-// Checks if state int s is smallest among its translations and compatible with momentum k.
-int checkState(const int s, const int k, const int N) {
-    int t = s;
-    for (int i = 1; i <= N/2; i++) {
-        cycleBits2(t, N); //translate state
-        if (t < s) {return -1;}
-        else if (t == s) {
-            if ( k % (int) std::trunc((double )N/(2*i)) ) {return -1;} // check compatibility with k
-            return i;
-        }
+// Reflects bits about the center of the chain.
+void reflectBits(int & s, int N) {
+    int t = 0;
+    for (int i = 0; i < N; i++) {
+        setBit(t, i, getBit(s, N - 1 - i));
     }
-    return -1;
+    s = t;
 }
 
 std::vector<int> checkState_parity(const int s, const int k, const int N) {
@@ -127,27 +122,13 @@ std::vector<int> checkState_parity(const int s, const int k, const int N) {
     return {R, m};
 }
 
-// Reflects bits about the center of the chain.
-void reflectBits(int & s, int N) {
-    int t = 0;
-    for (int i = 0; i < N; i++) {
-        setBit(t, i, getBit(s, N - 1 - i));
+// Get vector containing all states corresponding to a given m.
+vector<int> getStates_m(int N, int n_up) {
+    vector<int> s_vector_m;
+    for (int s = 0; s < pow(2, N); s++) {
+        if (bitSum(s) == n_up) {s_vector_m.push_back(s);}
     }
-    s = t;
-}
-
-// Generates representative for given state int s. 1st return: representative. 2nd return:
-// Needed number of translations.
-std::vector<int> representative(const int s, const int N) {
-    int r = s;
-    int t = s;
-    int l = 0;
-
-    for (int i = 1; i < N/2; i++) {
-        cycleBits2(t, N);
-        if (t < r) {r = t; l = i;}
-    }
-    return {r, l};
+    return s_vector_m;
 }
 
 std::vector<int> representative_parity(const int s, const int N) {
@@ -160,7 +141,7 @@ std::vector<int> representative_parity(const int s, const int N) {
         if (t < r) {r = t; l = i;}
     }
 
-    t = s;
+    //t = s;
     reflectBits(t, N);
     int q = 0;
     for (int i = 1; i < N/2; i++) {

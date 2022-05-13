@@ -38,17 +38,14 @@ void cycleBits(int & s, const int N);
 // Calls cycleBits twice.
 void cycleBits2(int &s, const int N);
 
-// Checks if state int s is smallest among its translations and compatible with momentum k.
-int checkState(const int s, const int k, const int N);
+// Get vector containing all states corresponding to a given m.
+std::vector<int> getStates_m(int N, int n_up);
+
 
 std::vector<int> checkState_parity(const int s, const int k, const int N);
 
 // Reflects bits about the center of the chain.
 void reflectBits(int & s, int N);
-
-// Generates representative for given state int s. 1st return: representative. 2nd return:
-// Needed number of translations.
-std::vector<int> representative(const int s, const int N);
 
 std::vector<int> representative_parity(const int s, const int N);
 

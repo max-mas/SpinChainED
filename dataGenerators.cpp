@@ -178,34 +178,6 @@ void saveTripleToFile(const list<std::tuple<T, U, V>> & pairList, std::string pa
     File.close();
 }
 
-// Threaded version of getEnergiesFromBlocks for the momentum state ansatz.
-vector<double> getMomentumErgsThreaded(const list<list<MatrixXcd>> & H_list, int N) {
-    vector<list<MatrixXcd>> H_vector(H_list.begin(), H_list.end());
-    vector<double> ergs;
-#pragma omp parallel for default(none) shared(ergs, H_vector, N, std::cout) num_threads(16)
-    for (int i = 0; i < H_vector.size(); i++) {
-        vector<double> blockErgs = getEnergiesFromBlocks(H_vector[i]);
-        writeThreadSafe(ergs, blockErgs);
-        //std::cout << "1 done" << "\n";
-    }
-    std::sort(ergs.begin(), ergs.end());
-    return ergs;
-}
-
-// Returns all eigenvalues for a given vector of values of J1/J2. Threaded.
-vector<vector<double>> diagonalizeThreaded(const vector<double> & J_ratios, int N) {
-    const int num = J_ratios.size();
-    vector<vector<double>> v(num);
-#pragma omp parallel for default(none) shared(v, J_ratios, N, std::cout) num_threads(16)
-    for (int i = 0; i < num; i++) {
-        list<list<MatrixXcd>> H = momentumHamiltonian(J_ratios[i], N);
-        vector<double> erg = getEnergiesFromBlocks(H, N);
-        writeThreadSafe(v, erg);
-        std::cout << "1 done" << "\n";
-    }
-    return v;
-}
-
 // Enables threaded writing to a vector.
 void writeThreadSafe (vector<vector<double>> & writeTo, const vector<double> & writeFrom) {
     static std::mutex mu;

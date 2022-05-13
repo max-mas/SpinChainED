@@ -25,7 +25,7 @@ if (UNIX)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -m64 -I${MKLROOT}/include -DEIGEN_USE_MKL_ALL")
 endif (UNIX)
 
-add_executable(SpinChainED main.cpp main.h helperFunctions.cpp helperFunctions.h constants.h hamiltonianBuilders.cpp hamiltonianBuilders.h thermodynamics.cpp thermodynamics.h dataGenerators.cpp dataGenerators.h)
+add_executable(SpinChainED main.cpp main.h helperFunctions.cpp helperFunctions.h constants.h thermodynamics.cpp thermodynamics.h dataGenerators.cpp dataGenerators.h naiveHamiltonian.cpp naiveHamiltonian.h magnetizationHamiltonian.cpp magnetizationHamiltonian.h momentumHamiltonian.cpp momentumHamiltonian.h diagonalizationMethods.cpp diagonalizationMethods.h parityHamiltonian.cpp parityHamiltonian.h)
 
 if (WIN32)
     target_link_libraries(SpinChainED PUBLIC OpenMP::OpenMP_CXX -Wl,--start-group ${MKLROOT}\\lib\\intel64\\mkl_intel_lp64.lib ${MKLROOT}\\lib\\intel64\\mkl_intel_thread.lib ${MKLROOT}\\lib\\intel64\\mkl_core.lib -Wl,--end-group -lgomp -lpthread -lm)
