@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
     }
 #endif
 #ifdef fuckParity
-    int N = 16;
+    int N = 12;
     //Eigen::MatrixXd H2 = naiveHamiltonian(0, N);
     //Eigen::VectorXd erg2 = H2.eigenvalues().real();
     //std::sort(erg2.begin(), erg2.end());
