@@ -24,7 +24,7 @@ vector<double> getEnergiesFromBlocks(const list<list<list<MatrixXd>>> & H_list) 
                 sol.compute(mat);
                 Eigen::VectorXcd blockEnergies = sol.eigenvalues();
                 std::for_each(blockEnergies.begin(), blockEnergies.end(),
-                [&](complex<double> & d){energies.emplace_back(d.real());});
+                        [&](complex<double> & d){energies.emplace_back(d.real());});
             }
         }
     }
@@ -152,10 +152,9 @@ vector<double> getParityErgsThreaded(const list<list<list<MatrixXd>>> & H_list, 
 
 // Returns all eigenvalues for a given vector of values of J1/J2. Threaded.
 vector<vector<double>> diagonalizeThreaded(const vector<double> & J_ratios, int N) {
-    const int num = J_ratios.size();
-    vector<vector<double>> v(num);
+    vector<vector<double>> v(J_ratios.size());
 #pragma omp parallel for default(none) shared(v, J_ratios, N, std::cout)
-    for (int i = 0; i < num; i++) {
+    for (int i = 0; i < J_ratios.size(); i++) {
         list<list<MatrixXcd>> H = momentumHamiltonian(J_ratios[i], N);
         vector<double> erg = getEnergiesFromBlocks(H);
         writeThreadSafe(v, erg);

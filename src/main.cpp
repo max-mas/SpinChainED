@@ -119,7 +119,7 @@ int main(int argc, char* argv[]) {
     }
 #endif
 #ifdef fuckSpinInversion
-    int N = 8;
+    int N = 12;
     //Eigen::MatrixXd H2 = naiveHamiltonian(0, N);
     //Eigen::VectorXd erg2 = H2.eigenvalues().real();
     //std::sort(erg2.begin(), erg2.end());
@@ -136,7 +136,7 @@ int main(int argc, char* argv[]) {
 
     begin = std::chrono::steady_clock::now();
 
-    std::list<std::list<std::list<Eigen::MatrixXd>>> H = spinInversionHamiltonian(0, N);
+    std::list<std::list<std::list<Eigen::MatrixXd>>> H = spinInversionHamiltonian2(0, N);
     vector<double> erg = getEnergiesFromBlocks(H);
     printEnergies(erg);
     std::cout << erg.size() << "\n";
