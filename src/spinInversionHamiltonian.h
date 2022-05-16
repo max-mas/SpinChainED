@@ -39,6 +39,8 @@ void getStates_k_p_z(int N, const std::vector<int> &s_vector_m, int k, int p, in
                      std::vector<int> &R_vector, std::vector<int> &m_vector, std::vector<int> & n_vector,
                      std::vector<int> & c_vector);
 
+void set_m_n(int c, int m_p, int m_z, int m_pz, std::vector<int> & m_vec, std::vector<int> & n_vec);
+
 std::vector<int> checkState_inversion(int s, int k, int N);
 
 std::vector<int> representative_inversion(const int s, const int N);

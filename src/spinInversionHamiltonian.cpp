@@ -33,7 +33,7 @@ list<list<list<MatrixXd>>> spinInversionHamiltonian(double J_ratio, int N) {
 
         if (n_up == N/2) {
             //// TODO
-            for (int k = 0; k < trunc(N/4); k++) {
+            for (int k = 0; k <= trunc(N/4); k++) {
                 list<MatrixXd> H_subSubSubspace_list;
                 for (int p : {-1, 1}) {
                     for (int z : {-1, 1}) {
@@ -46,7 +46,7 @@ list<list<list<MatrixXd>>> spinInversionHamiltonian(double J_ratio, int N) {
                         for (int a = 0; a < K; a++) {
                             const int s = s_vector_k[a];
                             int n;
-                            if (a > 0 && s_vector_k[a] == s_vector_k[a-1]) continue;
+                            if (a > 0   && s_vector_k[a] == s_vector_k[a-1]) continue;
                             if (a < K-1 && s_vector_k[a] == s_vector_k[a+1]) {n = 2;
                             } else n = 1;
 
@@ -57,7 +57,7 @@ list<list<list<MatrixXd>>> spinInversionHamiltonian(double J_ratio, int N) {
                             setHElementsForState_inversion(N, k, p, z, s_vector_k, R_vector, m_vector, n_vector, c_vector,
                                                                 K, H, a, s, n, 1, 1);
                             setHElementsForState_inversion(N, k, p, z, s_vector_k, R_vector, m_vector, n_vector, c_vector,
-                                                           K, H, a, s, n, 2, J_ratio);
+                                                                K, H, a, s, n, 2, J_ratio);
 
                         }
                         H_subSubSubspace_list.emplace_back(H);
@@ -105,7 +105,7 @@ list<list<list<MatrixXd>>> spinInversionHamiltonian(double J_ratio, int N) {
 }
 
 void setHElementsForState_inversion(int N, int k, int p, int z, const vector<int> & s_vector_k,
-                                    const vector<int> & R_vector, const vector<int> &m_vector,
+                                    const vector<int> & R_vector, const vector<int> & m_vector,
                                     const vector<int> & n_vector, const vector<int> & c_vector, int K, MatrixXd & H,
                                     int a, const int s, int n, int neighbour, double J) {
     for (int i = 0; i < N; i++) {
@@ -141,10 +141,11 @@ double h_Element_inversion(int a, int b, double l, double q, double g, double k,
                            const vector<int> & n_vec, const vector<int> & c_vec) {
     double sigma_a = (double) R_vec[a]/abs(R_vec[a]);
     double sigma_b = (double) R_vec[b]/abs(R_vec[b]);
-    double k_actual = (double) k*4.0*M_PI/ (double) N;
-    double Na = N_a_sigma_inversion(N, c_vec[a], sigma_a, abs(R_vec[a]), p, k_actual, m_vec[a], n_vec[a], z);
-    double Nb = N_a_sigma_inversion(N, c_vec[b], sigma_b, abs(R_vec[b]), p, k_actual, m_vec[b], n_vec[b], z);
+    double k_actual = (double) k*4.0*M_PI / (double) N;
+    double Na = N_a_sigma_inversion(N, c_vec[a], sigma_a, R_vec[a], p, k_actual, m_vec[a], n_vec[a], z);
+    double Nb = N_a_sigma_inversion(N, c_vec[b], sigma_b, R_vec[b], p, k_actual, m_vec[b], n_vec[b], z);
     double ret = 0;
+
     if (sigma_a == sigma_b) {
         if (c_vec[b] == 1 || c_vec[b] == 3) {
             ret = 0.5 * pow(sigma_a * p, q) * pow(z,g) * sqrt(Nb/Na) * cos(k_actual*l);
@@ -153,7 +154,7 @@ double h_Element_inversion(int a, int b, double l, double q, double g, double k,
                     / (1 + sigma_a * p * cos(k_actual * m_vec[b]));
         } else {
             ret = 0.5 * pow(sigma_a * p, q) * pow(z,g) * sqrt(Nb/Na) * ( cos(k_actual * l) + sigma_a * p * z * cos(k_actual * (l - m_vec[b])))
-                  / (1 + sigma_a * p * z * cos(k_actual * m_vec[b]));
+                    / (1 + sigma_a * p * z * cos(k_actual * m_vec[b]));
         }
     } else {
         if (c_vec[b] == 1 || c_vec[b] == 3) {
@@ -170,16 +171,17 @@ double h_Element_inversion(int a, int b, double l, double q, double g, double k,
 }
 
 double N_a_sigma_inversion(double N, int c, double sigma, double R, double p, double k, double z, double m, double n) {
+    double k_actual = k * 4.0 * M_PI / N;
     if (c == 1) {
-        return (double) 2 * N * N / (R * g_k(k, N));
+        return (double) 2.0 * N * N / (double) (abs(R) * g_k(k, N));
     } else if (c == 2) {
-        return (double) 2 * N * N / (R * g_k(k, N)) * (1 + sigma * p * cos(k * m));
+        return (double) 2.0 * N * N / (double) (abs(R) * g_k(k, N)) * (1.0 + sigma * p * cos(k_actual * m));
     } else if (c == 3) {
-        return (double) 2 * N * N / (R * g_k(k, N)) * (1 + z * cos(k * m));
+        return (double) 2.0 * N * N / (double) (abs(R) * g_k(k, N)) * (1.0 + z * cos(k_actual * m));
     } else if (c == 4) {
-        return (double) 2 * N * N / (R * g_k(k, N)) * (1 + sigma * p * z * cos(k * m));
+        return (double) 2.0 * N * N / (double) (abs(R) * g_k(k, N)) * (1.0 + sigma * p * z * cos(k_actual * m));
     } else {
-        return (double) 2 * N * N / (R * g_k(k, N)) * (1 + sigma * p * cos(k * m)) * (1 + z * cos(k*n));
+        return (double) 2.0 * N * N / (double) (abs(R) * g_k(k, N)) * (1.0 + sigma * p * cos(k_actual * m)) * (1.0 + z * cos(k_actual*n));
     }
 }
 
@@ -190,40 +192,52 @@ void getStates_k_p_z(int N, const vector<int> &s_vector_m, int k, int p, int z, 
             if ((k == 0 || k == trunc(N/4) ) && sigma == -1) continue; //
 
             vector<int> R_mp_mz_mpz = checkState_inversion(s, k, N);
-            if (R_mp_mz_mpz[0] == -1) {
-                continue;
-            }
             int c = getStateClass(R_mp_mz_mpz[1], R_mp_mz_mpz[2], R_mp_mz_mpz[3]);
-            if (c == 2 || c == 5) {
-                double v = sigma * (double) p * cos(
-                        (double) k * (double) R_mp_mz_mpz[1] * 4.0 * M_PI
-                        / (double) N);
-                if (std::abs( 1.0 + v ) < epsilon ) R_mp_mz_mpz[0] = -1;
-                if (sigma == -1 && std::abs( 1.0 - v ) > epsilon ) R_mp_mz_mpz[0] = -1;
-            } else if (c == 4) {
-                double v = sigma * (double) p * z * cos(
-                        (double) k * (double) R_mp_mz_mpz[1] * 4.0 * M_PI
-                        / (double) N);
-                if (std::abs( 1.0 + v ) < epsilon ) R_mp_mz_mpz[0] = -1;
-                if (sigma == -1 && std::abs( 1.0 - v ) > epsilon ) R_mp_mz_mpz[0] = -1;
+            if (c == 2 || c == 4 || c == 5) {
+                double Na       = N_a_sigma_inversion(N, c,  sigma, R_mp_mz_mpz[0], p, k, z, R_mp_mz_mpz[1], R_mp_mz_mpz[2]);
+                double Na_minus = N_a_sigma_inversion(N, c, -sigma, R_mp_mz_mpz[0], p, k, z, R_mp_mz_mpz[1], R_mp_mz_mpz[2]);
+                if (std::abs( Na ) < epsilon ) R_mp_mz_mpz[0] = -1;
+                if (sigma == -1 && Na_minus > epsilon ) R_mp_mz_mpz[0] = -1;
+            } else if (c == 3) {
+                double Na = N_a_sigma_inversion(N, c, sigma, R_mp_mz_mpz[0], p, k, z, R_mp_mz_mpz[1], R_mp_mz_mpz[2]);
+                if (abs(Na) < epsilon) R_mp_mz_mpz[0] = -1;
             }
             if (R_mp_mz_mpz[0] > 0) {
                 s_vector_k.emplace_back(s);
                 R_vector.emplace_back(sigma * R_mp_mz_mpz[0]);
-                m_vector.emplace_back(R_mp_mz_mpz[1]);
-                n_vector.emplace_back(R_mp_mz_mpz[2]);
+                set_m_n(c, R_mp_mz_mpz[1], R_mp_mz_mpz[2], R_mp_mz_mpz[3], m_vector, n_vector);
                 c_vector.emplace_back(c);
             }
         }
     }
 }
 
+void set_m_n(int c, int m_p, int m_z, int m_pz, vector<int> & m_vec, vector<int> & n_vec) {
+    if (c == 1) {
+        m_vec.emplace_back(-1);
+        n_vec.emplace_back(-1);
+    } else if (c == 2) {
+        m_vec.emplace_back(m_p);
+        n_vec.emplace_back(-1);
+    } else if (c == 3) {
+        m_vec.emplace_back(m_z);
+        n_vec.emplace_back(-1);
+    } else if (c == 4) {
+        m_vec.emplace_back(m_pz);
+        n_vec.emplace_back(-1);
+    } else {
+        m_vec.emplace_back(m_p);
+        n_vec.emplace_back(m_z);
+    }
+}
+
 vector<int> checkState_inversion(int s, int k, int N) {
-    int t = s;
     int R    = -1;
     int m_p  = -1;
     int m_z  = -1;
     int m_zp = -1;
+
+    int t = s;
     for (int i = 1; i <= N/2; i++) {
         cycleBits2(t, N); //translate state
         if (t < s) {return {R, m_p, m_z, m_zp};}
@@ -236,7 +250,7 @@ vector<int> checkState_inversion(int s, int k, int N) {
 
     t = s;
     reflectBits(t, N);
-    for (int i = 0; i < R; i++) {
+    for (int i = 0; i <= R; i++) {
         if (t < s) {
             R = -1;
             return {R, m_p, m_z, m_zp};
@@ -249,7 +263,8 @@ vector<int> checkState_inversion(int s, int k, int N) {
 
     t = s;
     invertBits(t, N);
-    for (int i = 0; i < R; i++) {
+    for (int i = 0; i <= R; i++) {
+
         if (t < s) {
             R = -1;
             return {R, m_p, m_z, m_zp};
@@ -263,7 +278,7 @@ vector<int> checkState_inversion(int s, int k, int N) {
     t = s;
     invertBits(t, N);
     reflectBits(t, N);
-    for (int i = 0; i < R; i++) {
+    for (int i = 0; i <= R; i++) {
         if (t < s) {
             R = -1;
             return {R, m_p, m_z, m_zp};
@@ -284,10 +299,13 @@ vector<int> representative_inversion(const int s, const int N) {
 
     for (int i = 1; i <= N/2; i++) {
         cycleBits2(t, N);
-        if (t < r) {r = t; l = i;}
+        if (t < r) {
+            r = t;
+            l = i;
+        }
     }
 
-    //t = s;
+    t = s;
     reflectBits(t, N);
     int q = 0;
     for (int i = 0; i <= N/2; i++) {
@@ -300,8 +318,8 @@ vector<int> representative_inversion(const int s, const int N) {
     }
 
     t = s;
-    invertBits(t, N);
     int g = 0;
+    invertBits(t, N);
     for (int i = 0; i <= N/2; i++) {
         if (t < r) {
             r = t;
@@ -337,12 +355,14 @@ int getStateClass(int m_p, int m_z, int m_zp) {
         return 3;
     } else if (m_p == -1 && m_z == -1 && m_zp != -1) {
         return 4;
-    } else {
+    } else if (m_p != -1 && m_z != -1 && m_zp != -1) {
         return 5;
     }
 }
 
 
 void invertBits(int & s, int N) {
-        s = pow(2, N-1) - s;
+    for (int i = 0; i < N; i++) {
+        setBit(s, i, !getBit(s, i));
+    }
 }
