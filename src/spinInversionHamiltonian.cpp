@@ -193,15 +193,16 @@ void getStates_k_p_z(int N, const vector<int> &s_vector_m, int k, int p, int z, 
 
             vector<int> R_mp_mz_mpz = checkState_inversion(s, k, N);
             int c = getStateClass(R_mp_mz_mpz[1], R_mp_mz_mpz[2], R_mp_mz_mpz[3]);
-            if (c == 2 || c == 4 || c == 5) {
+            if (c == 2 || c == 4 || c == 5 || c == 3) {
                 double Na       = N_a_sigma_inversion(N, c,  sigma, R_mp_mz_mpz[0], p, k, z, R_mp_mz_mpz[1], R_mp_mz_mpz[2]);
                 double Na_minus = N_a_sigma_inversion(N, c, -sigma, R_mp_mz_mpz[0], p, k, z, R_mp_mz_mpz[1], R_mp_mz_mpz[2]);
                 if (std::abs( Na ) < epsilon ) R_mp_mz_mpz[0] = -1;
                 if (sigma == -1 && Na_minus > epsilon ) R_mp_mz_mpz[0] = -1;
-            } else if (c == 3) {
+            }
+            /* else if (c == 3) {
                 double Na = N_a_sigma_inversion(N, c, sigma, R_mp_mz_mpz[0], p, k, z, R_mp_mz_mpz[1], R_mp_mz_mpz[2]);
                 if (abs(Na) < epsilon) R_mp_mz_mpz[0] = -1;
-            }
+            }*/
             if (R_mp_mz_mpz[0] > 0) {
                 s_vector_k.emplace_back(s);
                 R_vector.emplace_back(sigma * R_mp_mz_mpz[0]);
@@ -296,6 +297,8 @@ vector<int> representative_inversion(const int s, const int N) {
     int r = s;
     int t = s;
     int l = 0;
+    int q = 0;
+    int g = 0;
 
     for (int i = 1; i <= N/2; i++) {
         cycleBits2(t, N);
@@ -307,8 +310,7 @@ vector<int> representative_inversion(const int s, const int N) {
 
     t = s;
     reflectBits(t, N);
-    int q = 0;
-    for (int i = 0; i <= N/2; i++) {
+    for (int i = 0; i < N/2; i++) {
         if (t < r) {
             r = t;
             l = i;
@@ -318,22 +320,21 @@ vector<int> representative_inversion(const int s, const int N) {
     }
 
     t = s;
-    int g = 0;
     invertBits(t, N);
-    for (int i = 0; i <= N/2; i++) {
+    for (int i = 1; i < N/2; i++) {
+        cycleBits2(t, N);
         if (t < r) {
             r = t;
             l = i;
             q = 0;
             g = 1;
         }
-        cycleBits2(t, N);
     }
 
     t = s;
     invertBits(t, N);
     reflectBits(t, N);
-    for (int i = 0; i <= N/2; i++) {
+    for (int i = 0; i < N/2; i++) {
         if (t < r) {
             r = t;
             l = i;
