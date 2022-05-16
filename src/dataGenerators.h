@@ -26,7 +26,7 @@
 
 // Saves excitation energy (i.e. energy difference between ground and 1st excited state) vor varying values of J1/J2.
 // Note: If ground state is degenerate, zero is returned.
-void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double end, std::string path);
+void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double end, const std::string & path);
 
 // Saves specific heat at given temperature/beta for varying values of J1/J2.
 void saveSpecificHeatForVaryingJ(int N, int dataPointNum, double betaOrT, double start, double end,

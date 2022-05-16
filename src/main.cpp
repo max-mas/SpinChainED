@@ -9,13 +9,13 @@ using std::vector;
 //#define saveSusceptibility
 //#define saveSusceptibilityForJ
 //#define saveDispersion
-#define fuckParity
+#define fuckSpinInversion
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
     int dataPointNum = 200;
-    int nMax = 20;
+    int nMax = 16;
     vector<double> J_ratios = {0.1, 1, 2, 5};
     vector<double> Ts = {0.2, 0.5, 1};
     bool isBeta = false;
@@ -51,7 +51,7 @@ int main(int argc, char* argv[]) {
     }
 #endif
 #ifdef saveExcitationErgs
-    for (int N = 6; N <= nMax; N+= 2) {
+    for (int N = 8; N <= nMax; N+= 4) {
         std::string path = "/home/mmaschke/BA_Code/Data/ExcitationErgs/ExcErgs" + std::to_string(N) + ".txt";
         saveExcitationErgsForVaryingJ(N, dataPointNum, start, endP, path);
         std::cout << std::string("N") + std::to_string(N) << std::endl;
@@ -59,7 +59,7 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef saveSpecificHeat
     for (double J_ratio : J_ratios) {
-        for (int N = 6; N <= nMax; N+= 2) {
+        for (int N = 8; N <= nMax; N+= 4) {
             std::string j = std::to_string(J_ratio);
             std::replace(j.begin(), j.end(), '.', '_');
             std::string path = "/home/mmaschke/BA_Code/Data/SpecificHeats/SpecHeatN" + std::to_string(N)+ std::string("J") +
@@ -118,26 +118,28 @@ int main(int argc, char* argv[]) {
         }
     }
 #endif
-#ifdef fuckParity
-    int N = 12;
+#ifdef fuckSpinInversion
+    int N = 8;
     //Eigen::MatrixXd H2 = naiveHamiltonian(0, N);
     //Eigen::VectorXd erg2 = H2.eigenvalues().real();
     //std::sort(erg2.begin(), erg2.end());
     //printEnergies(erg2);
-    std::list<std::list<Eigen::MatrixXcd>> H1 = momentumHamiltonian(1, N);
+    std::list<std::list<Eigen::MatrixXcd>> H1 = momentumHamiltonian(0, N);
     vector<double> erg1 = getMomentumErgsThreaded(H1, N);
-    //printEnergies(erg1);
+    printEnergies(erg1);
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count()
               << "[ms]" << std::endl;
 
+    std::cout << "\n\n\n\n";
+
     begin = std::chrono::steady_clock::now();
 
-    std::list<std::list<std::list<Eigen::MatrixXd>>> H = parityHamiltonian(1, N);
-    vector<double> erg = getParityErgsThreaded(H, N);
-    //printEnergies(erg);
-    //std::cout << erg.size() << "\n";
+    std::list<std::list<std::list<Eigen::MatrixXd>>> H = spinInversionHamiltonian(0, N);
+    vector<double> erg = getEnergiesFromBlocks(H);
+    printEnergies(erg);
+    std::cout << erg.size() << "\n";
     //int s = 16;
     //reflectBits(s, 6);
     //std::cout << s << std::endl;

@@ -17,13 +17,11 @@
 #include "dataGenerators.h"
 
 // Diagonalization-methods for a number of cases.
-std::vector<double> getEnergiesFromBlocks(const std::list<std::list<std::list<Eigen::MatrixXd>>> & H_list, int N);
-std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXcd> & H_list, int N);
+std::vector<double> getEnergiesFromBlocks(const std::list<std::list<std::list<Eigen::MatrixXd>>> & H_list);
 std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXcd> & H_list);
 std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXd> & H_list);
-std::vector<double> getEnergiesFromBlocks(const std::list<Eigen::MatrixXd> & H_list, int N);
-std::vector<double> getEnergiesFromBlocks(const std::list<std::list<Eigen::MatrixXcd>> & H_list, int N);
-std::vector<double> getEnergiesFromBlocks(const std::list<std::list<Eigen::MatrixXd>> & H_list, int N);
+std::vector<double> getEnergiesFromBlocks(const std::list<std::list<Eigen::MatrixXcd>> & H_list);
+std::vector<double> getEnergiesFromBlocks(const std::list<std::list<Eigen::MatrixXd>> & H_list);
 
 // Returns energies sorted by m and k, used for generation of dispersion plots.
 std::vector<std::vector<std::vector<double>>> getEnergiesFromBlocksByK(

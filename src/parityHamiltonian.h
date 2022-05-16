@@ -21,9 +21,19 @@
 #include <Eigen/Dense>
 
 #include "helperFunctions.h"
+#include "diagonalizationMethods.h"
 
 // Returns (m, k, p) blocks for given N and J1/J2.
 std::list<std::list<std::list<Eigen::MatrixXd>>> parityHamiltonian(double J_ratio, int N);
+
+std::vector<double> getEnergies_memorySaving_threaded_parity(double J_ratio, int N);
+
+void getStates_k_p(int N, const std::vector<int> &s_vector_m, int k, int p, std::vector<int> &s_vector_k,
+                   std::vector<int> &R_vector, std::vector<int> &m_vector);
+
+void setHElementsForState_parity(int N, int k, int p, const std::vector<int> &s_vector_k, const std::vector<int> &R_vector,
+                                 const std::vector<int> &m_vector, int K, Eigen::MatrixXd &H, int a, const int s, int n,
+                                 int neighbour, double J);
 
 // Returns off-diagonal operator matrix elements.
 double h_Element_parity(int a, int b, double l, double q, double k, double p, double N,

@@ -23,12 +23,10 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
 
     // init list of block lists
     list<list<list<MatrixXd>>> H_subspace_list;
-    int g = 0;
 
     // loop over all magnetizations m
     for (int n_up = 0; n_up <= N; n_up++) {
 
-        int y = 0;
         // Calculate magnetization and number of "up"-states for given magnetization.
 
         // Find states compatible with m and store them in list.
@@ -41,34 +39,15 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
         for (int k = 0; k <= trunc(N/4); k++) {
             list<MatrixXd> H_subSubSubspace_list;
             for (int p : {-1, 1}) {
+
                 vector<int> s_vector_k, R_vector, m_vector;
-                for (int s: s_vector_m) {
-                    for (int sigma : {-1, 1}) {
-                        if ((k == 0 || k == trunc(N/4) ) && sigma == -1) continue; //
-                        vector<int> R_m = checkState_parity(s, k, N);
-                        if (R_m[1] != -1) {
-                            complex<double> v = sigma * (double) p * std::cos(
-                                    (double) k * (double) R_m[1] * 4.0 * M_PI
-                                    / (double) N);
-                            if (std::abs( 1.0 + v ) < epsilon ) R_m[0] = -1;
-                            if (sigma == -1 && std::abs( 1.0 - v ) > epsilon ) R_m[0] = -1;
-                        }
-                        if (R_m[0] > 0) {
-                            s_vector_k.emplace_back(s);
-                            R_vector.emplace_back(sigma * R_m[0]);
-                            m_vector.emplace_back(R_m[1]);
-                        }
-                    }
-                }
+                getStates_k_p(N, s_vector_m, k, p, s_vector_k, R_vector, m_vector);
                 int K = s_vector_k.size();
 
                 MatrixXd H = MatrixXd::Zero(K, K);
 
                 for (int a = 0; a < K; a++) {
                     const int s = s_vector_k[a];
-                    g++;
-                    y++;
-                    //std::cout << s << " " << mag << " " << k << " " << p << " " << R_vector[a] << std::endl;
                     int n;
                     if (a > 0 && s_vector_k[a] == s_vector_k[a-1]) continue;
                     if (a < K-1 && s_vector_k[a] == s_vector_k[a+1]) {n = 2;
@@ -78,59 +57,9 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
                         H(u, u) += E_z_parity(s, J_ratio, N);
                     }
 
-                    for (int i = 0; i < N; i++) {
-                        int s_prime = s;
-                        int j = (i + 1) % N;
-                        if (getBit(s_prime, i) != getBit(s_prime, j)) {
-                            flipBit(s_prime, i);
-                            flipBit(s_prime, j);
-                            vector<int> r_l_q = representative_parity(s_prime, N);
-                            int b = findState(s_vector_k, r_l_q[0]);
-                            int m;
-                            if (b >= 0) {
-                                if (b > 0 && s_vector_k[b] == s_vector_k[b - 1]) {
-                                    m = 2;
-                                    b += -1;
-                                } else if (b < K - 1 && s_vector_k[b] == s_vector_k[b + 1]) {
-                                    m = 2;
-                                } else m = 1;
-                                for (int i_mat = a; i_mat < a + n; i_mat++) {
-                                    for (int j_mat = b; j_mat < b + m; j_mat++) {
-                                        double val = h_Element_parity(i_mat, j_mat, r_l_q[1], r_l_q[2], k, p, N,
-                                                                      s_vector_k, R_vector, m_vector);
-                                        H(i_mat, j_mat) += val;
-                                    }
-                                }
-                            }
-                        }
-                    }
+                    setHElementsForState_parity(N, k, p, s_vector_k, R_vector, m_vector, K, H, a, s, n, 1, 1);
+                    setHElementsForState_parity(N, k, p, s_vector_k, R_vector, m_vector, K, H, a, s, n, 2, J_ratio);
 
-                    for (int i = 0; i < N; i++) {
-                        int s_prime = s;
-                        int j = (i + 2) % N;
-                        if (getBit(s_prime, i) != getBit(s_prime, j)) {
-                            flipBit(s_prime, i);
-                            flipBit(s_prime, j);
-                            vector<int> r_l_q = representative_parity(s_prime, N);
-                            int b = findState(s_vector_k, r_l_q[0]);
-                            int m;
-                            if (b >= 0) {
-                                if (b > 0 && s_vector_k[b] == s_vector_k[b - 1]) {
-                                    m = 2;
-                                    b += -1;
-                                } else if (b < K - 1 && s_vector_k[b] == s_vector_k[b + 1]) {
-                                    m = 2;
-                                } else m = 1;
-                                for (int i_mat = a; i_mat < a + n; i_mat++) {
-                                    for (int j_mat = b; j_mat < b + m; j_mat++) {
-                                        double val = h_Element_parity(i_mat, j_mat, r_l_q[1], r_l_q[2], k, p, N,
-                                                                      s_vector_k, R_vector, m_vector);
-                                        H(i_mat, j_mat) += J_ratio * val;
-                                    }
-                                }
-                            }
-                        }
-                    }
                 }
                 H_subSubSubspace_list.emplace_back(H);
             }
@@ -139,6 +68,110 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
         H_subspace_list.emplace_back(H_subSubspace_list);
     }
     return H_subspace_list;
+}
+
+vector<double> getEnergies_memorySaving_threaded_parity(double J_ratio, int N) {
+    // N must be a multiple of 4 and >=8.
+    if (N < 8 || N%4 != 0) {
+        throw std::invalid_argument("N must be larger than 8 and a multiple of 4.");
+    }
+
+    vector<double> ergs;
+
+    // loop over all magnetizations m
+#pragma omp parallel for default(none) shared(ergs, J_ratio, N)
+    for (int n_up = 0; n_up <= N; n_up++) {
+
+        // Calculate magnetization and number of "up"-states for given magnetization.
+
+        // Find states compatible with m and store them in list.
+        vector<int> s_vector_m = getStates_m(N, n_up);
+
+        // loop over all possible semi-momenta k and parity numbers p = +-1
+        for (int k = 0; k <= trunc(N/4); k++) {
+            for (int p = -1; p <= 1; p+= 2) {
+
+                vector<int> s_vector_k, R_vector, m_vector;
+                getStates_k_p(N, s_vector_m, k, p, s_vector_k, R_vector, m_vector);
+                int K = s_vector_k.size();
+
+                MatrixXd H = MatrixXd::Zero(K, K);
+
+                for (int a = 0; a < K; a++) {
+                    const int s = s_vector_k[a];
+                    int n;
+                    if (a > 0 && s_vector_k[a] == s_vector_k[a-1]) continue;
+                    if (a < K-1 && s_vector_k[a] == s_vector_k[a+1]) {n = 2;
+                    } else n = 1;
+
+                    for (int u = a; u < a + n; u++) {
+                        H(u, u) += E_z_parity(s, J_ratio, N);
+                    }
+
+                    setHElementsForState_parity(N, k, p, s_vector_k, R_vector, m_vector, K, H, a, s, n, 1, 1);
+                    setHElementsForState_parity(N, k, p, s_vector_k, R_vector, m_vector, K, H, a, s, n, 2, J_ratio);
+
+                }
+                vector<double> blockErgs = getEnergiesFromBlocks(list<MatrixXd>{H});
+                writeThreadSafe(ergs, blockErgs);
+            }
+        }
+    }
+    std::sort(ergs.begin(), ergs.end());
+
+    return ergs;
+}
+
+void setHElementsForState_parity(int N, int k, int p, const vector<int> &s_vector_k, const vector<int> &R_vector,
+                                 const vector<int> &m_vector, int K, MatrixXd &H, int a, const int s, int n, int neighbour, double J) {
+    for (int i = 0; i < N; i++) {
+        int s_prime = s;
+        int j = (i + neighbour) % N;
+        if (getBit(s_prime, i) != getBit(s_prime, j)) {
+            flipBit(s_prime, i);
+            flipBit(s_prime, j);
+            vector<int> r_l_q = representative_parity(s_prime, N);
+            int b = findState(s_vector_k, r_l_q[0]);
+            int m;
+            if (b >= 0) {
+                if (b > 0 && s_vector_k[b] == s_vector_k[b - 1]) {
+                    m = 2;
+                    b += -1;
+                } else if (b < K - 1 && s_vector_k[b] == s_vector_k[b + 1]) {
+                    m = 2;
+                } else m = 1;
+                for (int i_mat = a; i_mat < a + n; i_mat++) {
+                    for (int j_mat = b; j_mat < b + m; j_mat++) {
+                        double val = h_Element_parity(i_mat, j_mat, r_l_q[1], r_l_q[2], k, p, N,
+                                                      s_vector_k, R_vector, m_vector);
+                        H(i_mat, j_mat) += J * val;
+                    }
+                }
+            }
+        }
+    }
+}
+
+void getStates_k_p(int N, const vector<int> &s_vector_m, int k, int p, vector<int> &s_vector_k, vector<int> &R_vector,
+                   vector<int> &m_vector) {
+    for (int s: s_vector_m) {
+        for (int sigma : {-1, 1}) {
+            if ((k == 0 || k == trunc(N/4) ) && sigma == -1) continue; //
+            vector<int> R_m = checkState_parity(s, k, N);
+            if (R_m[1] != -1) {
+                complex<double> v = sigma * (double) p * cos(
+                        (double) k * (double) R_m[1] * 4.0 * M_PI
+                        / (double) N);
+                if (std::abs( 1.0 + v ) < epsilon ) R_m[0] = -1;
+                if (sigma == -1 && std::abs( 1.0 - v ) > epsilon ) R_m[0] = -1;
+            }
+            if (R_m[0] > 0) {
+                s_vector_k.emplace_back(s);
+                R_vector.emplace_back(sigma * R_m[0]);
+                m_vector.emplace_back(R_m[1]);
+            }
+        }
+    }
 }
 
 // Returns off-diagonal operator matrix elements.

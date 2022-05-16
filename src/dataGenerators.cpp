@@ -5,6 +5,8 @@
 
 #include "dataGenerators.h"
 
+#include <utility>
+
 using std::complex;
 using std::list;
 using std::pow;
@@ -16,13 +18,15 @@ using Eigen::Dynamic;
 
 // Saves excitation energy (i.e. energy difference between ground and 1st excited state) vor varying values of J1/J2.
 // Note: If ground state is degenerate, zero is returned.
-void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double end, std::string path) {
+void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double end, const std::string & path) {
     Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
     vector<double> diffs;
-    for (double J_ratio : J_ratios) {
-        list<list<MatrixXcd>> H = momentumHamiltonian(J_ratio, N);
-        vector<double> erg = getEnergiesFromBlocks(H, N);
-        diffs.emplace_back( abs(erg[0]-erg[1]) );
+#pragma omp parallel for default(none) shared(diffs, J_ratios, N)
+    for (int i = 0; i < J_ratios.size(); i++) {
+        list<list<list<MatrixXd>>> H = parityHamiltonian(J_ratios[i], N);
+        vector<double> erg = getEnergiesFromBlocks(H);
+        writeThreadSafe(diffs, {abs(erg[0]-erg[1])});
+        //diffs.emplace_back( abs(erg[0]-erg[1]) );
     }
     list<std::pair<double, double>> out;
     for (int i = 0; i < diffs.size(); i++) {
@@ -40,8 +44,8 @@ void saveSpecificHeatForVaryingJ(int N, int dataPointNum, double betaOrT, double
     Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
     vector<double> C;
     for (double J_ratio : J_ratios) {
-        list<list<MatrixXcd>> H = momentumHamiltonian(J_ratio, N);
-        vector<double> erg = getMomentumErgsThreaded(H, N);
+        list<list<list<MatrixXd>>> H = parityHamiltonian(J_ratio, N);
+        vector<double> erg = getParityErgsThreaded(H, N);
         C.emplace_back(specificHeat(erg, betaOrT, isBeta) / N);
     }
     list<std::pair<double, double>> out;
@@ -56,8 +60,8 @@ void saveSpecificHeatsForVaryingTemp(int N, int dataPointNum, double J_ratio, do
                                      bool isBeta, std::string path) {
     Eigen::VectorXd Ts = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
     vector<double> C;
-    list<list<MatrixXcd>> H = momentumHamiltonian(J_ratio, N);
-    vector<double> erg = getMomentumErgsThreaded(H, N);
+    list<list<list<MatrixXd>>> H = parityHamiltonian(J_ratio, N);
+    vector<double> erg = getParityErgsThreaded(H, N);
     for (int i = 0; i < Ts.size(); i++) {
         C.emplace_back( specificHeat(erg, Ts[i], isBeta) /N );
     }

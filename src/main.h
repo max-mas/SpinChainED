@@ -8,8 +8,9 @@
 #include "naiveHamiltonian.h"
 #include "magnetizationHamiltonian.h"
 #include "momentumHamiltonian.h"
-
 #include "parityHamiltonian.h"
+#include "spinInversionHamiltonian.h"
+
 #include "thermodynamics.h"
 #include "dataGenerators.h"
 #include "diagonalizationMethods.h"
