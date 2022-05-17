@@ -94,7 +94,7 @@ for J_ratio in J_ratios:
     J_ratio = J_ratio.replace("_", ".")
     ax.set(xlabel="$T$ ($J_2$)", ylabel="Specific heat per Spin $C/N$", title="$J_1/J_2 =\\,$"+J_ratio)
     plt.show()
-"""
+
 
 for J_ratio in J_ratios:
     fig, ax = plt.subplots()
@@ -117,7 +117,7 @@ for J_ratio in J_ratios:
     plt.show()
 """
 fig, ax = plt.subplots()
-for N in np.linspace(6, 12, 4):
+for N in np.linspace(6, 14, 5):
     path = "/home/mmaschke/BA_Code/Data/ExcitationErgs/ExcErgs"+str(int(N))+".txt"
     file = open(path)
     Ts = []
@@ -132,6 +132,6 @@ for N in np.linspace(6, 12, 4):
     ax.legend()
     ax.set(xlabel="$J_1/J_2$", ylabel="1st Excitation Energy $\\Delta E$ ($J_2$)")
 plt.show()
-"""
+
 
 

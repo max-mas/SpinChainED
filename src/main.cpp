@@ -3,10 +3,10 @@
 using std::vector;
 
 //#define saveErgs
-//#define saveExcitationErgs
+#define saveExcitationErgs
 //#define saveSpecificHeat
 //#define saveSpecificHeatForJ
-#define saveSusceptibility
+//#define saveSusceptibility
 //#define saveSusceptibilityForJ
 //#define saveDispersion
 
@@ -14,7 +14,7 @@ int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
     int dataPointNum = 200;
-    int nMax = 12;
+    int nMax = 16;
     vector<double> J_ratios = {0.1, 1, 2, 5};
     vector<double> Ts = {0.2, 0.5, 1};
     bool isBeta = false;
@@ -50,7 +50,7 @@ int main(int argc, char* argv[]) {
     }
 #endif
 #ifdef saveExcitationErgs
-    for (int N = 8; N <= nMax; N+= 4) {
+    for (int N = 6; N <= nMax; N+= 2) {
         std::string path = "/home/mmaschke/BA_Code/Data/ExcitationErgs/ExcErgs" + std::to_string(N) + ".txt";
         saveExcitationErgsForVaryingJ(N, dataPointNum, start, endP, path);
         std::cout << std::string("N") + std::to_string(N) << std::endl;
