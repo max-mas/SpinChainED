@@ -9,7 +9,7 @@
 #include "magnetizationHamiltonian.h"
 #include "momentumHamiltonian.h"
 #include "parityHamiltonian.h"
-#include "spinInversion2.h"
+#include "spinInversionHamiltonian.h"
 
 #include "thermodynamics.h"
 #include "dataGenerators.h"

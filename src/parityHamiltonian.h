@@ -26,7 +26,7 @@
 // Returns (m, k, p) blocks for given N and J1/J2.
 std::list<std::list<std::list<Eigen::MatrixXd>>> parityHamiltonian(double J_ratio, int N);
 
-std::vector<double> getEnergies_memorySaving_threaded_parity(double J_ratio, int N);
+std::vector<double> getEnergies_memorySaving_threaded_parity(double J_ratio, int N, bool sort);
 
 void getStates_k_p(int N, const std::vector<int> &s_vector_m, int k, int p, std::vector<int> &s_vector_k,
                    std::vector<int> &R_vector, std::vector<int> &m_vector);

@@ -21,6 +21,7 @@
 #include "naiveHamiltonian.h"
 #include "magnetizationHamiltonian.h"
 #include "momentumHamiltonian.h"
+#include "spinInversionHamiltonian.h"
 #include "diagonalizationMethods.h"
 #include "thermodynamics.h"
 
@@ -63,6 +64,6 @@ void writeThreadSafe (std::vector<std::vector<double>> & writeTo, const std::vec
 // Enables threaded writing to a vector.
 void writeThreadSafe (std::vector<double> & writeTo, const std::vector<double> & writeFrom);
 
-
+Eigen::MatrixXd buildTransformMatrix_parity(const std::list<std::list<std::list<Eigen::MatrixXd>>> & H_m0, std::vector<double> & ergs);
 
 #endif //SPINCHAINED_DATAGENERATORS_H

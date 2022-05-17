@@ -23,10 +23,15 @@ void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double
     vector<double> diffs;
 #pragma omp parallel for default(none) shared(diffs, J_ratios, N)
     for (int i = 0; i < J_ratios.size(); i++) {
-        list<list<list<MatrixXd>>> H = parityHamiltonian(J_ratios[i], N);
-        vector<double> erg = getEnergiesFromBlocks(H);
-        writeThreadSafe(diffs, {abs(erg[0]-erg[1])});
-        //diffs.emplace_back( abs(erg[0]-erg[1]) );
+        if (N % 4 == 0 && N >= 8) {
+            list<list<list<MatrixXd>>> H = spinInversionHamiltonian(J_ratios[i], N, 0, N);
+            vector<double> erg = getEnergiesFromBlocks(H, true);
+            writeThreadSafe(diffs, {abs(erg[0]-erg[1])});
+        } else if (N % 2 == 0 && N >= 6) {
+            list<list<MatrixXcd>> H = momentumHamiltonian(J_ratios[i], N);
+            vector<double> erg = getEnergiesFromBlocks(H, true);
+            writeThreadSafe(diffs, {abs(erg[0]-erg[1])});
+        }
     }
     list<std::pair<double, double>> out;
     for (int i = 0; i < diffs.size(); i++) {
@@ -35,18 +40,20 @@ void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double
     savePairsToFile(out, path);
 }
 
-void saveExcitationEnergiesByK() {
-
-}
-
 // Saves specific heat at given temperature/beta for varying values of J1/J2.
 void saveSpecificHeatForVaryingJ(int N, int dataPointNum, double betaOrT, double start, double end, bool isBeta, std::string path) {
     Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
     vector<double> C;
     for (double J_ratio : J_ratios) {
-        list<list<list<MatrixXd>>> H = parityHamiltonian(J_ratio, N);
-        vector<double> erg = getParityErgsThreaded(H, N);
-        C.emplace_back(specificHeat(erg, betaOrT, isBeta) / N);
+        if (N % 4 == 0 && N >= 8) {
+            list<list<list<MatrixXd>>> H = spinInversionHamiltonian(J_ratio, N, 0, N);
+            vector<double> erg = getParityErgsThreaded(H, N, true);
+            C.emplace_back(specificHeat(erg, betaOrT, isBeta) / N);
+        } else if (N % 2 == 0 && N >= 6) {
+            list<list<MatrixXcd>> H = momentumHamiltonian(J_ratio, N);
+            vector<double> erg = getMomentumErgsThreaded(H, N, true);
+            C.emplace_back(specificHeat(erg, betaOrT, isBeta) / N);
+        }
     }
     list<std::pair<double, double>> out;
     for (int i = 0; i < C.size(); i++) {
@@ -60,10 +67,19 @@ void saveSpecificHeatsForVaryingTemp(int N, int dataPointNum, double J_ratio, do
                                      bool isBeta, std::string path) {
     Eigen::VectorXd Ts = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
     vector<double> C;
-    list<list<list<MatrixXd>>> H = parityHamiltonian(J_ratio, N);
-    vector<double> erg = getParityErgsThreaded(H, N);
-    for (int i = 0; i < Ts.size(); i++) {
-        C.emplace_back( specificHeat(erg, Ts[i], isBeta) /N );
+
+    if (N % 4 == 0 && N >= 8) {
+        list<list<list<MatrixXd>>> H = spinInversionHamiltonian(J_ratio, N, 0, N);
+        vector<double> erg = getParityErgsThreaded(H, N, true);
+        for (int i = 0; i < Ts.size(); i++) {
+            C.emplace_back(specificHeat(erg, Ts[i], isBeta) / N);
+        }
+    } else if (N % 2 == 0 && N >= 6) {
+        list<list<MatrixXcd>> H = momentumHamiltonian(J_ratio, N);
+        vector<double> erg = getMomentumErgsThreaded(H, N, true);
+        for (int i = 0; i < Ts.size(); i++) {
+            C.emplace_back(specificHeat(erg, Ts[i], isBeta) / N);
+        }
     }
 
     list<std::pair<double, double>> out;
@@ -82,16 +98,25 @@ void saveSusceptibilitiesForVaryingJ(int N, int dataPointNum, double betaOrT, do
 
     vector<double> susceptibilities;
     for (double J_ratio : J_ratios) {
+        if (N % 4 == 0 && N >= 8) {
+            list<list<list<MatrixXd>>> H_m0 = spinInversionHamiltonian(J_ratio,  N, N/2, N/2);
+            vector<double> ergs;
+            MatrixXd U = buildTransformMatrix_parity(H_m0, ergs);
 
-        MatrixXd H_m0 = getMagnetizationBlock(J_ratio, 0, N);
-        Eigen::SelfAdjointEigenSolver<MatrixXd> sol(H_m0);
-        Eigen::VectorXd erg = sol.eigenvalues().real();
-        vector<double> ergs_stl(erg.data(), erg.data() + erg.size());
-        const Eigen::MatrixXcd & U = sol.eigenvectors();
+            MatrixXd T = U.transpose() * S_2 * U;
 
-        MatrixXcd T = U.adjoint() * H_m0 * U;
+            susceptibilities.emplace_back( susceptibility(ergs, betaOrT, isBeta, T) / (double) N );
+        } else if (N % 2 == 0 && N >= 6) {
+            MatrixXd H_m0 = getMagnetizationBlock(J_ratio, 0, N);
+            Eigen::SelfAdjointEigenSolver<MatrixXd> sol(H_m0);
+            Eigen::VectorXd erg = sol.eigenvalues().real();
+            vector<double> ergs_stl(erg.data(), erg.data() + erg.size());
+            const Eigen::MatrixXcd & U = sol.eigenvectors();
 
-        susceptibilities.emplace_back( susceptibility(ergs_stl, betaOrT, isBeta, T) / (double) N );
+            MatrixXcd T = U.adjoint() * S_2 * U;
+
+            susceptibilities.emplace_back( susceptibility(ergs_stl, betaOrT, isBeta, T) / (double) N );
+        }
     }
     list<std::pair<double, double>> out;
     for (int i = 0; i < susceptibilities.size(); i++) {
@@ -107,17 +132,29 @@ void saveSusceptibilitesForVaryingTemp(int N, int dataPointNum, double J_ratio, 
     vector<int> states = getStates_m(N, N/2);
     MatrixXd S_2 = spinOperator_sq(states, N);
 
-    MatrixXd H_m0 = getMagnetizationBlock(J_ratio, 0, N);
-    Eigen::SelfAdjointEigenSolver<MatrixXd> sol(H_m0);
-    Eigen::VectorXd erg = sol.eigenvalues().real();
-    vector<double> ergs_stl(erg.data(), erg.data() + erg.size());
-    const Eigen::MatrixXcd & U = sol.eigenvectors();
-
-    MatrixXcd T = U.adjoint() * H_m0 * U;
-
     vector<double> susceptibilities(dataPointNum);
-    for (int i = 0; i < dataPointNum; i++) {
-        susceptibilities[i] =  susceptibility(ergs_stl, Ts[i], isBeta, T) / N ;
+    if (N % 4 == 0 && N >= 8) {
+        list<list<list<MatrixXd>>> H_m0 = spinInversionHamiltonian(J_ratio,  N, N/2, N/2);
+        vector<double> ergs;
+        MatrixXd U = buildTransformMatrix_parity(H_m0, ergs);
+
+        MatrixXd T = U.transpose() * S_2 * U;
+
+        for (int i = 0; i < dataPointNum; i++) {
+            susceptibilities[i] =  susceptibility(ergs, Ts[i], isBeta, T) / N ;
+        }
+    } else if (N % 2 == 0 && N >= 6) {
+        MatrixXd H_m0 = getMagnetizationBlock(J_ratio, 0, N);
+        Eigen::SelfAdjointEigenSolver<MatrixXd> sol(H_m0);
+        Eigen::VectorXd erg = sol.eigenvalues().real();
+        vector<double> ergs_stl(erg.data(), erg.data() + erg.size());
+        const Eigen::MatrixXcd & U = sol.eigenvectors();
+
+        MatrixXcd T = U.adjoint() * S_2 * U;
+
+        for (int i = 0; i < dataPointNum; i++) {
+            susceptibilities[i] =  susceptibility(ergs_stl, Ts[i], isBeta, T) / N ;
+        }
     }
 
     list<std::pair<double, double>> out;
@@ -200,3 +237,29 @@ void writeThreadSafe (vector<double> & writeTo, const vector<double> & writeFrom
     }
 }
 
+MatrixXd buildTransformMatrix_parity(const list<list<list<MatrixXd>>> & H_m0, vector<double> & ergs) {
+    int totalSize = 0;
+    list<list<MatrixXd>> EV_blocks;
+    for (const list<list<MatrixXd>> & l : H_m0) { // if this ever has more than one element, kaboom
+        for (const list<MatrixXd> & m : l) {
+            list<MatrixXd> EV_subBlocks;
+            for (const MatrixXd & mat : m) {
+                totalSize += mat.cols();
+
+                Eigen::SelfAdjointEigenSolver<MatrixXd> sol(mat);
+                Eigen::VectorXd blockErgs = sol.eigenvalues().real();
+                vector<double> ergs_stl(blockErgs.begin(), blockErgs.end());
+                writeThreadSafe(ergs, ergs_stl);
+
+                MatrixXd U_block = sol.eigenvectors();
+                EV_subBlocks.emplace_back(U_block);
+            }
+            EV_blocks.emplace_back(EV_subBlocks);
+        }
+    }
+
+    list<MatrixXd> temp = blkdiag(EV_blocks);
+    MatrixXd ret = blkdiag(temp, totalSize);
+
+    return ret;
+}

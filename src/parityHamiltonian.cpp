@@ -70,7 +70,7 @@ list<list<list<MatrixXd>>> parityHamiltonian(double J_ratio, int N) {
     return H_subspace_list;
 }
 
-vector<double> getEnergies_memorySaving_threaded_parity(double J_ratio, int N) {
+vector<double> getEnergies_memorySaving_threaded_parity(double J_ratio, int N, bool sort) {
     // N must be a multiple of 4 and >=8.
     if (N < 8 || N%4 != 0) {
         throw std::invalid_argument("N must be larger than 8 and a multiple of 4.");
@@ -112,12 +112,12 @@ vector<double> getEnergies_memorySaving_threaded_parity(double J_ratio, int N) {
                     setHElementsForState_parity(N, k, p, s_vector_k, R_vector, m_vector, K, H, a, s, n, 2, J_ratio);
 
                 }
-                vector<double> blockErgs = getEnergiesFromBlocks(list<MatrixXd>{H});
+                vector<double> blockErgs = getEnergiesFromBlocks(list<MatrixXd>{H}, false);
                 writeThreadSafe(ergs, blockErgs);
             }
         }
     }
-    std::sort(ergs.begin(), ergs.end());
+    if (sort) std::sort(ergs.begin(), ergs.end());
 
     return ergs;
 }

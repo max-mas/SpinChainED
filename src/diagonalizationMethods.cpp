@@ -12,7 +12,7 @@ using Eigen::MatrixXcd;
 using Eigen::MatrixXd;
 
 // Diagonalization methods for a number of cases.
-vector<double> getEnergiesFromBlocks(const list<list<list<MatrixXd>>> & H_list) {
+vector<double> getEnergiesFromBlocks(const list<list<list<MatrixXd>>> & H_list, bool sort) {
     vector<double> energies;
     for (const list<list<MatrixXd>> & H_sublist : H_list) {
         for (const list<MatrixXd> & H_subSubList : H_sublist) {
@@ -28,11 +28,11 @@ vector<double> getEnergiesFromBlocks(const list<list<list<MatrixXd>>> & H_list) 
             }
         }
     }
-    std::sort(energies.begin(), energies.end());
+    if (sort) std::sort(energies.begin(), energies.end());
     return energies;
 }
 
-vector<double> getEnergiesFromBlocks(const list<MatrixXcd> & H_list) {
+vector<double> getEnergiesFromBlocks(const list<MatrixXcd> & H_list, bool sort) {
     vector<double> energies;
     for (const MatrixXcd & mat : H_list) {
         Eigen::SelfAdjointEigenSolver<MatrixXcd> sol;
@@ -44,11 +44,11 @@ vector<double> getEnergiesFromBlocks(const list<MatrixXcd> & H_list) {
         std::for_each(blockEnergies.begin(), blockEnergies.end(),
                       [&](complex<double> & d){energies.emplace_back( d.real() );});
     }
-    std::sort(energies.begin(), energies.end());
+    if (sort) std::sort(energies.begin(), energies.end());
     return energies;
 }
 
-vector<double> getEnergiesFromBlocks(const list<MatrixXd> & H_list) {
+vector<double> getEnergiesFromBlocks(const list<MatrixXd> & H_list, bool sort) {
     vector<double> energies;
     for (const MatrixXd & mat : H_list) {
         Eigen::SelfAdjointEigenSolver<MatrixXd> sol;
@@ -60,11 +60,11 @@ vector<double> getEnergiesFromBlocks(const list<MatrixXd> & H_list) {
         std::for_each(blockEnergies.begin(), blockEnergies.end(),
                       [&](complex<double> & d){energies.emplace_back( d.real() );});
     }
-    std::sort(energies.begin(), energies.end());
+    if (sort) std::sort(energies.begin(), energies.end());
     return energies;
 }
 
-vector<double> getEnergiesFromBlocks(const list<list<MatrixXcd>> & H_list) {
+vector<double> getEnergiesFromBlocks(const list<list<MatrixXcd>> & H_list, bool sort) {
     vector<double> energies;
     for (const list<MatrixXcd> & subList : H_list) {
         for (const MatrixXcd & mat : subList) {
@@ -79,11 +79,11 @@ vector<double> getEnergiesFromBlocks(const list<list<MatrixXcd>> & H_list) {
                               energies.emplace_back(d.real()); });
         }
     }
-    std::sort(energies.begin(), energies.end());
+    if (sort) std::sort(energies.begin(), energies.end());
     return energies;
 }
 
-vector<double> getEnergiesFromBlocks(const list<list<MatrixXd>> & H_list) {
+vector<double> getEnergiesFromBlocks(const list<list<MatrixXd>> & H_list, bool sort) {
     vector<double> energies;
     for (const list<MatrixXd> & subList : H_list) {
         for (const MatrixXd & mat : subList) {
@@ -97,7 +97,7 @@ vector<double> getEnergiesFromBlocks(const list<list<MatrixXd>> & H_list) {
                           [&](complex<double> &d) { energies.emplace_back(d.real()); });
         }
     }
-    std::sort(energies.begin(), energies.end());
+    if (sort) std::sort(energies.begin(), energies.end());
     return energies;
 }
 
@@ -123,40 +123,40 @@ vector<vector<vector<double>>> getEnergiesFromBlocksByK(const list<list<MatrixXc
 }
 
 // Threaded version of getEnergiesFromBlocks for the momentum state ansatz.
-vector<double> getMomentumErgsThreaded(const list<list<MatrixXcd>> & H_list, int N) {
+vector<double> getMomentumErgsThreaded(const list<list<MatrixXcd>> & H_list, int N, bool sort) {
     vector<list<MatrixXcd>> H_vector(H_list.begin(), H_list.end());
     vector<double> ergs;
-#pragma omp parallel for default(none) shared(ergs, H_vector, N, std::cout)
+#pragma omp parallel for default(none) shared(ergs, H_vector, N, std::cout, sort)
     for (int i = 0; i < H_vector.size(); i++) {
-        vector<double> blockErgs = getEnergiesFromBlocks(H_vector[i]);
+        vector<double> blockErgs = getEnergiesFromBlocks(H_vector[i], sort);
         writeThreadSafe(ergs, blockErgs);
         //std::cout << "1 done" << "\n";
     }
-    std::sort(ergs.begin(), ergs.end());
+    if (sort) std::sort(ergs.begin(), ergs.end());
     return ergs;
 }
 
 // Threaded version of getEnergiesFromBlocks for the semi-momentum/parity state ansatz.
-vector<double> getParityErgsThreaded(const list<list<list<MatrixXd>>> & H_list, int N) {
+vector<double> getParityErgsThreaded(const list<list<list<MatrixXd>>> & H_list, int N, bool sort) {
     vector<list<list<MatrixXd>>> H_vector(H_list.begin(), H_list.end());
     vector<double> ergs;
-#pragma omp parallel for default(none) shared(ergs, H_vector, N, std::cout)
+#pragma omp parallel for default(none) shared(ergs, H_vector, N, std::cout, sort)
     for (int i = 0; i < H_vector.size(); i++) {
-        vector<double> blockErgs = getEnergiesFromBlocks(H_vector[i]);
+        vector<double> blockErgs = getEnergiesFromBlocks(H_vector[i], sort);
         writeThreadSafe(ergs, blockErgs);
         //std::cout << "1 done" << "\n";
     }
-    std::sort(ergs.begin(), ergs.end());
+    if (sort) std::sort(ergs.begin(), ergs.end());
     return ergs;
 }
 
 // Returns all eigenvalues for a given vector of values of J1/J2. Threaded.
-vector<vector<double>> diagonalizeThreaded(const vector<double> & J_ratios, int N) {
+vector<vector<double>> diagonalizeThreaded(const vector<double> & J_ratios, int N, bool sort) {
     vector<vector<double>> v(J_ratios.size());
-#pragma omp parallel for default(none) shared(v, J_ratios, N, std::cout)
+#pragma omp parallel for default(none) shared(v, J_ratios, N, std::cout, sort)
     for (int i = 0; i < J_ratios.size(); i++) {
         list<list<MatrixXcd>> H = momentumHamiltonian(J_ratios[i], N);
-        vector<double> erg = getEnergiesFromBlocks(H);
+        vector<double> erg = getEnergiesFromBlocks(H, sort);
         writeThreadSafe(v, erg);
         std::cout << "1 done" << "\n";
     }
@@ -178,11 +178,37 @@ MatrixXcd blkdiag(const list<MatrixXcd> & matrix_list, int totalSize) {
     return bdm;
 }
 
+MatrixXd blkdiag(const list<MatrixXd> & matrix_list, int totalSize) {
+    MatrixXd bdm = MatrixXd::Zero(totalSize, totalSize);
+    int curr_index = 0;
+    for (const MatrixXd & mat : matrix_list)
+    {
+        if (mat.cols() == 0) {
+            continue;
+        }
+        bdm.block(curr_index, curr_index, mat.rows(), mat.cols()) = mat;
+        curr_index += (int) mat.rows();
+    }
+    return bdm;
+}
+
 list<MatrixXcd> blkdiag(const list<list<MatrixXcd>> & matrix_doubleList) {
     list<MatrixXcd> bdmlist;
     for (const list<MatrixXcd> & l : matrix_doubleList) {
         int size = 0;
         for (const MatrixXcd & m : l) {
+            size += m.rows();
+        }
+        bdmlist.emplace_back( blkdiag(l, size) );
+    }
+    return bdmlist;
+}
+
+list<MatrixXd> blkdiag(const list<list<MatrixXd>> & matrix_doubleList) {
+    list<MatrixXd> bdmlist;
+    for (const list<MatrixXd> & l : matrix_doubleList) {
+        int size = 0;
+        for (const MatrixXd & m : l) {
             size += m.rows();
         }
         bdmlist.emplace_back( blkdiag(l, size) );
