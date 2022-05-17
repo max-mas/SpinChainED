@@ -101,6 +101,81 @@ list<list<list<MatrixXd>>> spinInversionHamiltonian(double J_ratio, int N, int n
     return H_subspace_list;
 }
 
+list<list<MatrixXd>> spinOpS2_spinInv_m0(int N) {
+    vector<int> s_vector_m = getStates_m(N, N/2);
+
+    // init list of blocks
+    list<list<MatrixXd>> S2_subSubspace_list;
+
+    for (int k = 0; k <= trunc(N/4); k++) {
+        list<MatrixXd> S2_subSubSubspace_list;
+        for (int p : {-1, 1}) {
+            for (int z : {-1, 1}) {
+
+                vector<int> s_vector_k, R_vector, m_vector, n_vector, c_vector;
+
+                getStates_k_p_z(N, s_vector_m, k, p, z, s_vector_k, R_vector, m_vector, n_vector, c_vector);
+
+                int K = s_vector_k.size();
+                MatrixXd S2 = N*0.75*MatrixXd::Identity(K, K);
+
+                for (int a = 0; a < K; a++) {
+                    const int s = s_vector_k[a];
+                    int n;
+                    if (a > 0 && s_vector_k[a] == s_vector_k[a-1]) continue;
+                    if (a < K-1 && s_vector_k[a] == s_vector_k[a+1]) {n = 2;
+                    } else n = 1;
+
+                    for (int u = a; u < a + n; u++) {
+                        double E_z = 0;
+                        for (int i = 0; i < N; i++) {
+                            for (int j = 0; j < i; j++) {
+                                if (getBit(s, i) == getBit(s, j)) {
+                                    E_z += 0.25;
+                                } else {
+                                    E_z += -0.25;
+                                }
+                            }
+
+                        }
+                        S2(u, u) += 2*E_z_parity(s, 1, N);
+                    }
+                    for (int i = 0; i < N; i++) {
+                        int s_prime = s;
+                        for (int j = 0; j < i; j++) {
+                            if (getBit(s_prime, i) != getBit(s_prime, j)) {
+                                flipBit(s_prime, i);
+                                flipBit(s_prime, j);
+                                vector<int> r_l_q_g = representative_inversion(s_prime, N);
+                                int b = findState(s_vector_k, r_l_q_g[0]);
+                                int m;
+                                if (b >= 0) {
+                                    if (b > 0 && s_vector_k[b] == s_vector_k[b - 1]) {
+                                        m = 2;
+                                        b += -1;
+                                    } else if (b < K - 1 && s_vector_k[b] == s_vector_k[b + 1]) {
+                                        m = 2;
+                                    } else m = 1;
+                                    for (int i_mat = a; i_mat < a + n; i_mat++) {
+                                        for (int j_mat = b; j_mat < b + m; j_mat++) {
+                                            double val = 2*hElement_inversion(i_mat, j_mat, r_l_q_g[1], r_l_q_g[2], r_l_q_g[3],
+                                                                            k, p, z, N, R_vector, m_vector, n_vector, c_vector);
+                                            S2(i_mat, j_mat) += val;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                S2_subSubSubspace_list.emplace_back(S2);
+            }
+        }
+        S2_subSubspace_list.emplace_back(S2_subSubSubspace_list);
+    }
+    return S2_subSubspace_list;
+}
+
 vector<double> getEnergies_memorySaving_threaded_inversion(double J_ratio, int N) {
     // N must be a multiple of 4 and >=8.
     if (N < 8 || N%4 != 0) {

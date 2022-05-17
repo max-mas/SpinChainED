@@ -33,7 +33,7 @@ for J_ratio in J_ratios:
         fig.colorbar(sc, cmap="hsv", values=ms, label="Magnetization $m$")
         plt.show()
 """
-
+"""
 for T in Ts:
     fig, ax = plt.subplots()
     
@@ -53,7 +53,7 @@ for T in Ts:
     T = T.replace("_", ".")
     ax.set(xlabel="$J_1/J_2$", ylabel="Susceptibility per Spin $C$ ($1/J_2$)", title="$T =\\,$"+T)
     plt.show()
-"""
+
 for T in Ts:
     fig, ax = plt.subplots()
     
@@ -94,8 +94,8 @@ for J_ratio in J_ratios:
     J_ratio = J_ratio.replace("_", ".")
     ax.set(xlabel="$T$ ($J_2$)", ylabel="Specific heat per Spin $C/N$", title="$J_1/J_2 =\\,$"+J_ratio)
     plt.show()
-
 """
+
 for J_ratio in J_ratios:
     fig, ax = plt.subplots()
     

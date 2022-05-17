@@ -41,7 +41,7 @@ void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double
 }
 
 // Saves specific heat at given temperature/beta for varying values of J1/J2.
-void saveSpecificHeatForVaryingJ(int N, int dataPointNum, double betaOrT, double start, double end, bool isBeta, std::string path) {
+void saveSpecificHeatsForVaryingJ(int N, int dataPointNum, double betaOrT, double start, double end, bool isBeta, std::string path) {
     Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
     vector<double> C;
     for (double J_ratio : J_ratios) {
@@ -103,7 +103,7 @@ void saveSusceptibilitiesForVaryingJ(int N, int dataPointNum, double betaOrT, do
             vector<double> ergs;
             MatrixXd U = buildTransformMatrix_parity(H_m0, ergs);
 
-            MatrixXd T = U.transpose() * S_2 * U;
+            MatrixXcd T = U.adjoint() * S_2 * U;
 
             susceptibilities.emplace_back( susceptibility(ergs, betaOrT, isBeta, T) / (double) N );
         } else if (N % 2 == 0 && N >= 6) {
@@ -129,21 +129,30 @@ void saveSusceptibilitiesForVaryingJ(int N, int dataPointNum, double betaOrT, do
 void saveSusceptibilitesForVaryingTemp(int N, int dataPointNum, double J_ratio, double start, double end,
                                        bool isBeta, std::string path) {
     Eigen::VectorXd Ts = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
-    vector<int> states = getStates_m(N, N/2);
-    MatrixXd S_2 = spinOperator_sq(states, N);
+
 
     vector<double> susceptibilities(dataPointNum);
     if (N % 4 == 0 && N >= 8) {
+        //list<list<MatrixXd>> S_2_ll = spinOpS2_spinInv_m0(N);
+        //list<MatrixXd> S_2_l = blkdiag(S_2_ll);
+        //MatrixXd S_2 = blkdiag(S_2_l, fact(N) / (fact(N/2) * fact(N/2)));
+
+        vector<int> states = getStates_m(N, N/2);
+        MatrixXd S_2 = spinOperator_sq(states, N);
+
         list<list<list<MatrixXd>>> H_m0 = spinInversionHamiltonian(J_ratio,  N, N/2, N/2);
         vector<double> ergs;
         MatrixXd U = buildTransformMatrix_parity(H_m0, ergs);
 
-        MatrixXd T = U.transpose() * S_2 * U;
+        MatrixXcd T = U.adjoint() * S_2 * U;
 
         for (int i = 0; i < dataPointNum; i++) {
             susceptibilities[i] =  susceptibility(ergs, Ts[i], isBeta, T) / N ;
         }
     } else if (N % 2 == 0 && N >= 6) {
+        vector<int> states = getStates_m(N, N/2);
+        MatrixXd S_2 = spinOperator_sq(states, N);
+
         MatrixXd H_m0 = getMagnetizationBlock(J_ratio, 0, N);
         Eigen::SelfAdjointEigenSolver<MatrixXd> sol(H_m0);
         Eigen::VectorXd erg = sol.eigenvalues().real();
