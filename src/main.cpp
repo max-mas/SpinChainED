@@ -3,10 +3,11 @@
 using std::vector;
 
 //#define saveErgs
-#define saveExcitationErgs
+//#define saveExcitationErgs
+//#define saveGroundStateErgsPerSpin
 //#define saveSpecificHeat
 //#define saveSpecificHeatForJ
-//#define saveSusceptibility
+#define saveSusceptibility
 //#define saveSusceptibilityForJ
 //#define saveDispersion
 
@@ -14,12 +15,12 @@ int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
     int dataPointNum = 200;
-    int nMax = 16;
+    int nMax = 12;
     vector<double> J_ratios = {0.1, 1, 2, 5};
     vector<double> Ts = {0.2, 0.5, 1};
     bool isBeta = false;
-    double start = 0.001;
-    double endP = 3;
+    double start = 0;
+    double endP = 10;
 #ifdef saveErgs
     int N; double j_ratio; std::string path, method;
     if (argc > 4) {
@@ -53,6 +54,13 @@ int main(int argc, char* argv[]) {
     for (int N = 6; N <= nMax; N+= 2) {
         std::string path = "/home/mmaschke/BA_Code/Data/ExcitationErgs/ExcErgs" + std::to_string(N) + ".txt";
         saveExcitationErgsForVaryingJ(N, dataPointNum, start, endP, path);
+        std::cout << std::string("N") + std::to_string(N) << std::endl;
+    }
+#endif
+#ifdef saveGroundStateErgsPerSpin
+    for (int N = 6; N <= nMax; N+= 2) {
+        std::string path = "/home/mmaschke/BA_Code/Data/GroundStateErgs/GSErgs" + std::to_string(N) + ".txt";
+        saveGroundStateErgPerSpinForVaryingJ(N, dataPointNum, start, endP, path);
         std::cout << std::string("N") + std::to_string(N) << std::endl;
     }
 #endif

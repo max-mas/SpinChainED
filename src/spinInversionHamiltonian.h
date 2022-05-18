@@ -26,6 +26,8 @@ std::list<std::list<std::list<Eigen::MatrixXd>>> spinInversionHamiltonian(double
 
 std::vector<double> getEnergies_memorySaving_threaded_inversion(double J_ratio, int N);
 
+std::list<std::list<Eigen::MatrixXd>> spinOpS2_spinInv_m0(int N);
+
 void getStates_k_p_z(int N, std::vector<int> &s_vector_m, int k, int p, int z, std::vector<int> &s_vector_k,
                      std::vector<int> &R_vector, std::vector<int> &m_vector, std::vector<int> &n_vector,
                      std::vector<int> &c_vector);

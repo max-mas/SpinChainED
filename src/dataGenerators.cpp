@@ -17,49 +17,98 @@ using Eigen::MatrixXd;
 using Eigen::Dynamic;
 
 // Saves excitation energy (i.e. energy difference between ground and 1st excited state) vor varying values of J1/J2.
-// Note: If ground state is degenerate, zero is returned.
+// Note: If ground state is degenerate, zero is returned. Some re-sorting is needed because the omp for threads might
+// finish out of order.
 void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double end, const std::string & path) {
     Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
     vector<double> diffs;
-#pragma omp parallel for default(none) shared(diffs, J_ratios, N)
+    vector<double> reSortedJs;
+    vector<std::pair<double, double>> out;
+    std::mutex m;
+#pragma omp parallel for default(none) shared(diffs, J_ratios, reSortedJs, N, m)
     for (int i = 0; i < J_ratios.size(); i++) {
         if (N % 4 == 0 && N >= 8) {
             list<list<list<MatrixXd>>> H = spinInversionHamiltonian(J_ratios[i], N, 0, N);
             vector<double> erg = getEnergiesFromBlocks(H, true);
+            std::lock_guard<std::mutex> lock(m);
             writeThreadSafe(diffs, {abs(erg[0]-erg[1])});
+            writeThreadSafe(reSortedJs, {J_ratios[i]} );
         } else if (N % 2 == 0 && N >= 6) {
             list<list<MatrixXcd>> H = momentumHamiltonian(J_ratios[i], N);
             vector<double> erg = getEnergiesFromBlocks(H, true);
+            std::lock_guard<std::mutex> lock(m);
             writeThreadSafe(diffs, {abs(erg[0]-erg[1])});
+            writeThreadSafe(reSortedJs, {J_ratios[i]} );
         }
     }
-    list<std::pair<double, double>> out;
     for (int i = 0; i < diffs.size(); i++) {
-        out.emplace_back( std::pair<double, double>(J_ratios[i], diffs[i]) );
+        out.emplace_back( std::pair<double, double>(reSortedJs[i], diffs[i]) );
     }
-    savePairsToFile(out, path);
+    std::sort(out.begin(), out.end());
+    list<std::pair<double, double>> out_l(out.begin(), out.end());
+    savePairsToFile(out_l, path);
+}
+
+void saveGroundStateErgPerSpinForVaryingJ(int N, int dataPointNum, double start, double end, const std::string & path) {
+    Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
+    vector<double> gStateErgs;
+    vector<double> reSortedJs;
+    vector<std::pair<double, double>> out;
+    std::mutex m;
+#pragma omp parallel for default(none) shared(gStateErgs, J_ratios, reSortedJs, N, m)
+    for (int i = 0; i < J_ratios.size(); i++) {
+        if (N % 4 == 0 && N >= 8) {
+            list<list<list<MatrixXd>>> H = spinInversionHamiltonian(J_ratios[i], N, 0, N);
+            vector<double> erg = getEnergiesFromBlocks(H, true);
+            std::lock_guard<std::mutex> lock(m);
+            writeThreadSafe(gStateErgs, {erg[0] / N});
+            writeThreadSafe(reSortedJs, {J_ratios[i]} );
+        } else if (N % 2 == 0 && N >= 6) {
+            list<list<MatrixXcd>> H = momentumHamiltonian(J_ratios[i], N);
+            vector<double> erg = getEnergiesFromBlocks(H, true);
+            std::lock_guard<std::mutex> lock(m);
+            writeThreadSafe(gStateErgs, {erg[0] / N});
+            writeThreadSafe(reSortedJs, {J_ratios[i]} );
+        }
+    }
+    for (int i = 0; i < gStateErgs.size(); i++) {
+        out.emplace_back( std::pair<double, double>(reSortedJs[i], gStateErgs[i]) );
+    }
+    std::sort(out.begin(), out.end());
+    list<std::pair<double, double>> out_l(out.begin(), out.end());
+    savePairsToFile(out_l, path);
 }
 
 // Saves specific heat at given temperature/beta for varying values of J1/J2.
 void saveSpecificHeatsForVaryingJ(int N, int dataPointNum, double betaOrT, double start, double end, bool isBeta, std::string path) {
     Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
     vector<double> C;
+    vector<double> reSortedJs;
+    std::mutex m;
     for (double J_ratio : J_ratios) {
         if (N % 4 == 0 && N >= 8) {
             list<list<list<MatrixXd>>> H = spinInversionHamiltonian(J_ratio, N, 0, N);
             vector<double> erg = getParityErgsThreaded(H, N, true);
-            C.emplace_back(specificHeat(erg, betaOrT, isBeta) / N);
+            double specH = specificHeat(erg, betaOrT, isBeta) / N;
+            std::lock_guard<std::mutex> lock(m);
+            writeThreadSafe(C, {specH});
+            writeThreadSafe(reSortedJs, {J_ratio} );
         } else if (N % 2 == 0 && N >= 6) {
             list<list<MatrixXcd>> H = momentumHamiltonian(J_ratio, N);
             vector<double> erg = getMomentumErgsThreaded(H, N, true);
-            C.emplace_back(specificHeat(erg, betaOrT, isBeta) / N);
+            double specH = specificHeat(erg, betaOrT, isBeta) / N;
+            std::lock_guard<std::mutex> lock(m);
+            writeThreadSafe(C, {specH});
+            writeThreadSafe(reSortedJs, {J_ratio} );
         }
     }
-    list<std::pair<double, double>> out;
+    vector<std::pair<double, double>> out;
     for (int i = 0; i < C.size(); i++) {
-        out.emplace_back( std::pair<double, double>(J_ratios[i], C[i]) );
+        out.emplace_back( std::pair<double, double>(reSortedJs[i], C[i]) );
     }
-    savePairsToFile(out, path);
+    std::sort(out.begin(), out.end());
+    list<std::pair<double, double>> out_l(out.begin(), out.end());
+    savePairsToFile(out_l, path);
 }
 
 // Saves specific heat for a given value of J1/J2 for varying temperature/beta.
@@ -129,12 +178,13 @@ void saveSusceptibilitiesForVaryingJ(int N, int dataPointNum, double betaOrT, do
 void saveSusceptibilitesForVaryingTemp(int N, int dataPointNum, double J_ratio, double start, double end,
                                        bool isBeta, std::string path) {
     Eigen::VectorXd Ts = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
-
-    vector<int> states = getStates_m(N, N/2);
-    MatrixXd S_2 = spinOperator_sq(states, N);
-
     vector<double> susceptibilities(dataPointNum);
-    /*if (N % 4 == 0 && N >= 8) {
+
+    if (N % 4 == 0 && N >= 8) {
+        list<list<MatrixXd>> S_2_ll = spinOpS2_spinInv_m0(N);
+        list<MatrixXd> S_2_l = blkdiag(S_2_ll);
+        MatrixXd S_2 = blkdiag(S_2_l, fact(N) / (fact(N/2) * (fact(N/2))));
+
         list<list<list<MatrixXd>>> H_m0 = spinInversionHamiltonian(J_ratio,  N, N/2, N/2);
         vector<double> ergs;
         MatrixXd U = buildTransformMatrix_parity(H_m0, ergs);
@@ -144,7 +194,10 @@ void saveSusceptibilitesForVaryingTemp(int N, int dataPointNum, double J_ratio, 
         for (int i = 0; i < dataPointNum; i++) {
             susceptibilities[i] =  susceptibility(ergs, Ts[i], isBeta, T) / N ;
         }
-    } else */if (N % 2 == 0 && N >= 6) {
+    } else if (N % 2 == 0 && N >= 6) {
+        vector<int> states = getStates_m(N, N/2);
+        MatrixXd S_2 = spinOperator_sq(states, N);
+
         MatrixXd H_m0 = getMagnetizationBlock(J_ratio, 0, N);
         Eigen::SelfAdjointEigenSolver<MatrixXd> sol(H_m0);
         Eigen::VectorXd erg = sol.eigenvalues().real();
