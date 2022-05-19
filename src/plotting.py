@@ -54,12 +54,12 @@ for T in Ts:
     T = T.replace("_", ".")
     ax.set(xlabel="$J_1/J_2$", ylabel="Susceptibility per Spin $C$ ($1/J_2$)", title="$T =\\,$"+T)
     plt.show()
-
+"""
 #Specific Heat (J)
 for T in Ts:
     fig, ax = plt.subplots()
     
-    for N in np.linspace(6, 12, 4):
+    for N in np.linspace(6, 14, 5):
         path = "/home/mmaschke/BA_Code/Data/SpecificHeatsForJ/SpecHeatN"+str(int(N))+"T"+T+".txt"
         file = open(path)
         Js = []
@@ -75,12 +75,12 @@ for T in Ts:
     T = T.replace("_", ".")
     ax.set(xlabel="$J_1/J_2$", ylabel="Specific heat per Spin $C/N$", title="$T =\\,$"+T)
     plt.show()
-
+"""
 # Specific Heat (T)
 for J_ratio in J_ratios:
     fig, ax = plt.subplots()
     
-    for N in np.linspace(6, 12, 4):
+    for N in np.linspace(6, 16, 6):
         path = "/home/mmaschke/BA_Code/Data/SpecificHeats/SpecHeatN"+str(int(N))+"J"+J_ratio+".txt"
         file = open(path)
         Ts = []
@@ -96,12 +96,12 @@ for J_ratio in J_ratios:
     J_ratio = J_ratio.replace("_", ".")
     ax.set(xlabel="$T$ ($J_2$)", ylabel="Specific heat per Spin $C/N$", title="$J_1/J_2 =\\,$"+J_ratio)
     plt.show()
-"""
+
 # Susceptibility (T)
 for J_ratio in J_ratios:
     fig, ax = plt.subplots()
 
-    for N in np.linspace(6, 12, 4):
+    for N in np.linspace(6, 16, 6):
         path = "/home/mmaschke/BA_Code/Data/Susceptibilities/SuscN" + str(int(N)) + "J" + J_ratio + ".txt"
         file = open(path)
         Ts = []
@@ -119,10 +119,10 @@ for J_ratio in J_ratios:
     J_ratio = J_ratio.replace("_", ".")
     ax.set(xlabel="$T$ ($J_2$)", ylabel="Susceptibility per Spin $C$ ($1/J_2$)", title="$J_1/J_2 =\\,$" + J_ratio)
     plt.show()
-"""
+
 # Excitation Erg
 fig, ax = plt.subplots()
-for N in np.linspace(6, 14, 5):
+for N in np.linspace(6, 18, 7):
     path = "/home/mmaschke/BA_Code/Data/ExcitationErgs/ExcErgs"+str(int(N))+".txt"
     file = open(path)
     Ts = []
@@ -140,7 +140,7 @@ plt.show()
 
 # Ground state erg
 fig, ax = plt.subplots()
-for N in np.linspace(6, 14, 5):
+for N in np.linspace(6, 16, 6):
     path = "/home/mmaschke/BA_Code/Data/GroundStateErgs/GSErgs"+str(int(N))+".txt"
     file = open(path)
     Ts = []

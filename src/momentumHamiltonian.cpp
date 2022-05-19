@@ -12,7 +12,7 @@ using std::complex;
 using Eigen::MatrixXcd;
 
 // Generate list of list of (m, k)-blocks of the Hamiltonian for a given N.
-list<list<MatrixXcd>> momentumHamiltonian(double J_ratio, int N) {
+list<list<MatrixXcd>> momentumHamiltonian(double J_ratio, int N, int n_up_min, int n_up_max) {
     // N must be even and > 6 or this no longer describes the correct system.
     if (N < 6 || N%2 == 1) {
         throw std::invalid_argument("N must be larger than 6 and even.");
@@ -22,7 +22,7 @@ list<list<MatrixXcd>> momentumHamiltonian(double J_ratio, int N) {
     list<list<MatrixXcd>> H_subspace_list;
 
     // loop over all magnetizations m
-    for (int m_setter = 0; m_setter <= N; m_setter++) {
+    for (int m_setter = n_up_min; m_setter <= n_up_max; m_setter++) {
         // Find states compatible with m and store them in list.
         vector<int> s_vector_m = getStates_m(N, m_setter);
         int M = s_vector_m.size();
@@ -54,6 +54,72 @@ list<list<MatrixXcd>> momentumHamiltonian(double J_ratio, int N) {
         H_subspace_list.push_back(H_subSubspace_list);
     }
     return H_subspace_list;
+}
+
+list<MatrixXcd> spinOpS2_momentum_m0(int N) {
+    // N must be even and > 6 or this no longer describes the correct system.
+    if (N < 6 || N%2 == 1) {
+        throw std::invalid_argument("N must be larger than 6 and even.");
+    }
+
+    // loop over all magnetizations m
+    int n_up = N/2;
+    // Find states compatible with m and store them in list.
+    vector<int> s_vector_m = getStates_m(N, n_up);
+    int M = s_vector_m.size();
+
+    // init list of blocks
+    list<MatrixXcd> S2_subspace_list(N);
+
+    // loop over all possible momenta k
+    for (int k = -trunc((N+2)/4) + 1 ; k <= trunc(N/4); k++ ) {
+
+        // find k-compatible states and their periodicities
+        vector<int> s_vector_k, R_vector;
+        for (int i = 0; i < M; i++) {
+            int s = s_vector_m[i];
+            int R = checkState(s, k, N);
+            if (R >= 0) {
+                s_vector_k.push_back(s);
+                R_vector.push_back(R);
+            }
+        }
+        int K = s_vector_k.size();
+
+        // init (m,k)-block
+        MatrixXcd S2 = 0.75 * N * MatrixXcd::Identity(K, K);
+
+        // fill elements of (m,k)-block
+        for (int l = 0; l < K; l++) {
+            int a = s_vector_k[l];
+            //std::cout << a << " " << k << " " << R_vector[l] << std::endl;
+            for (int i = 0; i < N; i++) {
+                for (int j = 0; j < i; j++) {
+                    if (getBit(a, i) == getBit(a, j)) {
+                        S2(l, l) += 0.5;
+                    } else {
+                        S2(l, l) += -0.5;
+
+                        int b = a;
+                        flipBit(b, i);
+                        flipBit(b, j);
+                        vector<int> r_L = representative(b, N);
+                        int f = findState(s_vector_k, r_L[0]);
+
+                        if (f >= 0) {
+                            complex<double> offDiagEl = 2 * 0.5 * sqrt((double) R_vector[l] / (double) R_vector[f])
+                                                        * std::exp(
+                                    complex<double>(0, 4.0 * M_PI * (double) k * (double) r_L[1] / (double) N));
+                            S2(l, f) += offDiagEl;
+                        }
+                    }
+                }
+            }
+        }
+        S2_subspace_list.emplace_back(S2);
+    }
+
+    return S2_subspace_list;
 }
 
 // Set matrix element for a given state (momentum-approach).

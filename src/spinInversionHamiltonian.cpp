@@ -200,6 +200,9 @@ vector<double> getEnergies_memorySaving_threaded_inversion(double J_ratio, int N
 }
 
 list<list<MatrixXd>> spinOpS2_spinInv_m0(int N) {
+    if (N < 8 || N%4 != 0) {
+        throw std::invalid_argument("N must be larger than 6 and even.");
+    }
     vector<int> s_vector_m = getStates_m(N, N/2);
 
     // init list of blocks
@@ -224,24 +227,21 @@ list<list<MatrixXd>> spinOpS2_spinInv_m0(int N) {
                     if (a < K-1 && s_vector_k[a] == s_vector_k[a+1]) {n = 2;
                     } else n = 1;
 
-                    for (int u = a; u < a + n; u++) {
-                        double E_z = 0;
+                    for (int u = a; u < a + n; u++) {;
                         for (int i = 0; i < N; i++) {
                             for (int j = 0; j < i; j++) {
                                 if (getBit(s, i) == getBit(s, j)) {
-                                    E_z += 0.25;
+                                    S2(u, u) += 0.5;
                                 } else {
-                                    E_z += -0.25;
+                                    S2(u, u) += -0.5;
                                 }
                             }
-
                         }
-                        S2(u, u) += 2*E_z_parity(s, 1, N);
                     }
                     for (int i = 0; i < N; i++) {
-                        int s_prime = s;
                         for (int j = 0; j < i; j++) {
-                            if (getBit(s_prime, i) != getBit(s_prime, j)) {
+                            if (getBit(s, i) != getBit(s, j)) {
+                                int s_prime = s;
                                 flipBit(s_prime, i);
                                 flipBit(s_prime, j);
                                 vector<int> r_l_q_g = representative_inversion(s_prime, N);
@@ -256,7 +256,7 @@ list<list<MatrixXd>> spinOpS2_spinInv_m0(int N) {
                                     } else m = 1;
                                     for (int i_mat = a; i_mat < a + n; i_mat++) {
                                         for (int j_mat = b; j_mat < b + m; j_mat++) {
-                                            double val = 2*hElement_inversion(i_mat, j_mat, r_l_q_g[1], r_l_q_g[2], r_l_q_g[3],
+                                            double val = 2 * hElement_inversion(i_mat, j_mat, r_l_q_g[1], r_l_q_g[2], r_l_q_g[3],
                                                                               k, p, z, N, R_vector, m_vector, n_vector, c_vector);
                                             S2(i_mat, j_mat) += val;
                                         }

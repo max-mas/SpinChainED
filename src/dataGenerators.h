@@ -67,5 +67,6 @@ void writeThreadSafe (std::vector<std::vector<double>> & writeTo, const std::vec
 void writeThreadSafe (std::vector<double> & writeTo, const std::vector<double> & writeFrom);
 
 Eigen::MatrixXd buildTransformMatrix_parity(const std::list<std::list<std::list<Eigen::MatrixXd>>> & H_m0, std::vector<double> & ergs);
+Eigen::MatrixXcd buildTransformMatrix_momentum(const std::list<std::list<Eigen::MatrixXcd>> & H_m0, std::vector<double> & ergs);
 
 #endif //SPINCHAINED_DATAGENERATORS_H

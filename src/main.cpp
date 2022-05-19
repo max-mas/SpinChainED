@@ -4,10 +4,10 @@ using std::vector;
 
 //#define saveErgs
 //#define saveExcitationErgs
-//#define saveGroundStateErgsPerSpin
+#define saveGroundStateErgsPerSpin
 //#define saveSpecificHeat
 //#define saveSpecificHeatForJ
-#define saveSusceptibility
+//#define saveSusceptibility
 //#define saveSusceptibilityForJ
 //#define saveDispersion
 
@@ -15,12 +15,13 @@ int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
     int dataPointNum = 200;
-    int nMax = 12;
+    int nMin = 6;
+    int nMax = 14;
     vector<double> J_ratios = {0.1, 1, 2, 5};
     vector<double> Ts = {0.2, 0.5, 1};
     bool isBeta = false;
     double start = 0;
-    double endP = 10;
+    double endP = 3;
 #ifdef saveErgs
     int N; double j_ratio; std::string path, method;
     if (argc > 4) {
@@ -51,14 +52,14 @@ int main(int argc, char* argv[]) {
     }
 #endif
 #ifdef saveExcitationErgs
-    for (int N = 6; N <= nMax; N+= 2) {
+    for (int N = nMin; N <= nMax; N+= 2) {
         std::string path = "/home/mmaschke/BA_Code/Data/ExcitationErgs/ExcErgs" + std::to_string(N) + ".txt";
         saveExcitationErgsForVaryingJ(N, dataPointNum, start, endP, path);
         std::cout << std::string("N") + std::to_string(N) << std::endl;
     }
 #endif
 #ifdef saveGroundStateErgsPerSpin
-    for (int N = 6; N <= nMax; N+= 2) {
+    for (int N = nMin; N <= nMax; N+= 2) {
         std::string path = "/home/mmaschke/BA_Code/Data/GroundStateErgs/GSErgs" + std::to_string(N) + ".txt";
         saveGroundStateErgPerSpinForVaryingJ(N, dataPointNum, start, endP, path);
         std::cout << std::string("N") + std::to_string(N) << std::endl;
@@ -67,7 +68,7 @@ int main(int argc, char* argv[]) {
 #ifdef saveSpecificHeat
     std::cout << "Specific heats vor varying temps:\n";
     for (double J_ratio : J_ratios) {
-        for (int N = 6; N <= nMax; N+= 2) {
+        for (int N = nMin; N <= nMax; N+= 2) {
             std::string j = std::to_string(J_ratio);
             std::replace(j.begin(), j.end(), '.', '_');
             std::string path = "/home/mmaschke/BA_Code/Data/SpecificHeats/SpecHeatN" + std::to_string(N)+ std::string("J") +
@@ -80,7 +81,7 @@ int main(int argc, char* argv[]) {
 #ifdef saveSpecificHeatForJ
     std::cout << "Specific heats vor varying J:\n";
     for (double T : Ts) {
-        for (int N = 6; N <= nMax; N+= 2) {
+        for (int N = nMin; N <= nMax; N+= 2) {
             std::string b = std::to_string(T);
             std::replace(b.begin(), b.end(), '.', '_');
             std::string path = "/home/mmaschke/BA_Code/Data/SpecificHeatsForJ/SpecHeatN" + std::to_string(N)+ std::string("T") +
@@ -93,7 +94,7 @@ int main(int argc, char* argv[]) {
 #ifdef saveSusceptibility
     std::cout << "Susceptibilities vor varying temps:\n";
     for (double J_ratio : J_ratios) {
-        for (int N = 6; N <= nMax; N+= 2) {
+        for (int N = nMin; N <= nMax; N+= 2) {
             std::string j = std::to_string(J_ratio);
             std::replace(j.begin(), j.end(), '.', '_');
             std::string path = "/home/mmaschke/BA_Code/Data/Susceptibilities/SuscN" + std::to_string(N)+ std::string("J") +
@@ -106,7 +107,7 @@ int main(int argc, char* argv[]) {
 #ifdef saveSusceptibilityForJ
     std::cout << "Susceptibilities vor varying J:\n";
     for (double T : Ts) {
-        for (int N = 6; N <= nMax; N+= 2) {
+        for (int N = nMin; N <= nMax; N+= 2) {
             std::string b = std::to_string(T);
             std::replace(b.begin(), b.end(), '.', '_');
             std::string path = "/home/mmaschke/BA_Code/Data/SusceptibilitiesForJ/SuscN" + std::to_string(N)+ std::string("T") +
@@ -118,7 +119,7 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef saveDispersion
     for (double J_ratio : J_ratios) {
-        for (int N = 6; N <= nMax; N+= 2) {
+        for (int N = nMin; N <= nMax; N+= 2) {
             std::string j = std::to_string(J_ratio);
             std::replace(j.begin(), j.end(), '.', '_');
 
