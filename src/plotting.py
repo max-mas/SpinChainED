@@ -52,9 +52,9 @@ for T in Ts:
         ax.plot(Js, chi, label=lab)
     ax.legend()
     T = T.replace("_", ".")
-    ax.set(xlabel="$J_1/J_2$", ylabel="Susceptibility per Spin $C$ ($1/J_2$)", title="$T =\\,$"+T)
+    ax.set(xlabel="$J_1/J_2$", ylabel="Susceptibility per Spin $\\chi / N$ ", title="$T =\\,$"+T)
     plt.show()
-"""
+
 #Specific Heat (J)
 for T in Ts:
     fig, ax = plt.subplots()
@@ -75,7 +75,7 @@ for T in Ts:
     T = T.replace("_", ".")
     ax.set(xlabel="$J_1/J_2$", ylabel="Specific heat per Spin $C/N$", title="$T =\\,$"+T)
     plt.show()
-"""
+
 # Specific Heat (T)
 for J_ratio in J_ratios:
     fig, ax = plt.subplots()
@@ -101,7 +101,7 @@ for J_ratio in J_ratios:
 for J_ratio in J_ratios:
     fig, ax = plt.subplots()
 
-    for N in np.linspace(6, 16, 6):
+    for N in np.linspace(6, 14, 5):
         path = "/home/mmaschke/BA_Code/Data/Susceptibilities/SuscN" + str(int(N)) + "J" + J_ratio + ".txt"
         file = open(path)
         Ts = []
@@ -111,13 +111,13 @@ for J_ratio in J_ratios:
             data = stri.split(" ")
             if data[0] == "-nan" or data[0] == "nan":
                 continue
-            Ts.append(float(data[0]))
+            Ts.append(float(data[0]) * 8.5)
             susc.append(float(data[1].replace("\n", "")))
         lab = "$N$ = " + str(int(N))
         ax.plot(Ts, susc, label=lab)
     ax.legend()
     J_ratio = J_ratio.replace("_", ".")
-    ax.set(xlabel="$T$ ($J_2$)", ylabel="Susceptibility per Spin $C$ ($1/J_2$)", title="$J_1/J_2 =\\,$" + J_ratio)
+    ax.set(xlabel="$T$ ($J_2$)", ylabel="Susceptibility per Spin $\\chi / N$", title="$J_1/J_2 =\\,$" + J_ratio)
     plt.show()
 
 # Excitation Erg

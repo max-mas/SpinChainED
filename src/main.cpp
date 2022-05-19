@@ -4,10 +4,10 @@ using std::vector;
 
 //#define saveErgs
 //#define saveExcitationErgs
-#define saveGroundStateErgsPerSpin
+//#define saveGroundStateErgsPerSpin
 //#define saveSpecificHeat
 //#define saveSpecificHeatForJ
-//#define saveSusceptibility
+#define saveSusceptibility
 //#define saveSusceptibilityForJ
 //#define saveDispersion
 
