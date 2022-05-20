@@ -10,6 +10,7 @@ if test -n "$9"; then
   start="$7"
   end="$8"
   flags="$9"
+  saveTo_path="${10}"
 else
   nMin="6"
   nMax="12"
@@ -20,6 +21,7 @@ else
   start="0"
   end="3"
   flags="0010000"
+  saveTo_path="/home/mmaschke/BA_Code/Data"
 fi
-./cmake-build-release/SpinChainED $nMin $nMax $dataPointNum $J_ratios_path $Ts_path $isBeta $start $end $flags
+./cmake-build-release/SpinChainED $nMin $nMax $dataPointNum $J_ratios_path $Ts_path $isBeta $start $end $flags $saveTo_path
 
