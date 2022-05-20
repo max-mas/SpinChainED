@@ -28,8 +28,8 @@ void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double
 #pragma omp parallel for default(none) shared(diffs, J_ratios, reSortedJs, N, m)
     for (int i = 0; i < J_ratios.size(); i++) {
         if (N % 4 == 0 && N >= 8) {
-            list<list<list<MatrixXd>>> H = spinInversionHamiltonian(J_ratios[i], N, 0, N);
-            vector<double> erg = getEnergiesFromBlocks(H, true);
+            //list<list<list<MatrixXd>>> H = spinInversionHamiltonian(J_ratios[i], N, 0, N);
+            vector<double> erg = getEnergies_memorySaving_threaded_inversion(J_ratios[i], N);
             std::lock_guard<std::mutex> lock(m);
             writeThreadSafe(diffs, {abs(erg[0]-erg[1])});
             writeThreadSafe(reSortedJs, {J_ratios[i]} );
@@ -346,4 +346,16 @@ MatrixXcd buildTransformMatrix_momentum(const list<list<MatrixXcd>> & H_m0, vect
     MatrixXcd ret = blkdiag(EV_blocks, totalSize);
 
     return ret;
+}
+
+vector<double> readDoubleVectorFromFile(const std::string & path) {
+    vector<double> vals;
+    std::ifstream file;
+    file.open(path);
+    std::string line;
+    while(getline(file, line)) {
+        vals.emplace_back( stod(line) );
+    }
+
+    return vals;
 }

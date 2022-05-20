@@ -119,7 +119,7 @@ for J_ratio in J_ratios:
     J_ratio = J_ratio.replace("_", ".")
     ax.set(xlabel="$T$ ($J_2$)", ylabel="Susceptibility per Spin $\\chi / N$", title="$J_1/J_2 =\\,$" + J_ratio)
     plt.show()
-
+"""
 # Excitation Erg
 fig, ax = plt.subplots()
 for N in np.linspace(6, 18, 7):
@@ -137,7 +137,7 @@ for N in np.linspace(6, 18, 7):
     ax.legend()
     ax.set(xlabel="$J_1/J_2$", ylabel="1st Excitation Energy $\\Delta E$ ($J_2$)")
 plt.show()
-
+"""
 # Ground state erg
 fig, ax = plt.subplots()
 for N in np.linspace(6, 16, 6):
