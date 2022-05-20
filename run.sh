@@ -21,5 +21,5 @@ else
   end="3"
   flags="0010000"
 fi
-./cmake-build-release/SpinChainED nMin nMax dataPointNum J_ratios_path Ts_path isBeta start end flags
+./cmake-build-release/SpinChainED $nMin $nMax $dataPointNum $J_ratios_path $Ts_path $isBeta $start $end $flags
 
