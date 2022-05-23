@@ -49,6 +49,42 @@ void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double
     savePairsToFile(out_l, path);
 }
 
+void saveSpinGapForVaryingJ(int N, int dataPointNum, double start, double end, const std::string & path) {
+    Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
+    vector<double> diffs;
+    vector<double> reSortedJs;
+    vector<std::pair<double, double>> out;
+    std::mutex m;
+#pragma omp parallel for default(none) shared(diffs, J_ratios, reSortedJs, N, m)
+    for (int i = 0; i < J_ratios.size(); i++) {
+        /*if (N % 4 == 0 && N >= 8) {
+            list<list<list<MatrixXd>>> H_m0 = spinInversionHamiltonian(J_ratios[i], N, N/2, N/2);
+            vector<double> erg_m0 = getEnergiesFromBlocks(H_m0, true);
+            list<list<list<MatrixXd>>> H_m1 = spinInversionHamiltonian(J_ratios[i], N, N/2 + 1, N/2 + 1);
+            vector<double> erg_m1 = getEnergiesFromBlocks(H_m1, true);
+            std::lock_guard<std::mutex> lock(m);
+            double val = abs(erg_m0[0] - erg_m1[0]);
+            writeThreadSafe(diffs, {val});
+            writeThreadSafe(reSortedJs, {J_ratios[i]} );
+        } else */if (N % 2 == 0 && N >= 6) {
+            list<list<MatrixXcd>> H_m0 = momentumHamiltonian(J_ratios[i], N, N/2, N/2);
+            vector<double> erg_m0 = getEnergiesFromBlocks(H_m0, true);
+            list<list<MatrixXcd>> H_m1 = momentumHamiltonian(J_ratios[i], N, N/2 + 1, N/2 + 1);
+            vector<double> erg_m1 = getEnergiesFromBlocks(H_m1, true);
+            std::lock_guard<std::mutex> lock(m);
+            double val = abs(erg_m0[0] - erg_m1[0]);
+            writeThreadSafe(diffs, {val});
+            writeThreadSafe(reSortedJs, {J_ratios[i]} );
+        }
+    }
+    for (int i = 0; i < diffs.size(); i++) {
+        out.emplace_back( std::pair<double, double>(reSortedJs[i], diffs[i]) );
+    }
+    std::sort(out.begin(), out.end());
+    list<std::pair<double, double>> out_l(out.begin(), out.end());
+    savePairsToFile(out_l, path);
+}
+
 void saveGroundStateErgPerSpinForVaryingJ(int N, int dataPointNum, double start, double end, const std::string & path) {
     Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
     vector<double> gStateErgs;

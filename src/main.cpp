@@ -43,7 +43,7 @@ int main(int argc, char* argv[]) {
         std::cout << "Excitation energies:\n";
         for (int N = nMin; N <= nMax; N += 2) {
             std::string path = saveTo_path + "/out/ExcitationErgs/ExcErgs" + std::to_string(N) + ".txt";
-            saveExcitationErgsForVaryingJ(N, dataPointNum, start, endP, path);
+            saveSpinGapForVaryingJ(N, dataPointNum, start, endP, path);
             std::cout << std::string("N") + std::to_string(N) << std::endl;
         }
     }

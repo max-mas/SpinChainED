@@ -29,6 +29,8 @@
 // Note: If ground state is degenerate, zero is returned.
 void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double end, const std::string & path);
 
+void saveSpinGapForVaryingJ(int N, int dataPointNum, double start, double end, const std::string & path);
+
 void saveGroundStateErgPerSpinForVaryingJ(int N, int dataPointNum, double start, double end, const std::string & path);
 
 // Saves specific heat at given temperature/beta for varying values of J1/J2.
