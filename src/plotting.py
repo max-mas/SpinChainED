@@ -58,6 +58,7 @@ if flags[0]:
         ax.legend()
         ax.set(xlabel="$J_1/J_2$", ylabel="1st Excitation Energy $\\Delta E$ ($J_2$)")
     fig.savefig(saveToPath + "/plots/ExcitationErgs/Excergs.pdf")
+    fig.savefig(saveToPath + "/plots/ExcitationErgs/Excergs.png")
 
 # Ground state erg
 if flags[1]:
@@ -77,6 +78,7 @@ if flags[1]:
         ax.legend()
         ax.set(xlabel="$J_1/J_2$", ylabel="Ground state energy per spin $E_0 / N$ ($J_2$)")
     fig.savefig(saveToPath + "/plots/GroundStateErgs/GSErgs.pdf")
+    fig.savefig(saveToPath + "/plots/GroundStateErgs/GSErgs.png")
 
 # Specific Heat (T)
 if flags[2]:
@@ -99,6 +101,7 @@ if flags[2]:
         ax.set(xlabel="$T$ ($J_2$)", ylabel="Specific heat per Spin $C/N$", title="$J_1/J_2 =\\,$" + J_ratio)
         J_ratio = J_ratio.replace(".", "_")
         fig.savefig(saveToPath + "/plots/SpecificHeats/SpecHeatJ" + J_ratio + ".pdf")
+        fig.savefig(saveToPath + "/plots/SpecificHeats/SpecHeatJ" + J_ratio + ".png")
 
 # Specific Heat (J)
 if flags[3]:
@@ -121,6 +124,7 @@ if flags[3]:
         ax.set(xlabel="$J_1/J_2$", ylabel="Specific heat per Spin $C/N$", title="$T =\\,$" + T)
         T = T.replace(".", "_")
         fig.savefig(saveToPath + "/plots/SpecificHeatsForJ/SpecHeatT" + T + ".pdf")
+        fig.savefig(saveToPath + "/plots/SpecificHeatsForJ/SpecHeatT" + T + ".png")
 
 # Susceptibility (T)
 if flags[4]:
@@ -145,6 +149,7 @@ if flags[4]:
         ax.set(xlabel="$T$ ($J_2$)", ylabel="Susceptibility per Spin $\\chi / N$", title="$J_1/J_2 =\\,$" + J_ratio)
         J_ratio = J_ratio.replace(".", "_")
         fig.savefig(saveToPath + "/plots/Susceptibilities/SuscJ" + J_ratio + ".pdf")
+        fig.savefig(saveToPath + "/plots/Susceptibilities/SuscJ" + J_ratio + ".png")
 
 # Susceptibility (J)
 if flags[5]:
@@ -167,6 +172,7 @@ if flags[5]:
         ax.set(xlabel="$J_1/J_2$", ylabel="Susceptibility per Spin $\\chi / N$ ", title="$T =\\,$" + T)
         T = T.replace(".", "_")
         fig.savefig(saveToPath + "/plots/SusceptibilitiesForJ/SuscT" + T + ".pdf")
+        fig.savefig(saveToPath + "/plots/SusceptibilitiesForJ/SuscT" + T + ".png")
 
 
 # Dispersion
@@ -194,3 +200,4 @@ if flags[6]:
             ax.xaxis.set_major_locator(MaxNLocator(integer=True))
             fig.colorbar(sc, cmap="hsv", values=ms, label="Magnetization $m$")
             fig.savefig(saveToPath + "/plots/Dispersion/DispN" + str(N) + "J" + J_ratio + ".pdf")
+            fig.savefig(saveToPath + "/plots/Dispersion/DispN" + str(N) + "J" + J_ratio + ".png")

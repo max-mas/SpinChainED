@@ -108,8 +108,8 @@ list<MatrixXcd> spinOpS2_momentum_m0(int N) {
 
                         if (f >= 0) {
                             complex<double> offDiagEl = 2 * 0.5 * sqrt((double) R_vector[l] / (double) R_vector[f])
-                                                        * std::exp(
-                                    complex<double>(0, 4.0 * M_PI * (double) k * (double) r_L[1] / (double) N));
+                                                        * std::exp(complex<double>(0, 4.0 * M_PI
+                                                            * (double) k * (double) r_L[1] / (double) N));
                             S2(l, f) += offDiagEl;
                         }
                     }

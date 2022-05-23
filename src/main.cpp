@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
     if (flags[0]) {
         std::cout << "Excitation energies:\n";
         for (int N = nMin; N <= nMax; N += 2) {
-            std::string path = saveTo_path + "/ExcitationErgs/ExcErgs" + std::to_string(N) + ".txt";
+            std::string path = saveTo_path + "/out/ExcitationErgs/ExcErgs" + std::to_string(N) + ".txt";
             saveExcitationErgsForVaryingJ(N, dataPointNum, start, endP, path);
             std::cout << std::string("N") + std::to_string(N) << std::endl;
         }
@@ -52,7 +52,7 @@ int main(int argc, char* argv[]) {
     if (flags[1]) {
         std::cout << "Ground state energies:\n";
         for (int N = nMin; N <= nMax; N+= 2) {
-            std::string path = saveTo_path + "/GroundStateErgs/GSErgs" + std::to_string(N) + ".txt";
+            std::string path = saveTo_path + "/out/GroundStateErgs/GSErgs" + std::to_string(N) + ".txt";
             saveGroundStateErgPerSpinForVaryingJ(N, dataPointNum, start, endP, path);
             std::cout << std::string("N") + std::to_string(N) << std::endl;
         }
@@ -65,7 +65,7 @@ int main(int argc, char* argv[]) {
             for (int N = nMin; N <= nMax; N += 2) {
                 std::string j = std::to_string(J_ratio);
                 std::replace(j.begin(), j.end(), '.', '_');
-                std::string path = saveTo_path + "/SpecificHeats/SpecHeatN" + std::to_string(N) + std::string("J") +
+                std::string path = saveTo_path + "/out/SpecificHeats/SpecHeatN" + std::to_string(N) + std::string("J") +
                         j + ".txt";
                 saveSpecificHeatsForVaryingTemp(N, dataPointNum, J_ratio, start, endP, isBeta, path);
                 std::cout << std::string("N") + std::to_string(N) + std::string("J") + j << std::endl;
@@ -80,7 +80,7 @@ int main(int argc, char* argv[]) {
             for (int N = nMin; N <= nMax; N += 2) {
                 std::string b = std::to_string(T);
                 std::replace(b.begin(), b.end(), '.', '_');
-                std::string path = saveTo_path + "/SpecificHeatsForJ/SpecHeatN" + std::to_string(N) +
+                std::string path = saveTo_path + "/out/SpecificHeatsForJ/SpecHeatN" + std::to_string(N) +
                                    std::string("T") +
                                    b + ".txt";
                 saveSpecificHeatsForVaryingJ(N, dataPointNum, T, start, endP, isBeta, path);
@@ -96,7 +96,7 @@ int main(int argc, char* argv[]) {
             for (int N = nMin; N <= nMax; N += 2) {
                 std::string j = std::to_string(J_ratio);
                 std::replace(j.begin(), j.end(), '.', '_');
-                std::string path = saveTo_path + "/Susceptibilities/SuscN" + std::to_string(N) + std::string("J") +
+                std::string path = saveTo_path + "/out/Susceptibilities/SuscN" + std::to_string(N) + std::string("J") +
                         j + ".txt";
                 saveSusceptibilitesForVaryingTemp(N, dataPointNum, J_ratio, start, endP, isBeta, path);
                 std::cout << std::string("N") + std::to_string(N) + std::string("J") + j << std::endl;
@@ -111,7 +111,7 @@ int main(int argc, char* argv[]) {
             for (int N = nMin; N <= nMax; N+= 2) {
                 std::string b = std::to_string(T);
                 std::replace(b.begin(), b.end(), '.', '_');
-                std::string path = saveTo_path + "SusceptibilitiesForJ/SuscN" + std::to_string(N)+ std::string("T") +
+                std::string path = saveTo_path + "/out/SusceptibilitiesForJ/SuscN" + std::to_string(N)+ std::string("T") +
                                    b + ".txt";
                 saveSusceptibilitiesForVaryingJ(N, dataPointNum, T, start, endP, isBeta, path);
                 std::cout << std::string("N") + std::to_string(N)+ std::string("T") + b << std::endl;
@@ -127,7 +127,7 @@ int main(int argc, char* argv[]) {
                 std::string j = std::to_string(J_ratio);
                 std::replace(j.begin(), j.end(), '.', '_');
 
-                std::string path = saveTo_path + "/Dispersion/DispN" + std::to_string(N)
+                std::string path = saveTo_path + "/out/Dispersion/DispN" + std::to_string(N)
                                    + std::string("J") + j + ".txt";
                 saveEnergyDispersionWithMag(N, J_ratio, path);
                 std::cout << std::string("N") + std::to_string(N)+ std::string("J") + j << std::endl;

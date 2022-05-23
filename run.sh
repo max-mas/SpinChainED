@@ -20,8 +20,8 @@ else
   isBeta="0"
   start="0"
   end="3"
-  flags="0010000"
+  flags="0000100"
   saveTo_path="/home/mmaschke/BA_Code/Data"
 fi
 ./cmake-build-release/SpinChainED $nMin $nMax $dataPointNum $J_ratios_path $Ts_path $isBeta $start $end $flags $saveTo_path
-
+python3 ./src/plotting.py $nMin $nMax $dataPointNum $J_ratios_path $Ts_path $flags $saveTo_path
