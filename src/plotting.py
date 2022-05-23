@@ -57,8 +57,8 @@ if flags[0]:
         ax.plot(Ts, excErg, label=lab)
         ax.legend()
         ax.set(xlabel="$J_1/J_2$", ylabel="Spin Gap Energy $\\Delta E$ ($J_2$)")
-        ax.set_xlim(0, 0.5)
-        ax.set_ylim(0, 0.75)
+        #ax.set_xlim(0, 0.5)
+        #ax.set_ylim(0, 0.75)
     fig.savefig(saveToPath + "/plots/ExcitationErgs/Excergs.pdf")
     fig.savefig(saveToPath + "/plots/ExcitationErgs/Excergs.png")
 

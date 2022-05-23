@@ -51,11 +51,11 @@ void saveExcitationErgsForVaryingJ(int N, int dataPointNum, double start, double
 
 void saveSpinGapForVaryingJ(int N, int dataPointNum, double start, double end, const std::string & path) {
     Eigen::VectorXd J_ratios = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
-    vector<double> diffs;
+    vector<std::pair<double, double>> diffs;
     vector<double> reSortedJs;
-    vector<std::pair<double, double>> out;
+    vector<std::tuple<double, double, double>> out;
     std::mutex m;
-#pragma omp parallel for default(none) shared(diffs, J_ratios, reSortedJs, N, m)
+//#pragma omp parallel for default(none) shared(diffs, J_ratios, reSortedJs, N, m)
     for (int i = 0; i < J_ratios.size(); i++) {
         /*if (N % 4 == 0 && N >= 8) {
             list<list<list<MatrixXd>>> H_m0 = spinInversionHamiltonian(J_ratios[i], N, N/2, N/2);
@@ -66,23 +66,23 @@ void saveSpinGapForVaryingJ(int N, int dataPointNum, double start, double end, c
             double val = abs(erg_m0[0] - erg_m1[0]);
             writeThreadSafe(diffs, {val});
             writeThreadSafe(reSortedJs, {J_ratios[i]} );
-        } else */if (N % 2 == 0 && N >= 6) {
+        } else*/ if (N % 2 == 0 && N >= 6) {
             list<list<MatrixXcd>> H_m0 = momentumHamiltonian(J_ratios[i], N, N/2, N/2);
             vector<double> erg_m0 = getEnergiesFromBlocks(H_m0, true);
             list<list<MatrixXcd>> H_m1 = momentumHamiltonian(J_ratios[i], N, N/2 + 1, N/2 + 1);
-            vector<double> erg_m1 = getEnergiesFromBlocks(H_m1, true);
+            std::pair<double, double> e_k_m1 = findLowestErgAndK_momentum(H_m1, N);
             std::lock_guard<std::mutex> lock(m);
-            double val = abs(erg_m0[0] - erg_m1[0]);
-            writeThreadSafe(diffs, {val});
+            double val = abs(erg_m0[0] - std::get<0>(e_k_m1));
+            writeThreadSafe(diffs, {std::pair<double, double>(val, std::get<1>(e_k_m1))} );
             writeThreadSafe(reSortedJs, {J_ratios[i]} );
         }
     }
     for (int i = 0; i < diffs.size(); i++) {
-        out.emplace_back( std::pair<double, double>(reSortedJs[i], diffs[i]) );
+        out.emplace_back( std::tuple<double, double, double>(reSortedJs[i], std::get<0>(diffs[i]), std::get<1>(diffs[i]) ));
     }
     std::sort(out.begin(), out.end());
-    list<std::pair<double, double>> out_l(out.begin(), out.end());
-    savePairsToFile(out_l, path);
+    list<std::tuple<double, double, double>> out_l(out.begin(), out.end());
+    saveTripleToFile(out_l, path);
 }
 
 void saveGroundStateErgPerSpinForVaryingJ(int N, int dataPointNum, double start, double end, const std::string & path) {
@@ -314,17 +314,19 @@ void saveTripleToFile(const list<std::tuple<T, U, V>> & pairList, std::string pa
 }
 
 // Enables threaded writing to a vector.
-void writeThreadSafe (vector<vector<double>> & writeTo, const vector<double> & writeFrom) {
+template <typename T>
+void writeThreadSafe (vector<vector<T>> & writeTo, const vector<T> & writeFrom) {
     static std::mutex mu;
     std::lock_guard<std::mutex> lock(mu);
     writeTo.emplace_back(writeFrom);
 }
 
 // Enables threaded writing to a vector.
-void writeThreadSafe (vector<double> & writeTo, const vector<double> & writeFrom) {
+template <typename T>
+void writeThreadSafe (vector<T> & writeTo, const vector<T> & writeFrom) {
     static std::mutex mu;
     std::lock_guard<std::mutex> lock(mu);
-    for (double d : writeFrom) {
+    for (T d : writeFrom) {
         writeTo.emplace_back(d);
     }
 }
@@ -394,4 +396,24 @@ vector<double> readDoubleVectorFromFile(const std::string & path) {
     }
 
     return vals;
+}
+
+std::pair<double, double> findLowestErgAndK_momentum(const list<list<MatrixXcd>> & H, int N) {
+    vector<std::pair<double, double>> ergs_w_k;
+    for (const list<MatrixXcd> & subList : H) { // should only contain one element
+        int k = -trunc((N+2)/4);
+        for (const MatrixXcd & mat : subList) {
+            Eigen::SelfAdjointEigenSolver<MatrixXcd> sol;
+            if (mat.cols() == 0) {
+                continue;
+            }
+            sol.compute(mat);
+            Eigen::VectorXcd blockEnergies = sol.eigenvalues();
+            std::for_each(blockEnergies.begin(), blockEnergies.end(),
+                          [&](complex<double> &d) { ergs_w_k.emplace_back( std::pair<double, double>{d.real(), k } ); });
+            k++;
+        }
+    }
+    std::sort(ergs_w_k.begin(), ergs_w_k.end());
+    return ergs_w_k[0];
 }

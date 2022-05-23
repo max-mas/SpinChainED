@@ -151,17 +151,17 @@ vector<double> getParityErgsThreaded(const list<list<list<MatrixXd>>> & H_list, 
 }
 
 // Returns all eigenvalues for a given vector of values of J1/J2. Threaded.
-vector<vector<double>> diagonalizeThreaded(const vector<double> & J_ratios, int N, bool sort) {
+/*vector<vector<double>> diagonalizeThreaded(const vector<double> & J_ratios, int N, bool sort) {
     vector<vector<double>> v(J_ratios.size());
 #pragma omp parallel for default(none) shared(v, J_ratios, N, std::cout, sort)
     for (int i = 0; i < J_ratios.size(); i++) {
         list<list<MatrixXcd>> H = momentumHamiltonian(J_ratios[i], N, 0, N);
         vector<double> erg = getEnergiesFromBlocks(H, sort);
-        writeThreadSafe(v, erg);
+        writeThreadSafe<double>(v, erg);
         std::cout << "1 done" << "\n";
     }
     return v;
-}
+}*/
 
 // Generate full-sized matrix from blocks.
 MatrixXcd blkdiag(const list<MatrixXcd> & matrix_list, int totalSize) {

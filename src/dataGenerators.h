@@ -63,14 +63,18 @@ template <typename T, typename U, typename V>
 void saveTripleToFile(const std::list<std::tuple<T, U, V>> & pairList, std::string path);
 
 // Enables threaded writing to a vector.
-void writeThreadSafe (std::vector<std::vector<double>> & writeTo, const std::vector<double> & writeFrom);
+template <typename T>
+void writeThreadSafe(std::vector<std::vector<T>> & writeTo, const std::vector<T> & writeFrom);
 
 // Enables threaded writing to a vector.
-void writeThreadSafe (std::vector<double> & writeTo, const std::vector<double> & writeFrom);
+template <typename T>
+void writeThreadSafe(std::vector<T> & writeTo, const std::vector<T> & writeFrom);
 
 Eigen::MatrixXd buildTransformMatrix_parity(const std::list<std::list<std::list<Eigen::MatrixXd>>> & H_m0, std::vector<double> & ergs);
 Eigen::MatrixXcd buildTransformMatrix_momentum(const std::list<std::list<Eigen::MatrixXcd>> & H_m0, std::vector<double> & ergs);
 
 std::vector<double> readDoubleVectorFromFile(const std::string & path);
+
+std::pair<double, double> findLowestErgAndK_momentum(const std::list<std::list<Eigen::MatrixXcd>> & H, int N);
 
 #endif //SPINCHAINED_DATAGENERATORS_H
