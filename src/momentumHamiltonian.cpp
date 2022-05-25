@@ -56,20 +56,20 @@ list<list<MatrixXcd>> momentumHamiltonian(double J_ratio, int N, int n_up_min, i
     return H_subspace_list;
 }
 
-list<MatrixXcd> spinOpS2_momentum_m0(int N) {
+list<MatrixXcd> spinOpS2_momentum_m(int N, int n_up) {
     // N must be even and > 6 or this no longer describes the correct system.
     if (N < 6 || N%2 == 1) {
         throw std::invalid_argument("N must be larger than 6 and even.");
     }
 
     // loop over all magnetizations m
-    int n_up = N/2;
+    //int n_up = N/2;
     // Find states compatible with m and store them in list.
     vector<int> s_vector_m = getStates_m(N, n_up);
     int M = s_vector_m.size();
 
     // init list of blocks
-    list<MatrixXcd> S2_subspace_list(N);
+    list<MatrixXcd> S2_subspace_list;
 
     // loop over all possible momenta k
     for (int k = -trunc((N+2)/4) + 1 ; k <= trunc(N/4); k++ ) {

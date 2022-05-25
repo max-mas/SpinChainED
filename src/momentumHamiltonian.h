@@ -17,7 +17,7 @@
 // Generate list of list of (m, k)-blocks of the Hamiltonian for a given N.
 std::list<std::list<Eigen::MatrixXcd>> momentumHamiltonian(double J_ratio, int N, int n_up_min, int n_up_max);
 
-std::list<Eigen::MatrixXcd> spinOpS2_momentum_m0(int N);
+std::list<Eigen::MatrixXcd> spinOpS2_momentum_m(int N, int n_up);
 
 // Set matrix element for a given state (momentum-approach).
 void setHElement_momentum(double J_ratio, int N, std::list<Eigen::MatrixXcd> &H_subSubspace_list, int k,
