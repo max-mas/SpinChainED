@@ -1,0 +1,1 @@
+target_sources(SpinChain PRIVATE matrixExpIteration.h matrixExpIteration.cpp momentumHamiltonian_sparse.h momentumHamiltonian_sparse.cpp)
