@@ -3,16 +3,16 @@
 
 #include <chrono>
 
-#include "helperFunctions.h"
+#include "ED/helperFunctions.h"
 
-#include "naiveHamiltonian.h"
-#include "magnetizationHamiltonian.h"
-#include "momentumHamiltonian.h"
-#include "parityHamiltonian.h"
-#include "spinInversionHamiltonian.h"
+#include "ED/naiveHamiltonian.h"
+#include "ED/magnetizationHamiltonian.h"
+#include "ED/momentumHamiltonian.h"
+#include "ED/parityHamiltonian.h"
+#include "ED/spinInversionHamiltonian.h"
 
-#include "thermodynamics.h"
-#include "dataGenerators.h"
-#include "diagonalizationMethods.h"
+#include "ED/thermodynamics.h"
+#include "ED/dataGenerators.h"
+#include "ED/diagonalizationMethods.h"
 
 #endif //HEISENBERG_CHAIN_1D_C_MAIN_H

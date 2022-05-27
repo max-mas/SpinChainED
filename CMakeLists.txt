@@ -20,16 +20,16 @@ if (UNIX)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -m64 -I${MKLROOT}/include -DEIGEN_USE_MKL_ALL")
 endif (UNIX)
 
-add_executable(SpinChainED  src/main.cpp src/main.h src/helperFunctions.cpp src/helperFunctions.h src/constants.h
-                            src/thermodynamics.cpp src/thermodynamics.h src/dataGenerators.cpp src/dataGenerators.h
-                            src/naiveHamiltonian.cpp src/naiveHamiltonian.h src/magnetizationHamiltonian.cpp
-                            src/magnetizationHamiltonian.h src/momentumHamiltonian.cpp src/momentumHamiltonian.h
-                            src/diagonalizationMethods.cpp src/diagonalizationMethods.h src/parityHamiltonian.cpp
-                            src/parityHamiltonian.h src/spinInversionHamiltonian.cpp src/spinInversionHamiltonian.h)
+add_executable(SpinChain)
+add_subdirectory(src)
 
 if (WIN32)
-    target_link_libraries(SpinChainED PUBLIC OpenMP::OpenMP_CXX -Wl,--start-group ${MKLROOT}\\lib\\intel64\\mkl_intel_lp64.lib ${MKLROOT}\\lib\\intel64\\mkl_intel_thread.lib ${MKLROOT}\\lib\\intel64\\mkl_core.lib -Wl,--end-group -lgomp -lpthread -lm)
+    target_link_libraries(SpinChain PUBLIC OpenMP::OpenMP_CXX -Wl,--start-group
+            ${MKLROOT}\\lib\\intel64\\mkl_intel_lp64.lib ${MKLROOT}\\lib\\intel64\\mkl_intel_thread.lib
+            ${MKLROOT}\\lib\\intel64\\mkl_core.lib -Wl,--end-group -lgomp -lpthread -lm)
 endif(WIN32)
 if (UNIX)
-    target_link_libraries(SpinChainED PUBLIC OpenMP::OpenMP_CXX -Wl,--start-group ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl)
+    target_link_libraries(SpinChain PUBLIC OpenMP::OpenMP_CXX -Wl,--start-group
+            ${MKLROOT}/lib/intel64/libmkl_intel_lp64.a ${MKLROOT}/lib/intel64/libmkl_gnu_thread.a
+            ${MKLROOT}/lib/intel64/libmkl_core.a -Wl,--end-group -lgomp -lpthread -lm -ldl)
 endif(UNIX)

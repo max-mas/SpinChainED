@@ -15,7 +15,7 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
-#include "constants.h"
+#include "../constants.h"
 
 // Gets bit in integer s at index i.
 bool getBit(const int s, const int i);
