@@ -7,7 +7,7 @@ find_package(MKL REQUIRED)
 find_package(OpenMP REQUIRED)
 
 if (WIN32)
-    include_directories("D:\\Code\\C++\\eigen-3.4.0")
+    include_directories("C:\\Users\\masch\\Code\\eigen-3.4.0")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wa,-mbig-obj")
     set(MKLROOT "C:\\Program Files (x86)\\Intel\\oneAPI\\mkl\\latest")
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -I"%MKLROOT%"\\include -DEIGEN_USE_MKL_ALL")

@@ -1,4 +1,4 @@
-#include "DataGenerators_DQT.h"
+#include "dataGenerators_DQT.h"
 
 using std::string;
 using std::complex;
