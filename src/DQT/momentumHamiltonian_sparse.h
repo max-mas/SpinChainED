@@ -8,9 +8,10 @@
 #include <Eigen/Sparse>
 #include <Eigen/Dense>
 
-#include "/../ED/helperFunctions.h"
-#include "/../ED/momentumHamiltonian.h"
+#include "../ED/helperFunctions.h"
+#include "../ED/momentumHamiltonian.h"
 
+Eigen::SparseMatrix<std::complex<double>> momentumHamiltonian_sparse(double J_ratio, int N);
 
 
 #endif //SPINCHAINED_MOMENTUMHAMILTONIAN_SPARSE_H

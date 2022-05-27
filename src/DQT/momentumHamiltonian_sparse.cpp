@@ -93,6 +93,7 @@ SparseMatrix<complex<double>> momentumHamiltonian_sparse(double J_ratio, int N) 
 
     SparseMatrix<complex<double>> H(pow(2, N), pow(2, N));
     H.setFromTriplets(elementList.begin(), elementList.end());
+    H.makeCompressed();
 
     return H;
 }

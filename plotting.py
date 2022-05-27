@@ -87,7 +87,7 @@ if flags[2]:
     for J_ratio in J_ratios:
         fig, ax = plt.subplots()
         for N in np.linspace(nMin, nMax, nNum):
-            path = saveToPath + "/out/SpecificHeats/SpecHeatN" + str(int(N)) + "J" + J_ratio + ".txt"
+            path = saveToPath + "/out/SpecificHeats_DQT/SpecHeatDQTN" + str(int(N)) + "J" + J_ratio + ".txt"
             file = open(path)
             lines = file.readlines()
             Ts = []
@@ -100,10 +100,10 @@ if flags[2]:
             ax.plot(Ts, specHeat, label=lab)
         ax.legend()
         J_ratio = J_ratio.replace("_", ".")
-        ax.set(xlabel="$T$ ($J_2$)", ylabel="Specific heat per Spin $C/N$", title="$J_1/J_2 =\\,$" + J_ratio)
+        ax.set(xlabel="$\\beta$ ($1/J_2$)", ylabel="Specific heat per Spin $C/N$", title="$J_1/J_2 =\\,$" + J_ratio)
         J_ratio = J_ratio.replace(".", "_")
-        fig.savefig(saveToPath + "/plots/SpecificHeats/SpecHeatJ" + J_ratio + ".pdf")
-        fig.savefig(saveToPath + "/plots/SpecificHeats/SpecHeatJ" + J_ratio + ".png")
+        fig.savefig(saveToPath + "/plots/SpecificHeats_DQT/SpecHeatJ" + J_ratio + ".pdf")
+        fig.savefig(saveToPath + "/plots/SpecificHeats_DQT/SpecHeatJ" + J_ratio + ".png")
 
 # Specific Heat (J)
 if flags[3]:
@@ -175,7 +175,6 @@ if flags[5]:
         T = T.replace(".", "_")
         fig.savefig(saveToPath + "/plots/SusceptibilitiesForJ/SuscT" + T + ".pdf")
         fig.savefig(saveToPath + "/plots/SusceptibilitiesForJ/SuscT" + T + ".png")
-
 
 # Dispersion
 if flags[6]:

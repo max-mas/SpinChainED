@@ -9,10 +9,12 @@ using std::vector;
 //#define saveSusceptibility
 //#define saveSusceptibilityForJ
 //#define saveDispersion
+#define testingArea
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
+#ifndef testingArea
     if (argc < 11) {
         std::cout <<
             "Correct usage: ./SpinChainEd nMin nMax dataPointNum path_J_ratios path_Ts isBeta startP endP flags saveTo_path.\n"
@@ -134,6 +136,28 @@ int main(int argc, char* argv[]) {
             }
         }
     }
+#endif
+#ifdef testingArea
+
+    vector<double> J_ratios = {0.1, 0.5, 1, 2};
+    int nMin = 6;
+    int nMax = 12;
+    std::string saveTo_path = "D:/Code/C++/SpinChainData";
+    int dataPointNum = 200;
+
+    for (double J_ratio: J_ratios) {
+        for (int N = nMin; N <= nMax; N += 2) {
+            std::string j = std::to_string(J_ratio);
+            std::replace(j.begin(), j.end(), '.', '_');
+            std::string path = saveTo_path + "/out/SpecificHeats_DQT/SpecHeatDQTN" + std::to_string(N) + std::string("J") +
+                               j + ".txt";
+            saveSpecificHeatsForVaryingTemp_DQT(N, dataPointNum, J_ratio, 3.0, path);
+            std::cout << std::string("N") + std::to_string(N) + std::string("J") + j << std::endl;
+        }
+    }
+
+
+#endif
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count()

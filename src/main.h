@@ -15,4 +15,6 @@
 #include "ED/dataGenerators.h"
 #include "ED/diagonalizationMethods.h"
 
+#include "DQT/DataGenerators_DQT.h"
+
 #endif //HEISENBERG_CHAIN_1D_C_MAIN_H
