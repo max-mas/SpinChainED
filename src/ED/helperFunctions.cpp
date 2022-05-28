@@ -122,9 +122,9 @@ void printMatrix(const Eigen::MatrixXcd & M) {
     for (int i = 0; i < M.rows(); i++ ) {
         for (int j = 0; j < M.cols(); j++) {
             if (abs(M(i,j)) < epsilon) {
-                std::cout << 0.0 << "\t\t\t" ;
+                std::cout << 0.0 << "\t" ;
             } else {
-                std::cout << M(i, j) << "\t\t\t" ;
+                std::cout << M(i, j) << "\t" ;
             }
         }
         std::cout << std::endl;

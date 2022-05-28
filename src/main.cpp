@@ -143,7 +143,7 @@ int main(int argc, char* argv[]) {
     int nMin = 6;
     int nMax = 12;
     std::string saveTo_path = "C:/Users/masch/Code/SpinChain_data";
-    int dataPointNum = 200;
+    int dataPointNum = 400;
 
     for (double J_ratio: J_ratios) {
         for (int N = nMin; N <= nMax; N += 2) {
@@ -155,7 +155,6 @@ int main(int argc, char* argv[]) {
             std::cout << std::string("N") + std::to_string(N) + std::string("J") + j << std::endl;
         }
     }
-
 
 #endif
 

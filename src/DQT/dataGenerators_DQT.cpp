@@ -20,10 +20,10 @@ void saveSpecificHeatsForVaryingTemp_DQT(int N, int dataPointNum, double J_ratio
      if (N % 2 == 0 && N >= 6) {
         SparseMatrix<complex<double>> H  = momentumHamiltonian_sparse(J_ratio, N);
         SparseMatrix<complex<double>> H2 = H*H;
+        H2.makeCompressed();
 
 
-        VectorXcd psi = randomComplexVector(N, stdDev);
-        psi.normalize();
+        VectorXcd psi = randomComplexVectorNormalised(N, stdDev);
 
         for (int i = 0; i < dataPointNum; i++) {
             complex<double> avg_H2 = (psi.adjoint() * H2 * psi)(0,0);
@@ -45,11 +45,11 @@ void saveSpecificHeatsForVaryingTemp_DQT(int N, int dataPointNum, double J_ratio
     savePairsToFile(out, path);
 }
 
-VectorXcd randomComplexVector(int N, double stdDev) {
+VectorXcd randomComplexVectorNormalised(int N, double stdDev) {
     int vecSize = pow(2, N);
     VectorXcd psi(vecSize);
 
-    std::default_random_engine generator;
+    std::random_device generator; //may not be available
     std::normal_distribution<double> distribution(0.0, stdDev);
 
     for (int i = 0; i < vecSize; i++) {
@@ -57,6 +57,8 @@ VectorXcd randomComplexVector(int N, double stdDev) {
         double im = distribution(generator);
         psi(i) = complex<double>(re, im);
     }
+
+    psi.normalize();
 
     return psi;
 }
