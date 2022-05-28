@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib.ticker import MaxNLocator
 import sys
 
-plt.rcParams['text.usetex'] = True
+#plt.rcParams['text.usetex'] = True
 plt.rc('axes', labelsize=16)
 plt.rc('axes', titlesize=20)
 

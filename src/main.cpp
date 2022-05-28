@@ -142,7 +142,7 @@ int main(int argc, char* argv[]) {
     vector<double> J_ratios = {0.1, 0.5, 1, 2};
     int nMin = 6;
     int nMax = 12;
-    std::string saveTo_path = "D:/Code/C++/SpinChainData";
+    std::string saveTo_path = "C:/Users/masch/Code/SpinChain_data";
     int dataPointNum = 200;
 
     for (double J_ratio: J_ratios) {
