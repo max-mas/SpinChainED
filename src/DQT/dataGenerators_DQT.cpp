@@ -10,7 +10,7 @@ using Eigen::SparseMatrix;
 
 
 void saveSpecificHeatsForVaryingTemp_DQT(int N, int dataPointNum, double J_ratio, double end, string path) {
-    double stdDev = 1 ;// exp(1);
+    double stdDev = 1;// exp(1);
     double beta = 0;
     double dBeta = end / (double) dataPointNum;
     Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
@@ -18,12 +18,10 @@ void saveSpecificHeatsForVaryingTemp_DQT(int N, int dataPointNum, double J_ratio
     vector<double> Cs;
 
      if (N % 2 == 0 && N >= 6) {
-        SparseMatrix<complex<double>> H  = momentumHamiltonian_sparse(J_ratio, N);
+        SparseMatrix<complex<double>> H  = naiveHamiltonian_sparse(J_ratio, N).cast<complex<double>>();
         SparseMatrix<complex<double>> H2 = H*H;
-        H2.makeCompressed();
 
-
-        VectorXcd psi = randomComplexVectorNormalised(N, stdDev);
+        Eigen::VectorXcd psi = randomComplexVectorNormalised(N, stdDev);
 
         for (int i = 0; i < dataPointNum; i++) {
             complex<double> avg_H2 = (psi.adjoint() * H2 * psi)(0,0);

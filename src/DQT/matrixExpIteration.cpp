@@ -3,6 +3,7 @@
 
 using Eigen::SparseMatrix;
 using Eigen::VectorXcd;
+using Eigen::VectorXd;
 
 using std::complex;
 

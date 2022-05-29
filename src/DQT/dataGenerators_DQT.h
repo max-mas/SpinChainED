@@ -8,6 +8,7 @@
 #include <Eigen/Sparse>
 
 #include "momentumHamiltonian_sparse.h"
+#include "naiveHamiltonian_sparse.h"
 #include "matrixExpIteration.h"
 
 #include "../ED/dataGenerators.h"
