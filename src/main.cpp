@@ -151,7 +151,7 @@ int main(int argc, char* argv[]) {
             std::replace(j.begin(), j.end(), '.', '_');
             std::string path = saveTo_path + "/out/SpecificHeats_DQT/SpecHeatDQTN" + std::to_string(N) + std::string("J") +
                                j + ".txt";
-            saveSpecificHeatsForVaryingTemp_DQT(N, dataPointNum, J_ratio, 3.0, path);
+            saveSpecificHeatsForVaryingTemp_DQT(N, dataPointNum, J_ratio, 10, path);
             std::cout << std::string("N") + std::to_string(N) + std::string("J") + j << std::endl;
         }
     }

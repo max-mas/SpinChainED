@@ -1,5 +1,7 @@
 #include "dataGenerators_DQT.h"
 
+#include <utility>
+
 using std::string;
 using std::complex;
 using std::vector;
@@ -19,12 +21,12 @@ void saveSpecificHeatsForVaryingTemp_DQT(int N, int dataPointNum, double J_ratio
 
      if (N % 2 == 0 && N >= 6) {
         SparseMatrix<complex<double>> H  = naiveHamiltonian_sparse(J_ratio, N).cast<complex<double>>();
-        SparseMatrix<complex<double>> H2 = H*H;
+        //SparseMatrix<complex<double>> H2 = H*H;
 
         Eigen::VectorXcd psi = randomComplexVectorNormalised(N, stdDev);
 
         for (int i = 0; i < dataPointNum; i++) {
-            complex<double> avg_H2 = (psi.adjoint() * H2 * psi)(0,0);
+            complex<double> avg_H2 = (psi.adjoint() * H * (H * psi))(0,0);
             complex<double> avg_H  = (psi.adjoint() * H  * psi)(0,0);
 
             double C = pow(beta, 2) * ( avg_H2.real() - pow(avg_H.real(), 2) ) / N;
@@ -40,7 +42,7 @@ void saveSpecificHeatsForVaryingTemp_DQT(int N, int dataPointNum, double J_ratio
     for (int j = 0; j < dataPointNum; j++) {
         out.emplace_back( std::pair<double, double>(betas[j], Cs[j]) );
     }
-    savePairsToFile(out, path);
+    savePairsToFile(out, std::move(path));
 }
 
 VectorXcd randomComplexVectorNormalised(int N, double stdDev) {
@@ -48,11 +50,14 @@ VectorXcd randomComplexVectorNormalised(int N, double stdDev) {
     VectorXcd psi(vecSize);
 
     std::random_device generator; //may not be available
+    std::mt19937 gen(generator());
     std::normal_distribution<double> distribution(0.0, stdDev);
 
     for (int i = 0; i < vecSize; i++) {
-        double re = distribution(generator);
-        double im = distribution(generator);
+        double re = distribution(gen);
+        gen();
+        double im = distribution(gen);
+        gen();
         psi(i) = complex<double>(re, im);
     }
 
