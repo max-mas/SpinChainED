@@ -13,7 +13,7 @@ if test -n "${10}"; then
   saveTo_path="${10}"
 else
   nMin="6"
-  nMax="18"
+  nMax="20"
   dataPointNum="200"
   J_ratios_path="/home/mmaschke/BA_Code/Data/args/J_ratios.txt"
   Ts_path="/home/mmaschke/BA_Code/Data/args/Ts.txt"

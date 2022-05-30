@@ -11,7 +11,7 @@ using Eigen::VectorXcd;
 using Eigen::SparseMatrix;
 
 
-void saveSpecificHeatsForVaryingTemp_DQT(int N, int dataPointNum, double J_ratio, double end, string path) {
+void saveSpecificHeatsForVaryingTemp_DQT_parallel(int N, int dataPointNum, double J_ratio, double end, string path) {
     double beta = 0;
     double dBeta = end / (double) dataPointNum;
     Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
@@ -48,6 +48,38 @@ void saveSpecificHeatsForVaryingTemp_DQT(int N, int dataPointNum, double J_ratio
             normaliseListOfVectors(psi_vec);
 
             beta += dBeta;
+        }
+    }
+
+    list<std::pair<double, double>> out;
+    for (int j = 0; j < dataPointNum; j++) {
+        out.emplace_back( std::pair<double, double>(betas[j], Cs[j]) );
+    }
+    savePairsToFile(out, std::move(path));
+}
+
+void saveSpecificHeatsForVaryingTemp_DQT(int N, int dataPointNum, double J_ratio, double end, string path) {
+    double beta = 0;
+    double dBeta = end / (double) dataPointNum;
+    Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
+
+    vector<double> Cs;
+
+    if (N % 2 == 0 && N >= 6) {
+        const SparseMatrix<complex<double>> H  = momentumHamiltonian_sparse(J_ratio, N);
+        VectorXcd psi = randomComplexVectorNormalised(pow(2, N), 1);
+
+        for (int i = 0; i < dataPointNum; i++) {
+            double avg_H2 = psi.dot(H * (H * psi)).real();
+            double avg_H = psi.dot(H * psi).real();
+
+            double diff = avg_H2 - pow(avg_H, 2);
+            double C = pow(beta, 2) * ( diff ) / N;
+            Cs.emplace_back(C);
+
+            beta += dBeta;
+            iterateState_beta(H, psi, dBeta);
+            psi.normalize();
         }
     }
 

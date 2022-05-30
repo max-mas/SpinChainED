@@ -13,6 +13,8 @@
 
 #include "../ED/dataGenerators.h"
 
+void saveSpecificHeatsForVaryingTemp_DQT_parallel(int N, int dataPointNum, double J_ratio, double end, std::string path);
+
 void saveSpecificHeatsForVaryingTemp_DQT(int N, int dataPointNum, double J_ratio, double end, std::string path);
 
 void normaliseListOfVectors(std::vector<Eigen::VectorXcd> & vec);

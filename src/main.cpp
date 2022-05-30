@@ -140,8 +140,8 @@ int main(int argc, char* argv[]) {
 #ifdef testingArea
 
     vector<double> J_ratios = {0.1, 0.5, 1, 2};
-    int nMin = 20;
-    int nMax = 20;
+    int nMin = 6;
+    int nMax = 24;
     std::string saveTo_path = "/home/mmaschke/BA_Code/Data";
     int dataPointNum = 400;
 
@@ -151,7 +151,7 @@ int main(int argc, char* argv[]) {
             std::replace(j.begin(), j.end(), '.', '_');
             std::string path = saveTo_path + "/out/SpecificHeats_DQT/SpecHeatDQTN" + std::to_string(N)
                     + std::string("J") + j + ".txt";
-            saveSpecificHeatsForVaryingTemp_DQT(N, dataPointNum, J_ratio, 10, path);
+            saveSpecificHeatsForVaryingTemp_DQT_parallel(N, dataPointNum, J_ratio, 10, path);
             std::cout << std::string("N") + std::to_string(N) + std::string("J") + j << std::endl;
         }
     }
