@@ -15,6 +15,8 @@
 
 void saveSpecificHeatsForVaryingTemp_DQT(int N, int dataPointNum, double J_ratio, double end, std::string path);
 
-Eigen::VectorXcd randomComplexVectorNormalised(int N, double stdDev);
+void normaliseListOfVectors(std::vector<Eigen::VectorXcd> & vec);
+
+Eigen::VectorXcd randomComplexVectorNormalised(int vecSize, double stdDev);
 
 #endif //SPINCHAINED_DATAGENERATORS_DQT_H

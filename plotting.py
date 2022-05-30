@@ -3,7 +3,7 @@ import numpy as np
 from matplotlib.ticker import MaxNLocator
 import sys
 
-#plt.rcParams['text.usetex'] = True
+plt.rcParams['text.usetex'] = True
 plt.rc('axes', labelsize=16)
 plt.rc('axes', titlesize=20)
 
@@ -99,6 +99,7 @@ if flags[2]:
             lab = "$N$ = " + str(int(N))
             ax.plot(Ts, specHeat, label=lab)
         ax.legend()
+        ax.set_ylim(0, 0.4)
         J_ratio = J_ratio.replace("_", ".")
         ax.set(xlabel="$\\beta$ ($1/J_2$)", ylabel="Specific heat per Spin $C/N$", title="$J_1/J_2 =\\,$" + J_ratio)
         J_ratio = J_ratio.replace(".", "_")

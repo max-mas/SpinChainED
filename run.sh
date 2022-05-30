@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if test -n "$9"; then
+if test -n "${10}"; then
   nMin="$1"
   nMax="$2"
   dataPointNum="$3"
@@ -13,15 +13,15 @@ if test -n "$9"; then
   saveTo_path="${10}"
 else
   nMin="6"
-  nMax="12"
+  nMax="18"
   dataPointNum="200"
   J_ratios_path="/home/mmaschke/BA_Code/Data/args/J_ratios.txt"
   Ts_path="/home/mmaschke/BA_Code/Data/args/Ts.txt"
   isBeta="0"
   start="0"
   end="3"
-  flags="1000000"
+  flags="0010000"
   saveTo_path="/home/mmaschke/BA_Code/Data"
 fi
-./cmake-build-release/SpinChainED $nMin $nMax $dataPointNum $J_ratios_path $Ts_path $isBeta $start $end $flags $saveTo_path
-#python3 ./src/plotting.py $nMin $nMax $dataPointNum $J_ratios_path $Ts_path $flags $saveTo_path
+#./cmake-build-release/SpinChainED $nMin $nMax $dataPointNum $J_ratios_path $Ts_path $isBeta $start $end $flags $saveTo_path
+python3 ./plotting.py $nMin $nMax $dataPointNum $J_ratios_path $Ts_path $flags $saveTo_path
