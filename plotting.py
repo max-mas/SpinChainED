@@ -94,12 +94,15 @@ if flags[2]:
             specHeat = []
             for line in lines:
                 data = line.split(" ")
+                # if float(data[0]) == 0:
+                #    continue
                 Ts.append(float(data[0]))
                 specHeat.append(float(data[1].replace("\n", "")))
             lab = "$N$ = " + str(int(N))
             ax.plot(Ts, specHeat, label=lab)
         ax.legend()
         ax.set_ylim(0, 0.4)
+        ax.set_xlim(0, 3)
         J_ratio = J_ratio.replace("_", ".")
         ax.set(xlabel="$\\beta$ ($1/J_2$)", ylabel="Specific heat per Spin $C/N$", title="$J_1/J_2 =\\,$" + J_ratio)
         J_ratio = J_ratio.replace(".", "_")
@@ -134,25 +137,26 @@ if flags[4]:
     for J_ratio in J_ratios:
         fig, ax = plt.subplots()
         for N in np.linspace(nMin, nMax, nNum):
-            path = saveToPath + "/out/Susceptibilities/SuscN" + str(int(N)) + "J" + J_ratio + ".txt"
+            path = saveToPath + "/out/Susceptibilities_DQT/SuscDQTN" + str(int(N)) + "J" + J_ratio + ".txt"
             file = open(path)
             lines = file.readlines()
             Ts = []
             susc = []
             for line in lines:
                 data = line.split(" ")
-                if data[0] == "-nan" or data[0] == "nan":
+                if data[0] == "-nan" or data[0] == "nan" or float(data[0]) == 0:
                     continue
-                Ts.append(float(data[0]) * 8.5)
+                Ts.append(1/float(data[0]))
                 susc.append(float(data[1].replace("\n", "")))
             lab = "$N$ = " + str(int(N))
             ax.plot(Ts, susc, label=lab)
         ax.legend()
+        ax.set_xlim(0, 3)
         J_ratio = J_ratio.replace("_", ".")
-        ax.set(xlabel="$T$ ($J_2$)", ylabel="Susceptibility per Spin $\\chi / N$", title="$J_1/J_2 =\\,$" + J_ratio)
+        ax.set(xlabel="$\\beta$ ($J_2$)", ylabel="Susceptibility per Spin $\\chi / N$", title="$J_1/J_2 =\\,$" + J_ratio)
         J_ratio = J_ratio.replace(".", "_")
-        fig.savefig(saveToPath + "/plots/Susceptibilities/SuscJ" + J_ratio + ".pdf")
-        fig.savefig(saveToPath + "/plots/Susceptibilities/SuscJ" + J_ratio + ".png")
+        fig.savefig(saveToPath + "/plots/Susceptibilities_DQT/SuscJ" + J_ratio + ".pdf")
+        fig.savefig(saveToPath + "/plots/Susceptibilities_DQT/SuscJ" + J_ratio + ".png")
 
 # Susceptibility (J)
 if flags[5]:

@@ -13,6 +13,8 @@
 
 Eigen::SparseMatrix<std::complex<double>> momentumHamiltonian_sparse(double J_ratio, int N);
 
+Eigen::SparseMatrix<std::complex<double>> spinOp2_momentum_sparse(int N);
+
 std::vector<Eigen::SparseMatrix<std::complex<double>>> momentumHamiltonian_sparse_blocks(double J_ratio, int N);
 
 

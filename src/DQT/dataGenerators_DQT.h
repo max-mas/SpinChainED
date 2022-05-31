@@ -3,6 +3,7 @@
 
 #include <string>
 #include <random>
+#include <utility>
 
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
@@ -15,7 +16,9 @@
 
 void saveSpecificHeatsForVaryingTemp_DQT_parallel(int N, int dataPointNum, double J_ratio, double end, std::string path);
 
-void saveSpecificHeatsForVaryingTemp_DQT(int N, int dataPointNum, double J_ratio, double end, std::string path);
+void saveSpecificHeatsForVaryingTemp_DQT_avg(int N, int dataPointNum, double J_ratio, double end, const std::string & path, int numOfRuns);
+
+void saveSusceptibilityForVaryingTemp_DQT(int N, int dataPointNum, double J_ratio, double end, const std::string & path);
 
 void normaliseListOfVectors(std::vector<Eigen::VectorXcd> & vec);
 

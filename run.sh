@@ -13,14 +13,14 @@ if test -n "${10}"; then
   saveTo_path="${10}"
 else
   nMin="6"
-  nMax="20"
+  nMax="12"
   dataPointNum="200"
   J_ratios_path="/home/mmaschke/BA_Code/Data/args/J_ratios.txt"
   Ts_path="/home/mmaschke/BA_Code/Data/args/Ts.txt"
   isBeta="0"
   start="0"
   end="3"
-  flags="0010000"
+  flags="0000100"
   saveTo_path="/home/mmaschke/BA_Code/Data"
 fi
 #./cmake-build-release/SpinChainED $nMin $nMax $dataPointNum $J_ratios_path $Ts_path $isBeta $start $end $flags $saveTo_path
