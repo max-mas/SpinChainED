@@ -153,7 +153,7 @@ if flags[4]:
         ax.legend()
         ax.set_xlim(0, 3)
         J_ratio = J_ratio.replace("_", ".")
-        ax.set(xlabel="$\\beta$ ($J_2$)", ylabel="Susceptibility per Spin $\\chi / N$", title="$J_1/J_2 =\\,$" + J_ratio)
+        ax.set(xlabel="$T$ ($J_2$)", ylabel="Susceptibility per Spin $\\chi / N$", title="$J_1/J_2 =\\,$" + J_ratio)
         J_ratio = J_ratio.replace(".", "_")
         fig.savefig(saveToPath + "/plots/Susceptibilities_DQT/SuscJ" + J_ratio + ".pdf")
         fig.savefig(saveToPath + "/plots/Susceptibilities_DQT/SuscJ" + J_ratio + ".png")

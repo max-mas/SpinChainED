@@ -9,7 +9,7 @@ using std::vector;
 //#define saveSusceptibility
 //#define saveSusceptibilityForJ
 //#define saveDispersion
-#define testingArea
+//#define testingArea
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -21,6 +21,10 @@ int main(int argc, char* argv[]) {
             "Flag order: ExcErgs, GrdState, SpecHeat, SpecHeatJ, Susc, SuscJ, Disp.\n";
         return 69;
     }
+
+    const int cpu_cnt = (int) std::thread::hardware_concurrency() / 2;
+    omp_set_num_threads(cpu_cnt);
+
 
     int nMin = atoi(argv[1]);
     int nMax = atoi(argv[2]);
@@ -62,7 +66,7 @@ int main(int argc, char* argv[]) {
 
     // Specific heats (T)
     if (flags[2]) {
-        std::cout << "Specific heats vor varying temps:\n";
+        std::cout << "Specific heats vor varying temps:\n";git
         for (double J_ratio: J_ratios) {
             for (int N = nMin; N <= nMax; N += 2) {
                 std::string j = std::to_string(J_ratio);
