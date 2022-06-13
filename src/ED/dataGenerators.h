@@ -60,7 +60,14 @@ template <typename T, typename U>
 void savePairsToFile(const std::list<std::pair<T, U>> & pairList, std::string path);
 
 template <typename T, typename U, typename V>
-void saveTripleToFile(const std::list<std::tuple<T, U, V>> & pairList, std::string path);
+void saveTripleToFile(const std::list<std::tuple<T, U, V>> & pairList, std::string path) {
+    std::ofstream File;
+    File.open(path);
+    for (std::tuple<T, U, V> p : pairList) {
+        File << std::get<0>(p) << " " << std::get<1>(p) << " " << std::get<2>(p) << "\n";
+    }
+    File.close();
+}
 
 template <typename T, typename U, typename V, typename W>
 void saveQuadrupleToFile(const std::list<std::tuple<T, U, V, W>> & pairList, std::string path);

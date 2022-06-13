@@ -9,12 +9,13 @@ using std::vector;
 //#define saveSusceptibility
 //#define saveSusceptibilityForJ
 //#define saveDispersion
-//#define testingArea
+#define QTtestingArea
+#define statisticsTest
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
-#ifndef testingArea
+#ifndef QTtestingArea
     if (argc < 11) {
         std::cout <<
             "Correct usage: ./SpinChainEd nMin nMax dataPointNum path_J_ratios path_Ts isBeta startP endP flags saveTo_path.\n"
@@ -22,7 +23,7 @@ int main(int argc, char* argv[]) {
         return 69;
     }
 
-    const int cpu_cnt = (int) std::thread::hardware_concurrency() / 2;
+    const int cpu_cnt = (int) std::thread::hardware_concurrency() ;// / 2;
     omp_set_num_threads(cpu_cnt);
 
 
@@ -66,7 +67,7 @@ int main(int argc, char* argv[]) {
 
     // Specific heats (T)
     if (flags[2]) {
-        std::cout << "Specific heats vor varying temps:\n";git
+        std::cout << "Specific heats vor varying temps:\n";
         for (double J_ratio: J_ratios) {
             for (int N = nMin; N <= nMax; N += 2) {
                 std::string j = std::to_string(J_ratio);
@@ -141,25 +142,48 @@ int main(int argc, char* argv[]) {
         }
     }
 #endif
-#ifdef testingArea
+#ifdef QTtestingArea
 
     vector<double> J_ratios = {0.1, 0.5, 1, 2};
-    int nMin = 6;
-    int nMax = 16;
-    std::string saveTo_path = "/home/mmaschke/BA_Code/Data";
+    vector<int> runNums = {1, 3, 10};
+    int nMin = 14;
+    int nMax = 12;
+    std::string saveTo_path = "D:/Code/C++/spinChainData";
     int dataPointNum = 1000;
 
     for (double J_ratio: J_ratios) {
-        for (int N = nMin; N <= nMax; N += 2) {
-            std::string j = std::to_string(J_ratio);
-            std::replace(j.begin(), j.end(), '.', '_');
-            std::string path = saveTo_path + "/out/Susceptibilities_DQT/SuscDQTN" + std::to_string(N)
-                    + std::string("J") + j + ".txt";
-            saveSusceptibilityForVaryingTemp_DQT(N, dataPointNum, J_ratio, 10, path);
-            std::cout << std::string("N") + std::to_string(N) + std::string("J") + j << std::endl;
+        for (int numOfRuns : runNums) {
+            for (int N = nMin; N <= nMax; N += 2) {
+                std::string j = std::to_string(J_ratio);
+                std::replace(j.begin(), j.end(), '.', '_');
+                std::string path = saveTo_path + "/out/SpecificHeats_DQT/SpecHeatDQTN" + std::to_string(N)
+                                   + std::string("J") + j + std::string("It") + std::to_string(numOfRuns) + ".txt";
+                saveSpecificHeatsForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 10, path, numOfRuns);
+                std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
+                        + std::to_string(numOfRuns) << std::endl;
+            }
         }
     }
 
+#endif
+#ifdef statisticsTest
+    for (double J_ratio: J_ratios) {
+        for (int numOfRuns : runNums) {
+            for (int N = 6; N <= 16; N += 2) {
+                std::string j = std::to_string(J_ratio);
+                std::replace(j.begin(), j.end(), '.', '_');
+                std::string EDPath = saveTo_path + "/out/SpecificHeats/SpecHeatN" + std::to_string(N)
+                                   + std::string("J") + j + ".txt";
+                std::string DQTPath = saveTo_path + "/out/SpecificHeats_DQT/SpecHeatDQTN" + std::to_string(N)
+                                   + std::string("J") + j + std::string("It") + std::to_string(numOfRuns) + ".txt";
+                std::string outPath = saveTo_path + std::string("/out/QTErrorStats/SpecHeatDiffs/DiffN") + std::to_string(N)
+                                   + std::string("J") + j + std::string("It") + std::to_string(numOfRuns) + ".txt";
+                calcAbsDQTError(EDPath, DQTPath, outPath);
+                std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
+                             + std::to_string(numOfRuns) << std::endl;
+            }
+        }
+    }
 #endif
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();

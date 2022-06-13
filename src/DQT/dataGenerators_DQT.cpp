@@ -28,7 +28,7 @@ void saveSpecificHeatsForVaryingTemp_DQT_parallel(int N, int dataPointNum, doubl
         for (int i = 0; i < dataPointNum; i++) {
             vector<double> avg_H2_vec;
             vector<double> avg_H_vec;
-#pragma omp parallel for default(none) shared(psi_vec, avg_H2_vec, avg_H_vec, dBeta, i)
+#pragma omp parallel for default(none) shared(psi_vec, avg_H2_vec, avg_H_vec, dBeta, i, H)
             for (int j = 0; j < H.size(); j++) {
                 double avg_H2_block = psi_vec[j].dot(H[j] * (H[j] * psi_vec[j])).real();
                 double avg_H_block  = psi_vec[j].dot(H[j] * psi_vec[j]).real();
@@ -60,14 +60,16 @@ void saveSpecificHeatsForVaryingTemp_DQT_avg(const int N, const int dataPointNum
     const double dBeta = end / (double) dataPointNum;
     Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
 
-    vector<double> Cs(dataPointNum, 0);
+    vector<vector<double>> Cs(dataPointNum);
+    vector<double> actualCs;
+    vector<double> stdDevs;
 
     if (N % 2 == 0 && N >= 6) {
         const SparseMatrix<complex<double>> H = momentumHamiltonian_sparse(J_ratio, N);
 
-#pragma omp parallel for default(none) shared(Cs)
+#pragma omp parallel for default(none) shared(Cs, numOfRuns, dBeta, N, H, dataPointNum)
         for (int k = 0; k < numOfRuns; k++) {
-            VectorXcd psi = randomComplexVectorNormalised(pow(2, N), 1);
+            VectorXcd psi = randomComplexVectorNormalised((int) pow(2, N), 1.0);
             double beta = 0;
             for (int i = 0; i < dataPointNum; i++) {
                 double avg_H2 = psi.dot(H * (H * psi)).real();
@@ -76,7 +78,7 @@ void saveSpecificHeatsForVaryingTemp_DQT_avg(const int N, const int dataPointNum
                 double diff = avg_H2 - pow(avg_H, 2);
                 double C = pow(beta, 2) * (diff) / N;
 #pragma omp critical
-                Cs[i] += C;
+                Cs[i].emplace_back(C);
 
                 beta += dBeta;
                 iterateState_beta(H, psi, dBeta);
@@ -84,19 +86,27 @@ void saveSpecificHeatsForVaryingTemp_DQT_avg(const int N, const int dataPointNum
             }
         }
 
-        for (double & C : Cs) {
-            C /= (double) numOfRuns;
+        for (vector<double> & C : Cs) {
+            double mean = std::accumulate(C.begin(), C.end(), 0.0) / numOfRuns;
+            double stdDev = 0.0;
+            for (double c : C) {
+                stdDev += pow( (mean - c), 2);
+            }
+            stdDev = sqrt(stdDev/(double) numOfRuns);
+            actualCs.emplace_back(mean);
+            stdDevs.emplace_back(stdDev);
         }
     }
 
-    list<std::pair<double, double>> out;
+    list<std::tuple<double, double, double>> out;
     for (int j = 0; j < dataPointNum; j++) {
-        out.emplace_back( std::pair<double, double>(betas[j], Cs[j]) );
+        std::tuple<double, double, double> a(betas[j], actualCs[j], stdDevs[j]);
+        out.emplace_back( a );
     }
-    savePairsToFile(out, path);
+    saveTripleToFile(out, path);
 }
 
-void saveSusceptibilityForVaryingTemp_DQT(const int N, const int dataPointNum, const double J_ratio, const double end, const string & path) {
+void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNum, const double J_ratio, const double end, const string & path, const int numOfRuns) {
     const double dBeta = end / (double) dataPointNum;
     Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
 
@@ -106,19 +116,29 @@ void saveSusceptibilityForVaryingTemp_DQT(const int N, const int dataPointNum, c
         const SparseMatrix<complex<double>> S2 = spinOp2_momentum_sparse(N);
         const SparseMatrix<complex<double>> H  = momentumHamiltonian_sparse(J_ratio, N);
 
-        VectorXcd psi = randomComplexVectorNormalised(pow(2, N), 1);
-        double beta = 0;
-        for (int i = 0; i < dataPointNum; i++) {
-            double avg_S2 = psi.dot(S2* psi).real();
+#pragma omp parallel for default(none) shared(Xs, numOfRuns, dBeta, N, H, S2, dataPointNum)
+        for (int k = 0; k < numOfRuns; k++) {
 
-            double x = beta * avg_S2 / (3.0 * N);
+            VectorXcd psi = randomComplexVectorNormalised((int) pow(2, N), 1.0);
+            double beta = 0;
+            for (int i = 0; i < dataPointNum; i++) {
+                double avg_S2 = psi.dot(S2 * psi).real();
 
-            Xs[i] += x;
+                double x = beta * avg_S2 / (3.0 * N);
 
-            beta += dBeta;
-            iterateState_beta(H, psi, dBeta);
-            psi.normalize();
+#pragma omp critical
+                Xs[i] += x;
+
+                beta += dBeta;
+                iterateState_beta(H, psi, dBeta);
+                psi.normalize();
+            }
         }
+
+        for (double & x : Xs) {
+            x /= (double) numOfRuns;
+        }
+
     }
 
     list<std::pair<double, double>> out;
@@ -126,6 +146,44 @@ void saveSusceptibilityForVaryingTemp_DQT(const int N, const int dataPointNum, c
         out.emplace_back( std::pair<double, double>(betas[j], Xs[j]) );
     }
     savePairsToFile(out, path);
+}
+
+void calcAbsDQTError(const string & EDpath, const string & DQTpath, const string & outPath) {
+    vector<std::pair<double, double>> EDData  = readPairVectorFromFile(EDpath );
+    vector<std::pair<double, double>> DQTData = readPairVectorFromFile(DQTpath);
+    list<std::pair<double, double>> betasAndDiffs;
+    for (int i = 0; i < EDData.size(); i++) {
+        betasAndDiffs.emplace_back(std::pair<double, double>( EDData[i].first, abs( EDData[i].second - DQTData[i].second ) ));
+    }
+    savePairsToFile(betasAndDiffs, outPath);
+}
+
+void calcRelDQTError(const string & EDpath, const string & DQTpath, const string & outPath) {
+    vector<std::pair<double, double>> EDData  = readPairVectorFromFile(EDpath );
+    vector<std::pair<double, double>> DQTData = readPairVectorFromFile(DQTpath);
+    list<std::pair<double, double>> betasAndDiffs;
+    for (int i = 0; i < EDData.size(); i++) {
+        betasAndDiffs.emplace_back(std::pair<double, double>( EDData[i].first, abs( (EDData[i].second - DQTData[i].second) / EDData[i].second ) ));
+    }
+    savePairsToFile(betasAndDiffs, outPath);
+}
+
+vector<std::pair<double, double>> readPairVectorFromFile(const std::string & path) {
+    vector<std::pair<double, double>> vals;
+    std::ifstream file;
+    file.open(path);
+    std::string line;
+    while (getline(file, line)) {
+        std::vector<double> tempV;
+        std::istringstream lineStream(line);
+        string temp;
+        while (std::getline(lineStream, temp, ' ')) {
+            tempV.emplace_back( stod(temp) );
+        }
+        vals.emplace_back( std::pair<double, double>(tempV[0], tempV[1]) );
+    }
+
+    return vals;
 }
 
 void normaliseListOfVectors(vector<VectorXcd> & vec) {

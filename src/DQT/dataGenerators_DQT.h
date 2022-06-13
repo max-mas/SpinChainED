@@ -18,7 +18,11 @@ void saveSpecificHeatsForVaryingTemp_DQT_parallel(int N, int dataPointNum, doubl
 
 void saveSpecificHeatsForVaryingTemp_DQT_avg(int N, int dataPointNum, double J_ratio, double end, const std::string & path, int numOfRuns);
 
-void saveSusceptibilityForVaryingTemp_DQT(int N, int dataPointNum, double J_ratio, double end, const std::string & path);
+void saveSusceptibilityForVaryingTemp_DQT_avg(int N, int dataPointNum, double J_ratio, double end, const std::string & path, int numOfRuns);
+
+void calcAbsDQTError(const std::string & EDpath, const std::string & DQTpath, const std::string & outPath);
+
+std::vector<std::pair<double, double>> readPairVectorFromFile(const std::string & path);
 
 void normaliseListOfVectors(std::vector<Eigen::VectorXcd> & vec);
 
