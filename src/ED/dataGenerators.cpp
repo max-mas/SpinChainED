@@ -234,9 +234,9 @@ void saveSusceptibilitesForVaryingTemp(int N, int dataPointNum, double J_ratio, 
             susceptibilities[i] =  susceptibility(ergs, Ts[i], isBeta, T) / N ;
         }
     } else */if (N % 2 == 0 && N >= 6) {
-       list<MatrixXcd> S_2_l = spinOpS2_momentum_m(N, N/2);
-       long siz = fact(N) / (fact(N/2) * fact(N/2));
-       MatrixXcd S_2 = blkdiag(S_2_l, siz);
+        list<MatrixXcd> S_2_l = spinOpS2_momentum_m(N, N/2);
+        long siz = fact(N) / (fact(N/2) * fact(N/2));
+        MatrixXcd S_2 = blkdiag(S_2_l, siz); //TODO doing this stuff block-wise will save a lot of ram. this can't run for N = 14 on 16G!
 
         list<list<MatrixXcd>> H_m0 = momentumHamiltonian(J_ratio, N, N/2, N/2);
         vector<double> ergs;

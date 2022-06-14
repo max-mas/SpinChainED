@@ -208,7 +208,8 @@ if flags[6]:
             fig.savefig(saveToPath + "/plots/Dispersion/DispN" + str(N) + "J" + J_ratio + ".pdf")
             fig.savefig(saveToPath + "/plots/Dispersion/DispN" + str(N) + "J" + J_ratio + ".png")
 
-# QT Error stats (WIP)
+# QT Error stats for C (WIP)
+"""
 reps = [1, 3, 10]
 for J_ratio in J_ratios:
     for rep in reps:
@@ -227,7 +228,31 @@ for J_ratio in J_ratios:
             ax.plot(betas, deltas, label=lab)
         ax.legend()
         J_ratioNum = J_ratio.replace("_", ".")
-        ax.set(xlabel="Inverse Temperature $\\beta$ ($1/J_2$)", ylabel="Relative Error of DQT spec. Heat $\\Delta$",
+        ax.set(xlabel="Inverse Temperature $\\beta$ ($1/J_2$)", ylabel="Relative Error of DQT spec. Heat $\\Delta C$",
                    title="$J_1/J_2 =\\,$" + J_ratioNum + ", $n =$ " + str(rep) + ", $d\\beta$ =" + str(np.max(betas)/len(betas)))
         fig.savefig(saveToPath + "/plots/QTErrorStats/SpecHeatDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".pdf")
         fig.savefig(saveToPath + "/plots/QTErrorStats/SpecHeatDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".png")
+"""
+# QT Error stats for X (WIP)
+reps = [1, 3, 10]
+for J_ratio in J_ratios:
+    for rep in reps:
+        fig, ax = plt.subplots()
+        for N in np.linspace(nMin, nMax, nNum):
+            path = saveToPath + "/out/QTErrorStats/SuscDiffs/DiffN" + str(int(N)) + "J" + J_ratio + "It" + str(rep) + ".txt"
+            file = open(path)
+            lines = file.readlines()
+            betas = []
+            deltas = []
+            for line in lines:
+                data = line.split(" ")
+                betas.append(float(data[0]))
+                deltas.append(float(data[1]))
+            lab = "$N$ = " + str(int(N))
+            ax.plot(betas, deltas, label=lab)
+        ax.legend()
+        J_ratioNum = J_ratio.replace("_", ".")
+        ax.set(xlabel="Inverse Temperature $\\beta$ ($1/J_2$)", ylabel="Relative Error of DQT Susceptibility $\\Delta\\chi$",
+               title="$J_1/J_2 =\\,$" + J_ratioNum + ", $n =$ " + str(rep) + ", $d\\beta$ =" + str(np.max(betas)/len(betas)))
+        fig.savefig(saveToPath + "/plots/QTErrorStats/SuscDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".pdf")
+        fig.savefig(saveToPath + "/plots/QTErrorStats/SuscDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".png")

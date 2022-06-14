@@ -10,7 +10,7 @@ using std::vector;
 //#define saveSusceptibilityForJ
 //#define saveDispersion
 #define QTtestingArea
-#define statisticsTest
+//#define statisticsTest
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -147,7 +147,7 @@ int main(int argc, char* argv[]) {
     vector<double> J_ratios = {0.1, 0.5, 1, 2};
     vector<int> runNums = {1, 3, 10};
     int nMin = 14;
-    int nMax = 12;
+    int nMax = 10;
     std::string saveTo_path = "D:/Code/C++/spinChainData";
     int dataPointNum = 1000;
 
@@ -156,11 +156,11 @@ int main(int argc, char* argv[]) {
             for (int N = nMin; N <= nMax; N += 2) {
                 std::string j = std::to_string(J_ratio);
                 std::replace(j.begin(), j.end(), '.', '_');
-                std::string path = saveTo_path + "/out/SpecificHeats_DQT/SpecHeatDQTN" + std::to_string(N)
+                std::string path = saveTo_path + "/out/Susceptibilities_DQT/SuscDQTN" + std::to_string(N)
                                    + std::string("J") + j + std::string("It") + std::to_string(numOfRuns) + ".txt";
-                saveSpecificHeatsForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 10, path, numOfRuns);
+                saveSusceptibilityForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 10, path, numOfRuns);
                 std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
-                        + std::to_string(numOfRuns) << std::endl;
+                                + std::to_string(numOfRuns) << std::endl;
             }
         }
     }
@@ -169,14 +169,14 @@ int main(int argc, char* argv[]) {
 #ifdef statisticsTest
     for (double J_ratio: J_ratios) {
         for (int numOfRuns : runNums) {
-            for (int N = 6; N <= 16; N += 2) {
+            for (int N = 6; N <= 12; N += 2) {
                 std::string j = std::to_string(J_ratio);
                 std::replace(j.begin(), j.end(), '.', '_');
-                std::string EDPath = saveTo_path + "/out/SpecificHeats/SpecHeatN" + std::to_string(N)
+                std::string EDPath = saveTo_path + "/out/Susceptibilities/SuscN" + std::to_string(N)
                                    + std::string("J") + j + ".txt";
-                std::string DQTPath = saveTo_path + "/out/SpecificHeats_DQT/SpecHeatDQTN" + std::to_string(N)
+                std::string DQTPath = saveTo_path + "/out/Susceptibilities_DQT/SuscDQTN" + std::to_string(N)
                                    + std::string("J") + j + std::string("It") + std::to_string(numOfRuns) + ".txt";
-                std::string outPath = saveTo_path + std::string("/out/QTErrorStats/SpecHeatDiffs/DiffN") + std::to_string(N)
+                std::string outPath = saveTo_path + std::string("/out/QTErrorStats/SuscDiffs/DiffN") + std::to_string(N)
                                    + std::string("J") + j + std::string("It") + std::to_string(numOfRuns) + ".txt";
                 calcAbsDQTError(EDPath, DQTPath, outPath);
                 std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
@@ -185,6 +185,10 @@ int main(int argc, char* argv[]) {
         }
     }
 #endif
+
+    std::list<std::list<Eigen::MatrixXcd>> h_l = momentumHamiltonian(0.5, 12, 0, 12);
+    vector<double> v = getEnergiesFromBlocks(h_l, true);
+    std::cout << v[0] - v[2] << "\n";
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count()
