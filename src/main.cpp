@@ -147,9 +147,24 @@ int main(int argc, char* argv[]) {
     vector<double> J_ratios = {0.1, 0.5, 1, 2};
     vector<int> runNums = {1, 3, 10};
     int nMin = 14;
-    int nMax = 10;
+    int nMax = 16;
     std::string saveTo_path = "D:/Code/C++/spinChainData";
-    int dataPointNum = 1000;
+    int dataPointNum = 5000;
+
+
+    for (double J_ratio: J_ratios) {
+        for (int numOfRuns : runNums) {
+            for (int N = nMin; N <= nMax; N += 2) {
+                std::string j = std::to_string(J_ratio);
+                std::replace(j.begin(), j.end(), '.', '_');
+                std::string path = saveTo_path + "/out/SpecificHeats_DQT/SpecHeatDQTN" + std::to_string(N)
+                                   + std::string("J") + j + std::string("It") + std::to_string(numOfRuns) + ".txt";
+                saveSpecificHeatsForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 50, path, numOfRuns);
+                std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
+                             + std::to_string(numOfRuns) << std::endl;
+            }
+        }
+    }
 
     for (double J_ratio: J_ratios) {
         for (int numOfRuns : runNums) {
@@ -158,13 +173,12 @@ int main(int argc, char* argv[]) {
                 std::replace(j.begin(), j.end(), '.', '_');
                 std::string path = saveTo_path + "/out/Susceptibilities_DQT/SuscDQTN" + std::to_string(N)
                                    + std::string("J") + j + std::string("It") + std::to_string(numOfRuns) + ".txt";
-                saveSusceptibilityForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 10, path, numOfRuns);
+                saveSusceptibilityForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 50, path, numOfRuns);
                 std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
                                 + std::to_string(numOfRuns) << std::endl;
             }
         }
     }
-
 #endif
 #ifdef statisticsTest
     for (double J_ratio: J_ratios) {
