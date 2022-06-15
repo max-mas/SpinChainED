@@ -185,6 +185,7 @@ int main(int argc, char* argv[]) {
     nMin = 6;
     nMax = 12;
 
+    /*
     for (int N = nMin; N <= nMax; N += 2) {
         for (double J_ratio: Js) {
             std::string j = std::to_string(J_ratio);
@@ -195,7 +196,19 @@ int main(int argc, char* argv[]) {
             std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
                          + std::to_string(1) << std::endl;
         }
+    }*/
+
+    for (int N = nMin; N <= nMax; N += 2) {
+        for (double J_ratio: Js) {
+            std::string j = std::to_string(J_ratio);
+            std::replace(j.begin(), j.end(), '.', '_');
+            std::string path = saveTo_path + "/out/SpecificHeats/forFit/SpecHeatN" + std::to_string(N) + std::string("J") +
+                               j + ".txt";
+            saveSpecificHeatsForVaryingTemp(N, dataPointNum, J_ratio, 0, 50, true, path);
+            std::cout << std::string("N") + std::to_string(N) + std::string("J") + j << std::endl;
+        }
     }
+
 
 #endif
 #ifdef statisticsTest
@@ -235,10 +248,6 @@ int main(int argc, char* argv[]) {
         }
     }
 #endif
-
-    std::list<std::list<Eigen::MatrixXcd>> h_l = momentumHamiltonian(0.5, 12, 0, 12);
-    vector<double> v = getEnergiesFromBlocks(h_l, true);
-    std::cout << v[0] - v[2] << "\n";
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
     std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count()
