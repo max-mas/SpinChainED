@@ -10,6 +10,7 @@ using std::vector;
 //#define saveSusceptibilityForJ
 //#define saveDispersion
 #define QTtestingArea
+#define QTDataForFit
 //#define statisticsTest
 
 int main(int argc, char* argv[]) {
@@ -143,11 +144,10 @@ int main(int argc, char* argv[]) {
     }
 #endif
 #ifdef QTtestingArea
-
     vector<double> J_ratios = {0.1, 0.5, 1, 2};
     vector<int> runNums = {1, 3, 10};
     int nMin = 14;
-    int nMax = 16;
+    int nMax = 10;
     std::string saveTo_path = "D:/Code/C++/spinChainData";
     int dataPointNum = 5000;
 
@@ -180,10 +180,46 @@ int main(int argc, char* argv[]) {
         }
     }
 #endif
+#ifdef QTDataForFit
+    Eigen::VectorXd Js = Eigen::VectorXd::LinSpaced(50, 0, 2);
+    nMin = 6;
+    nMax = 12;
+
+    for (int N = nMin; N <= nMax; N += 2) {
+        for (double J_ratio: Js) {
+            std::string j = std::to_string(J_ratio);
+            std::replace(j.begin(), j.end(), '.', '_');
+            std::string path = saveTo_path + "/out/SpecificHeats_DQT/forFit/SpecHeatDQTN" + std::to_string(N)
+                               + std::string("J") + j + std::string("It") + std::to_string(1) + ".txt";
+            saveSpecificHeatsForVaryingTemp_DQT_parallel(N, dataPointNum, J_ratio, 50, path);
+            std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
+                         + std::to_string(1) << std::endl;
+        }
+    }
+
+#endif
 #ifdef statisticsTest
     for (double J_ratio: J_ratios) {
         for (int numOfRuns : runNums) {
-            for (int N = 6; N <= 12; N += 2) {
+            for (int N = 6; N <= 16; N += 2) {
+                std::string j = std::to_string(J_ratio);
+                std::replace(j.begin(), j.end(), '.', '_');
+                std::string EDPath = saveTo_path + "/out/SpecificHeats/SpecHeatN" + std::to_string(N)
+                                     + std::string("J") + j + ".txt";
+                std::string DQTPath = saveTo_path + "/out/SpecificHeats_DQT/SpecHeatDQTN" + std::to_string(N)
+                                      + std::string("J") + j + std::string("It") + std::to_string(numOfRuns) + ".txt";
+                std::string outPath = saveTo_path + std::string("/out/QTErrorStats/SpecHeatDiffs/DiffN") + std::to_string(N)
+                                      + std::string("J") + j + std::string("It") + std::to_string(numOfRuns) + ".txt";
+                calcAbsDQTError(EDPath, DQTPath, outPath);
+                std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
+                             + std::to_string(numOfRuns) << std::endl;
+            }
+        }
+    }
+
+    for (double J_ratio: J_ratios) {
+        for (int numOfRuns : runNums) {
+            for (int N = 6; N <= 16; N += 2) {
                 std::string j = std::to_string(J_ratio);
                 std::replace(j.begin(), j.end(), '.', '_');
                 std::string EDPath = saveTo_path + "/out/Susceptibilities/SuscN" + std::to_string(N)

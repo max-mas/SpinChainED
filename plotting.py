@@ -59,8 +59,8 @@ if flags[0]:
         ax.plot(Ts, excErg, label=lab)
         ax.legend()
         ax.set(xlabel="$J_1/J_2$", ylabel="Spin Gap Energy $\\Delta E$ ($J_2$)")
-        ax.set_xlim(0, 0.5)
-        ax.set_ylim(0, 0.75)
+        #ax.set_xlim(0, 0.5)
+        #ax.set_ylim(0, 0.75)
     fig.savefig(saveToPath + "/plots/ExcitationErgs/Excergs.pdf")
     fig.savefig(saveToPath + "/plots/ExcitationErgs/Excergs.png")
 
@@ -235,7 +235,7 @@ for J_ratio in J_ratios:
                    title="$J_1/J_2 =\\,$" + J_ratioNum + ", $n =$ " + str(rep) + ", $d\\beta$ =" + str(np.max(betas)/len(betas)))
         fig.savefig(saveToPath + "/plots/QTErrorStats/SpecHeatDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".pdf")
         fig.savefig(saveToPath + "/plots/QTErrorStats/SpecHeatDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".png")
-"""
+
 # QT Error stats for X (WIP)
 for J_ratio in J_ratios:
     for rep in reps:
@@ -255,6 +255,7 @@ for J_ratio in J_ratios:
         ax.legend()
         J_ratioNum = J_ratio.replace("_", ".")
         ax.set(xlabel="Inverse Temperature $\\beta$ ($1/J_2$)", ylabel="Relative Error of DQT Susceptibility $\\Delta\\chi$",
-               title="$J_1/J_2 =\\,$" + J_ratioNum + ", $n =$ " + str(rep) + ", $d\\beta$ =" + str(np.max(betas)/len(betas)))
+               title="$J_1/J_2 =\\,$" + J_ratioNum + ", $n =$ " + str(rep) + ", $d\\beta$ =" )
         fig.savefig(saveToPath + "/plots/QTErrorStats/SuscDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".pdf")
         fig.savefig(saveToPath + "/plots/QTErrorStats/SuscDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".png")
+"""
