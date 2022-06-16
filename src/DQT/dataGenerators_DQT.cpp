@@ -28,7 +28,7 @@ void saveSpecificHeatsForVaryingTemp_DQT_parallel(int N, int dataPointNum, doubl
         for (int i = 0; i < dataPointNum; i++) {
             vector<double> avg_H2_vec;
             vector<double> avg_H_vec;
-#pragma omp parallel for default(none) shared(psi_vec, avg_H2_vec, avg_H_vec, dBeta, i, H)
+#pragma omp parallel for default(none) shared(psi_vec, avg_H2_vec, avg_H_vec, dBeta, i)
             for (int j = 0; j < H.size(); j++) {
                 double avg_H2_block = psi_vec[j].dot(H[j] * (H[j] * psi_vec[j])).real();
                 double avg_H_block  = psi_vec[j].dot(H[j] * psi_vec[j]).real();
@@ -67,7 +67,7 @@ void saveSpecificHeatsForVaryingTemp_DQT_avg(const int N, const int dataPointNum
     if (N % 2 == 0 && N >= 6) {
         const SparseMatrix<complex<double>> H = momentumHamiltonian_sparse(J_ratio, N);
 
-#pragma omp parallel for default(none) shared(Cs, numOfRuns, dBeta, N, H, dataPointNum)
+#pragma omp parallel for default(none) shared(Cs)
         for (int k = 0; k < numOfRuns; k++) {
             VectorXcd psi = randomComplexVectorNormalised((int) pow(2, N), 1.0);
             double beta = 0;
@@ -116,7 +116,7 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
         const SparseMatrix<complex<double>> S2 = spinOp2_momentum_sparse(N);
         const SparseMatrix<complex<double>> H  = momentumHamiltonian_sparse(J_ratio, N);
 
-#pragma omp parallel for default(none) shared(Xs, numOfRuns, dBeta, N, H, S2, dataPointNum)
+#pragma omp parallel for default(none) shared(Xs)
         for (int k = 0; k < numOfRuns; k++) {
 
             VectorXcd psi = randomComplexVectorNormalised((int) pow(2, N), 1.0);

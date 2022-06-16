@@ -22,6 +22,8 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(int N, int dataPointNum, double J_
 
 void calcAbsDQTError(const std::string & EDpath, const std::string & DQTpath, const std::string & outPath);
 
+void calcRelDQTError(const std::string & EDpath, const std::string & DQTpath, const std::string & outPath);
+
 std::vector<std::pair<double, double>> readPairVectorFromFile(const std::string & path);
 
 void normaliseListOfVectors(std::vector<Eigen::VectorXcd> & vec);

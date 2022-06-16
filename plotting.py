@@ -46,7 +46,7 @@ for i in range(0, len(flags_str)):
 if flags[0]:
     fig, ax = plt.subplots()
     for N in np.linspace(nMin, nMax, nNum):
-        path = saveToPath + "/out/ExcitationErgs/ExcErgs" + str(int(N)) + ".txt"
+        path = saveToPath + "/out/ActualExcitationErgs/ExcErgs" + str(int(N)) + ".txt"
         file = open(path)
         lines = file.readlines()
         Ts = []
@@ -58,11 +58,11 @@ if flags[0]:
         lab = "$N$ = " + str(int(N))
         ax.plot(Ts, excErg, label=lab)
         ax.legend()
-        ax.set(xlabel="$J_1/J_2$", ylabel="Spin Gap Energy $\\Delta E$ ($J_2$)")
+        ax.set(xlabel="$J_1/J_2$", ylabel="Excitation Energy $\\Delta$ ($J_2$)")
         #ax.set_xlim(0, 0.5)
         #ax.set_ylim(0, 0.75)
-    fig.savefig(saveToPath + "/plots/ExcitationErgs/Excergs.pdf")
-    fig.savefig(saveToPath + "/plots/ExcitationErgs/Excergs.png")
+    fig.savefig(saveToPath + "/plots/ActualExcitationErgs/Excergs.pdf")
+    fig.savefig(saveToPath + "/plots/ActualExcitationErgs/Excergs.png")
 
 # Ground state erg
 if flags[1]:
@@ -212,7 +212,7 @@ if flags[6]:
             fig.savefig(saveToPath + "/plots/Dispersion/DispN" + str(N) + "J" + J_ratio + ".png")
 
 # QT Error stats for C (WIP)
-"""
+
 reps = [1, 3, 10]
 for J_ratio in J_ratios:
     for rep in reps:
@@ -231,7 +231,7 @@ for J_ratio in J_ratios:
             ax.plot(betas, deltas, label=lab)
         ax.legend()
         J_ratioNum = J_ratio.replace("_", ".")
-        ax.set(xlabel="Inverse Temperature $\\beta$ ($1/J_2$)", ylabel="Relative Error of DQT spec. Heat $\\Delta C$",
+        ax.set(xlabel="Inverse Temperature $\\beta$ ($1/J_2$)", ylabel="Error of DQT spec. Heat $\\Delta C$",
                    title="$J_1/J_2 =\\,$" + J_ratioNum + ", $n =$ " + str(rep) + ", $d\\beta$ =" + str(np.max(betas)/len(betas)))
         fig.savefig(saveToPath + "/plots/QTErrorStats/SpecHeatDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".pdf")
         fig.savefig(saveToPath + "/plots/QTErrorStats/SpecHeatDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".png")
@@ -254,8 +254,7 @@ for J_ratio in J_ratios:
             ax.plot(betas, deltas, label=lab)
         ax.legend()
         J_ratioNum = J_ratio.replace("_", ".")
-        ax.set(xlabel="Inverse Temperature $\\beta$ ($1/J_2$)", ylabel="Relative Error of DQT Susceptibility $\\Delta\\chi$",
+        ax.set(xlabel="Inverse Temperature $\\beta$ ($1/J_2$)", ylabel="Error of DQT Susceptibility $\\Delta\\chi$",
                title="$J_1/J_2 =\\,$" + J_ratioNum + ", $n =$ " + str(rep) + ", $d\\beta$ =" )
         fig.savefig(saveToPath + "/plots/QTErrorStats/SuscDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".pdf")
         fig.savefig(saveToPath + "/plots/QTErrorStats/SuscDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".png")
-"""
