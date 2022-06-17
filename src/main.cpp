@@ -182,8 +182,8 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef QTDataForFit
     Eigen::VectorXd Js = Eigen::VectorXd::LinSpaced(50, 0, 2);
-    nMin = 14;
-    nMax = 20;
+    nMin = 6;
+    nMax = 12;
     int numOfRuns = 5;
 
     for (int i = 1; i <= numOfRuns; i++) {
@@ -193,7 +193,7 @@ int main(int argc, char* argv[]) {
                 std::replace(j.begin(), j.end(), '.', '_');
                 std::string path = saveTo_path + "/out/SpecificHeats_DQT/forFit/" + std::to_string(i) + "/SpecHeatDQTN" + std::to_string(N)
                                    + std::string("J") + j + std::string("It") + std::to_string(1) + ".txt";
-                saveSpecificHeatsForVaryingTemp_DQT_parallel(N, dataPointNum, J_ratio, 50, path);
+                saveSpecificHeatsForVaryingTemp_DQT_parallel(N, dataPointNum, J_ratio, 200, path);
                 std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
                              + std::to_string(1) << std::endl;
             }
@@ -207,7 +207,7 @@ int main(int argc, char* argv[]) {
                 std::replace(j.begin(), j.end(), '.', '_');
                 std::string path = saveTo_path + "/out/Susceptibilities_DQT/forFit/" + std::to_string(i) + "/SuscDQTN" + std::to_string(N)
                                    + std::string("J") + j + std::string("It") + std::to_string(1) + ".txt";
-                saveSusceptibilityForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 50, path, 1);
+                saveSusceptibilityForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 200, path, 1);
                 std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
                              + std::to_string(1) << std::endl;
             }
