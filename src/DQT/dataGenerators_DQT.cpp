@@ -1,3 +1,7 @@
+/**
+ *  This file contains methods used to calculate thermodynamic quantities using dynamic quantum typicality (DQT).
+ */
+
 #include "dataGenerators_DQT.h"
 
 using std::string;
@@ -8,9 +12,9 @@ using std::list;
 using Eigen::VectorXcd;
 using Eigen::SparseMatrix;
 
-
+// Block-parallelized approach for calculation of specific heat using DQT.
 void saveSpecificHeatsForVaryingTemp_DQT_parallel(int N, int dataPointNum, double J_ratio, double end, string path) {
-    double beta = 0;
+    double beta = 0; // iteration always starts at beta = 0
     double dBeta = end / (double) dataPointNum;
     Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
 
@@ -56,6 +60,7 @@ void saveSpecificHeatsForVaryingTemp_DQT_parallel(int N, int dataPointNum, doubl
     savePairsToFile(out, std::move(path));
 }
 
+// Calculates specific heat using DQT and average over a number of runs. Also calculates standard deviation.
 void saveSpecificHeatsForVaryingTemp_DQT_avg(const int N, const int dataPointNum, const double J_ratio, const double end, const string & path, const int numOfRuns) {
     const double dBeta = end / (double) dataPointNum;
     Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
@@ -106,6 +111,7 @@ void saveSpecificHeatsForVaryingTemp_DQT_avg(const int N, const int dataPointNum
     saveTripleToFile(out, path);
 }
 
+// Calculates susceptibility heat using DQT and average over a number of runs. TODO add stddev
 void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNum, const double J_ratio, const double end, const string & path, const int numOfRuns) {
     const double dBeta = end / (double) dataPointNum;
     Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
@@ -148,6 +154,7 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
     savePairsToFile(out, path);
 }
 
+// Calculates absolute error using QT and ED data from files with equal number of entries and equal dBeta.
 void calcAbsDQTError(const string & EDpath, const string & DQTpath, const string & outPath) {
     vector<std::pair<double, double>> EDData  = readPairVectorFromFile(EDpath );
     vector<std::pair<double, double>> DQTData = readPairVectorFromFile(DQTpath);
@@ -158,6 +165,7 @@ void calcAbsDQTError(const string & EDpath, const string & DQTpath, const string
     savePairsToFile(betasAndDiffs, outPath);
 }
 
+// Calculates relative error using QT and ED data from files with equal number of entries and equal dBeta.
 void calcRelDQTError(const string & EDpath, const string & DQTpath, const string & outPath) {
     vector<std::pair<double, double>> EDData  = readPairVectorFromFile(EDpath );
     vector<std::pair<double, double>> DQTData = readPairVectorFromFile(DQTpath);
@@ -168,6 +176,7 @@ void calcRelDQTError(const string & EDpath, const string & DQTpath, const string
     savePairsToFile(betasAndDiffs, outPath);
 }
 
+// Reads double pairs from a file.
 vector<std::pair<double, double>> readPairVectorFromFile(const std::string & path) {
     vector<std::pair<double, double>> vals;
     std::ifstream file;
@@ -186,6 +195,7 @@ vector<std::pair<double, double>> readPairVectorFromFile(const std::string & pat
     return vals;
 }
 
+// Normalises a list of complex vectors to be interpreted as one large vector.
 void normaliseListOfVectors(vector<VectorXcd> & vec) {
     double norm2 = 0;
     for (VectorXcd & v : vec) {
@@ -197,6 +207,7 @@ void normaliseListOfVectors(vector<VectorXcd> & vec) {
     }
 }
 
+// Generates a random complex vector using a true random seed for a pseudo random number generator.
 VectorXcd randomComplexVectorNormalised(int vecSize, double stdDev) {
     VectorXcd psi(vecSize);
 

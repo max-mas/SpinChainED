@@ -145,6 +145,7 @@ void printEnergies(const vector<double> & v) {
     }
 }
 
+// Recursive factorial function.
 long fact(int n) {
     if ((n==0)||(n==1))
         return 1;
