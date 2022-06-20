@@ -87,30 +87,31 @@ if flags[1]:
 # Specific Heat (T)
 if flags[2]:
     for J_ratio in J_ratios:
-        for rep in reps:
-            fig, ax = plt.subplots()
-            for N in np.linspace(nMin, nMax, nNum):
-                path = saveToPath + "/out/SpecificHeats_DQT/SpecHeatDQTN" + str(int(N)) + "J" + J_ratio + "It" + str(rep) + ".txt"
-                file = open(path)
-                lines = file.readlines()
-                Ts = []
-                specHeat = []
-                for line in lines:
-                    data = line.split(" ")
-                    # if float(data[0]) == 0:
-                    #    continue
-                    Ts.append(float(data[0]))
-                    specHeat.append(float(data[1].replace("\n", "")))
-                lab = "$N$ = " + str(int(N))
-                ax.plot(Ts, specHeat, label=lab)
-            ax.legend()
-            ax.set_ylim(0, 0.4)
-            #ax.set_xlim(0, 3)
-            J_ratio = J_ratio.replace("_", ".")
-            ax.set(xlabel="$\\beta$ ($1/J_2$)", ylabel="Specific heat per Spin $C/N$", title="$J_1/J_2 =\\,$" + J_ratio + ", $n=$ " + str(rep) + ", $d\\beta$ =" + str(np.max(Ts)/len(Ts)))
-            J_ratio = J_ratio.replace(".", "_")
-            fig.savefig(saveToPath + "/plots/SpecificHeats_DQT/SpecHeatJ" + J_ratio + "It" + str(rep) + ".pdf")
-            fig.savefig(saveToPath + "/plots/SpecificHeats_DQT/SpecHeatJ" + J_ratio + "It" + str(rep) + ".png")
+        fig, ax = plt.subplots()
+        for N in np.linspace(nMin, nMax, nNum):
+            path = saveToPath + "/out/SpecificHeats/SpecHeatN" + str(int(N)) + "J" + J_ratio + ".txt"
+            file = open(path)
+            lines = file.readlines()
+            Ts = []
+            specHeat = []
+            for line in lines:
+                data = line.split(" ")
+                if float(data[0]) == 0:
+                    continue
+                Ts.append(1/float(data[0]))
+                specHeat.append(float(data[1].replace("\n", "")))
+            lab = "$N$ = " + str(int(N))
+            ax.plot(Ts, specHeat, label=lab)
+            dBeta = 1/Ts[0]
+        ax.legend()
+        #ax.set_ylim(0, 0.4)
+        ax.set_xlim(0, 3)
+        J_ratio = J_ratio.replace("_", ".")
+        ax.set(xlabel="$T$ ($J_2$)", ylabel="Specific heat per Spin $C/N$", title="$J_1/J_2=\\,$ " + J_ratio)
+        J_ratio = J_ratio.replace(".", "_")
+        fig.savefig(saveToPath + "/plots/SpecificHeats/SpecHeatJ" + J_ratio + ".pdf")
+        fig.savefig(saveToPath + "/plots/SpecificHeats/SpecHeatJ" + J_ratio + ".png")
+        #plt.show()
 
 # Specific Heat (J)
 if flags[3]:
@@ -211,8 +212,8 @@ if flags[6]:
             fig.savefig(saveToPath + "/plots/Dispersion/DispN" + str(N) + "J" + J_ratio + ".pdf")
             fig.savefig(saveToPath + "/plots/Dispersion/DispN" + str(N) + "J" + J_ratio + ".png")
 
+"""
 # QT Error stats for C (WIP)
-
 reps = [1, 3, 10]
 for J_ratio in J_ratios:
     for rep in reps:
@@ -258,3 +259,74 @@ for J_ratio in J_ratios:
                title="$J_1/J_2 =\\,$" + J_ratioNum + ", $n =$ " + str(rep) + ", $d\\beta$ =" )
         fig.savefig(saveToPath + "/plots/QTErrorStats/SuscDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".pdf")
         fig.savefig(saveToPath + "/plots/QTErrorStats/SuscDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".png")
+
+
+# Specific Heat DQT (T)
+for J_ratio in J_ratios:
+    for rep in reps:
+        fig, ax = plt.subplots()
+        for N in np.linspace(nMin, nMax, nNum):
+            path = saveToPath + "/out/SpecificHeats_DQT/SpecHeatDQTN" + str(int(N)) + "J" + J_ratio + "It" + str(rep) + ".txt"
+            file = open(path)
+            lines = file.readlines()
+            Ts = []
+            specHeat = []
+            errs = []
+            for line in lines:
+                data = line.split(" ")
+                if float(data[0]) == 0:
+                    continue
+                Ts.append(1/float(data[0]))
+                specHeat.append(float(data[1]))
+                errs.append(float(data[2].replace("\n", ""))/np.sqrt(rep))
+            lab = "$N$ = " + str(int(N))
+            dBeta = 1/Ts[0]
+            Ts = np.asarray(Ts)
+            specHeat = np.asarray(specHeat)
+            errs = np.asarray(errs)
+            ax.plot(Ts, specHeat, label=lab)
+            ax.fill_between(Ts, specHeat - errs, specHeat + errs, alpha=0.1)
+        ax.legend()
+        ax.set_ylim(0, 0.4)
+        ax.set_xlim(0, 3)
+        J_ratio = J_ratio.replace("_", ".")
+        ax.set(xlabel="$\\beta$ ($1/J_2$)", ylabel="Specific heat per Spin $C/N$", title="$J_1/J_2 =\\,$" + J_ratio + ", $n=$ " + str(rep) + ", $d\\beta$ =" + str(dBeta))
+        J_ratio = J_ratio.replace(".", "_")
+        #fig.savefig(saveToPath + "/plots/SpecificHeats_DQT/SpecHeatJ" + J_ratio + "It" + str(rep) + ".pdf")
+        #fig.savefig(saveToPath + "/plots/SpecificHeats_DQT/SpecHeatJ" + J_ratio + "It" + str(rep) + ".png")
+        plt.show()
+"""
+# Susceptibility DQT (T)
+for J_ratio in J_ratios:
+    for rep in reps:
+        fig, ax = plt.subplots()
+        for N in np.linspace(nMin, nMax, nNum):
+            path = saveToPath + "/out/Susceptibilities_DQT/SuscDQTN" + str(int(N)) + "J" + J_ratio + "It" + str(rep)+ ".txt"
+            file = open(path)
+            lines = file.readlines()
+            Ts = []
+            susc = []
+            errs = []
+            for line in lines:
+                data = line.split(" ")
+                if data[0] == "-nan" or data[0] == "nan" or float(data[0]) == 0:
+                    continue
+                Ts.append(1/float(data[0]))
+                susc.append(float(data[1]))
+                errs.append(float(data[2].replace("\n", ""))/np.sqrt(rep))
+            Ts = np.asarray(Ts)
+            susc = np.asarray(susc)
+            errs = np.asarray(errs)
+            lab = "$N$ = " + str(int(N))
+            ax.plot(Ts, susc, label=lab)
+            ax.fill_between(Ts, susc - errs, susc + errs, alpha=0.1)
+            dBeta = 1/Ts[0]
+        ax.legend()
+        ax.set_xlim(0, 3)
+        J_ratio = J_ratio.replace("_", ".")
+        ax.set(xlabel="$T$ ($J_2$)", ylabel="Susceptibility per Spin $\\chi / N$", title="$J_1/J_2 =\\,$" + J_ratio + ", $n=$ " + str(rep) + ", $d\\beta$ =" + str(dBeta))
+        J_ratio = J_ratio.replace(".", "_")
+        #fig.savefig(saveToPath + "/plots/Susceptibilities_DQT/SuscJ" + J_ratio + ".pdf")
+        #fig.savefig(saveToPath + "/plots/Susceptibilities_DQT/SuscJ" + J_ratio + ".png")
+        plt.show()
+

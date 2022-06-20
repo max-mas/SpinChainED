@@ -4,6 +4,7 @@ import scipy.optimize as opt
 from matplotlib.ticker import MaxNLocator
 import os
 import natsort
+import copy
 
 plt.rcParams['text.usetex'] = True
 plt.rc('axes', labelsize=24)
@@ -28,19 +29,32 @@ def exp_fit_fn(beta, A, B):
     return beta**2 * A * np.exp(-beta * B)
 
 
+def alt_fit_fn(beta, A, B):
+    return A + 2 * np.log(beta) - B * beta
+
+
+def fd_up_fit_fn(beta, A, B, C):
+    return beta**2 * A * ( B**2 * (np.exp(-2*beta*B) + np.exp(-beta*(B+C))) + C**2 * (np.exp(-2*beta*C) + np.exp(-beta*(B+C))) )
+
+
+def weird_transform(Js, Vals):
+    A = copy.deepcopy(Vals)
+
+    for y in range(len(Js)):
+        A[y] *= 1 / (1 + Js[y])
+    return A
+
+
 nMin = 6
-nMax = 12
+nMax = 20
 nNum = int((nMax - nMin) / 2) + 1
-numOfRuns = 1
-minBeta = 10
-maxBeta = 200
-numOfFits = 8
+numOfRuns = 5
 
 gapsQT = []
 gapsQTavg = []
 gapsQTdev = []
 
-path = "/home/mmaschke/BA_Code/Data/out/SpecificHeats_DQT/forFit/"
+path = "/home/mmaschke/BA_Code/remoteData/out/SpecificHeats_DQT/forFit/"
 i = 0
 for N in np.linspace(nMin, nMax, nNum):
     gapsQT.append([])
@@ -50,54 +64,55 @@ for N in np.linspace(nMin, nMax, nNum):
         runPath = path + str(k) + "/"
 
         gapsQT[i].append([])
-        gapsQT[i][k-1].append([])
-        gapsQT[i][k-1].append([])
+        gapsQT[i][k - 1].append([])
+        gapsQT[i][k - 1].append([])
         for filePath in natsort.natsorted(os.listdir(runPath)):
-            R2ref = 0
-
+            file = open(runPath + filePath)
             name1 = filePath.split("J")
             name2 = name1[1].split("I")
             name = name2[0]
             J_str = name.replace("_", ".")
             N_str = name1[0].split("N")
             N_test = int(N_str[1])
-
             if N_test != N:
                 continue
             J = float(J_str)
-            gapsQT[i][k-1][0].append(J)
-            gapsQT[i][k-1][1].append(1)
 
-            for cutoff in np.linspace(maxBeta - 5, minBeta, numOfFits):
-                file = open(runPath + filePath)
+            betas = []
+            Cs = []
+            lines = file.readlines()
+            cutoff = 20
+            upperCutoff = 50
+            if J > 1.5:
+                cutoff = 15
+            #elif 0.4 < J < 0.75:
+            #    upperCutoff = 30
 
-                betas = []
-                Cs = []
-                lines = file.readlines()
-                for line in lines:
-                    data = line.split(" ")
-                    if float(data[0]) < cutoff:
-                        continue
-                    if data[1] == "nan\n" or data[1] == "-nan\n" or data[1] == "inf\n" or data[1] == "-inf\n":
-                        data[1] = "0"
-                    betas.append(float(data[0]))
-                    Cs.append(float(data[1].replace("\n", "")))
+            for line in lines:
+                data = line.split(" ")
+                if float(data[0]) < cutoff or float(data[0]) > upperCutoff:
+                    continue
+                if data[1] == "nan\n" or data[1] == "-nan\n" or data[1] == "inf\n" or data[1] == "-inf\n":
+                    data[1] = "0"
+                betas.append(float(data[0]))
+                Cs.append(float(data[1].replace("\n", "")))
 
-                try:
-                    parameters, covariance = opt.curve_fit(exp_fit_fn, betas, Cs)
-                except RuntimeError:
-                    parameters = [0, 0]
-                    covariance = [[1, 1], [1, 1]]
-                    print("Fit Error for N = " + str(N) + " and J = " + str(J))
-                resid = np.array(Cs) - exp_fit_fn(np.array(betas), *parameters)
-                resid_sum = np.sum(resid**2)
-                s_tot = np.sum((np.array(Cs)-np.mean(Cs))**2)
-                R2 = 1 - resid_sum/s_tot
-                perr = np.sqrt(np.diag(covariance))
-                if R2 > R2ref or abs(cutoff - minBeta) < 0.1:
-                    R2ref = R2
-                    gapsQT[i][k-1][0][-1] = J
-                    gapsQT[i][k-1][1][-1] = parameters[1]
+            try:
+                #if 0.4 < J < 0.75:
+                #    for m in range(len(Cs)):
+                #        if Cs[m] < 1e-12:
+                #            Cs[m] = 1e-12
+                #    lnCs = np.log(Cs)
+                #    parameters, covariance = opt.curve_fit(alt_fit_fn, betas, lnCs)
+                #else:
+                    parameters, covariance = opt.curve_fit(fd_up_fit_fn, betas, Cs)
+            except RuntimeError:
+                parameters = [0, 0]
+                covariance = [0, 0]
+                print("Fit Error for N = " + str(N) + " and J = " + str(J))
+            perr = np.sqrt(np.diag(covariance))
+            gapsQT[i][k - 1][0].append(J)
+            gapsQT[i][k - 1][1].append(parameters[1])
             print(str(N) + " " + J_str + " " + str(perr[1]))
 
         j += 1
@@ -113,10 +128,10 @@ for N in np.linspace(nMin, nMax, nNum):
         avg = 0.0
         dev = 0.0
         for l in range(numOfRuns):
-            avg += gapsQT[i][l][1][n]/numOfRuns
+            avg += gapsQT[i][l][1][n] / numOfRuns
         for l in range(numOfRuns):
-            dev += (gapsQT[i][l][1][n] - avg)**2 / numOfRuns
-        dev = np.sqrt(dev)
+            dev += (gapsQT[i][l][1][n] - avg) ** 2 / numOfRuns
+        dev = np.sqrt(dev)/np.sqrt(numOfRuns)
         gapsQTavg[i][1].append(avg)
         gapsQTdev[i][1].append(dev)
 
@@ -127,15 +142,15 @@ N = nMin
 i = 0
 for arr in gapsQTavg:
     lab = "$N$ = " + str(int(N)) + " QT Fit"
-    ax.errorbar(arr[0], arr[1], yerr=gapsQTdev[i][1], xerr=None, fmt=".-",  label=lab, alpha=0.5, capsize=2)
+    ax.errorbar(arr[0], weird_transform(arr[0], arr[1]), yerr=weird_transform(arr[0], gapsQTdev[i][1]), xerr=None,
+            fmt=".-", label=lab, alpha=0.5, capsize=2)
     N += 2
     i += 1
-"""
-gapsEQ = []
 
+gapsEQ = []
 path = "/home/mmaschke/BA_Code/Data/out/SpecificHeats/forFit/"
 i = 0
-for N in np.linspace(nMin, nMax, nNum):
+for N in np.linspace(6, 16, 6):
     gapsEQ.append([])
     gapsEQ[i].append([])
     gapsEQ[i].append([])
@@ -150,14 +165,19 @@ for N in np.linspace(nMin, nMax, nNum):
         if N_test != N:
             continue
         J = float(J_str)
-
         betas = []
         Cs = []
         lines = file.readlines()
+        cutoff = 20
+        upperCutoff = 50
+        if J > 1.5:
+            cutoff = 15
+        #elif 0.4 < J < 0.75:
+        #    upperCutoff = 30
+
         for line in lines:
             data = line.split(" ")
-
-            if float(data[0]) < 15:
+            if float(data[0]) < cutoff or float(data[0]) > upperCutoff:
                 continue
             if data[1] == "nan\n" or data[1] == "-nan\n" or data[1] == "inf\n" or data[1] == "-inf\n":
                 data[1] = "0"
@@ -165,28 +185,32 @@ for N in np.linspace(nMin, nMax, nNum):
             Cs.append(float(data[1].replace("\n", "")))
 
         try:
-            parameters, covariance = opt.curve_fit(exp_fit_fn, betas, Cs)
+            #if 0.4 < J < 0.75:
+            #    for m in range(len(Cs)):
+            #        if Cs[m] < 1e-12:
+            #            Cs[m] = 1e-12
+            #    lnCs = np.log(Cs)
+            #    parameters, covariance = opt.curve_fit(alt_fit_fn, betas, lnCs)
+            #else:
+                parameters, covariance = opt.curve_fit(fd_up_fit_fn, betas, Cs)
         except RuntimeError:
             parameters = [0, 0]
             covariance = [0, 0]
             print("Fit Error for N = " + str(N) + " and J = " + str(J))
-            # plt.plot(betas, Cs)
-            # plt.show()
         perr = np.sqrt(np.diag(covariance))
         gapsEQ[i][0].append(J)
         gapsEQ[i][1].append(parameters[1])
         print(str(N) + " " + J_str + " " + str(perr[1]))
     i += 1
-
 N = nMin
 plt.gca().set_prop_cycle(None)
 for arr in gapsEQ:
     lab = "$N$ = " + str(int(N)) + " ED Fit"
-    ax.plot(arr[0], arr[1], ".-", label=lab, alpha=0.2)
+    ax.plot(arr[0], weird_transform(arr[0], arr[1]), ".-", label=lab, alpha=0.2)
     N += 2
-"""
+
 plt.gca().set_prop_cycle(None)
-for N in np.linspace(nMin, 14, 5):
+for N in np.linspace(6, 14, 5):
     path = "/home/mmaschke/BA_Code/Data/out/ActualExcitationErgs/ExcErgs" + str(int(N)) + ".txt"
     file = open(path)
     lines = file.readlines()
@@ -197,17 +221,17 @@ for N in np.linspace(nMin, 14, 5):
         Ts.append(float(data[0]))
         excErg.append(float(data[1].replace("\n", "")))
     lab = "$N$ = " + str(int(N)) + " exact"
-    ax.plot(Ts, excErg, label=lab)
+    ax.plot(Ts, weird_transform(Ts, excErg), label=lab)
 
-ax.set(xlabel="$J_1/J_2$", ylabel="Excitation Energy $\\Delta$ ($J_2$)", title="$n = $ " + str(numOfRuns))
-ax.legend(prop={'size': 16})
-ax.set_ylim(0, 2)
+ax.set(xlabel="$J_1/J_2$", ylabel="Reduced Excitation Energy $\\Delta/(J_1+J_2)$", title="$n = $ " + str(numOfRuns))
+ax.legend(prop={'size': 6})
+ax.set_ylim(0, 0.8)
 ax.set_xlim(0, 2)
 fig.set_figwidth(12)
 fig.set_figheight(9)
 
-fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/ExcErg"+str(numOfRuns)+".pdf")
-fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/ExcErg"+str(numOfRuns)+".png")
+fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/ExcErg" + str(numOfRuns) + ".pdf")
+fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/ExcErg" + str(numOfRuns) + ".png")
 plt.show()
 
 """
@@ -221,7 +245,6 @@ for line in lines:
         continue
     betas.append(float(data[0]))
     Cs.append(float(data[1].replace("\n", "")))
-
 parameters, covariance = opt.curve_fit(exp_fit_fn, betas, Cs)
 print(parameters)
 print(covariance)

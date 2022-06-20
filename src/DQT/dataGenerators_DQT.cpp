@@ -116,7 +116,9 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
     const double dBeta = end / (double) dataPointNum;
     Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
 
-    vector<double> Xs(dataPointNum, 0);
+    vector<vector<double>> Xs(dataPointNum);
+    vector<double> actualXs;
+    vector<double> stdDevs;
 
     if (N % 2 == 0 && N >= 6) {
         const SparseMatrix<complex<double>> S2 = spinOp2_momentum_sparse(N);
@@ -133,7 +135,7 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
                 double x = beta * avg_S2 / (3.0 * N);
 
 #pragma omp critical
-                Xs[i] += x;
+                Xs[i].emplace_back(x);
 
                 beta += dBeta;
                 iterateState_beta(H, psi, dBeta);
@@ -141,17 +143,25 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
             }
         }
 
-        for (double & x : Xs) {
-            x /= (double) numOfRuns;
+        for (vector<double> & X : Xs) {
+            double mean = std::accumulate(X.begin(), X.end(), 0.0) / numOfRuns;
+            double stdDev = 0.0;
+            for (double x : X) {
+                stdDev += pow( (mean - x), 2);
+            }
+            stdDev = sqrt(stdDev/(double) numOfRuns);
+            actualXs.emplace_back(mean);
+            stdDevs.emplace_back(stdDev);
         }
 
     }
 
-    list<std::pair<double, double>> out;
+    list<std::tuple<double, double, double>> out;
     for (int j = 0; j < dataPointNum; j++) {
-        out.emplace_back( std::pair<double, double>(betas[j], Xs[j]) );
+        std::tuple<double, double, double> a(betas[j], actualXs[j], stdDevs[j]);
+        out.emplace_back( a );
     }
-    savePairsToFile(out, path);
+    saveTripleToFile(out, path);
 }
 
 // Calculates absolute error using QT and ED data from files with equal number of entries and equal dBeta.

@@ -409,6 +409,7 @@ vector<double> readDoubleVectorFromFile(const std::string & path) {
     return vals;
 }
 
+
 std::tuple<double, double, double> findLowestErgAndK_momentum(const list<list<MatrixXcd>> & H, int N, int n_up) {
     vector<std::tuple<double, double, double>> ergs_w_k_S;
     list<MatrixXcd> S2_list_m = spinOpS2_momentum_m(N, n_up);
