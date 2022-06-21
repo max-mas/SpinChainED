@@ -438,3 +438,37 @@ std::tuple<double, double, double> findLowestErgAndK_momentum(const list<list<Ma
     std::sort(ergs_w_k_S.begin(), ergs_w_k_S.end());
     return ergs_w_k_S[0];
 }
+
+// Saves partition function for a given value of J1/J2 for varying beta.
+void savePartitionFunction(int N, int dataPointNum, double J_ratio, double start, double end, std::string path) {
+    Eigen::VectorXd Ts = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
+    vector<double> Z;
+
+    if (N % 4 == 0 && N >= 8) {
+        list<list<list<MatrixXd>>> H = spinInversionHamiltonian(J_ratio, N, 0, N);
+        vector<double> erg = getParityErgsThreaded(H, N, true);
+        /*double e_0 = erg[0];
+        for (double & e : erg) {
+            e -= e_0;
+        }*/
+        for (int i = 0; i < Ts.size(); i++) {
+            Z.emplace_back(partitionFunction(erg, Ts[i], true) / N);
+        }
+    } else if (N % 2 == 0 && N >= 6) {
+        list<list<MatrixXcd>> H = momentumHamiltonian(J_ratio, N, 0, N);
+        vector<double> erg = getMomentumErgsThreaded(H, N, true);
+        /*double e_0 = erg[0];
+        for (double & e : erg) {
+            e -= e_0;
+        }*/
+        for (int i = 0; i < Ts.size(); i++) {
+            Z.emplace_back(partitionFunction(erg, Ts[i], true) / N);
+        }
+    }
+
+    list<std::pair<double, double>> out;
+    for (int j = 0; j < dataPointNum; j++) {
+        out.emplace_back( std::pair<double, double>(Ts[j], Z[j]) );
+    }
+    savePairsToFile(out, path);
+}

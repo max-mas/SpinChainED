@@ -36,7 +36,7 @@ flags_str = sys.argv[6]
 saveToPath = sys.argv[7]
 flags = []
 
-reps = [1, 3, 10]
+reps = [1, 2, 3, 5, 10]
 
 for i in range(0, len(flags_str)):
     flag = int(flags_str[i])
@@ -222,20 +222,26 @@ for J_ratio in J_ratios:
             path = saveToPath + "/out/QTErrorStats/SpecHeatDiffs/DiffN" + str(int(N)) + "J" + J_ratio + "It" + str(rep) + ".txt"
             file = open(path)
             lines = file.readlines()
-            betas = []
+            Ts = []
             deltas = []
             for line in lines:
                 data = line.split(" ")
-                betas.append(float(data[0]))
+                if data[0] == "-nan" or data[0] == "nan" or float(data[0]) == 0:
+                    continue
+                Ts.append(1/float(data[0]))
                 deltas.append(float(data[1]))
             lab = "$N$ = " + str(int(N))
-            ax.plot(betas, deltas, label=lab)
+            ax.plot(Ts, deltas, label=lab)
+        dBeta = 1/Ts[0]
         ax.legend()
         J_ratioNum = J_ratio.replace("_", ".")
-        ax.set(xlabel="Inverse Temperature $\\beta$ ($1/J_2$)", ylabel="Error of DQT spec. Heat $\\Delta C$",
-                   title="$J_1/J_2 =\\,$" + J_ratioNum + ", $n =$ " + str(rep) + ", $d\\beta$ =" + str(np.max(betas)/len(betas)))
+        ax.set(xlabel="Temperature $T$ ($J_2$)", ylabel="Relative Error of DQT spec. Heat $\\delta C$",
+                   title="$J_1/J_2 =\\,$" + J_ratioNum + ", $n =$ " + str(rep) + ", $d\\beta$ =" + str(dBeta))
+        ax.set_xlim(0, 10)
+        ax.semilogy()
         fig.savefig(saveToPath + "/plots/QTErrorStats/SpecHeatDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".pdf")
         fig.savefig(saveToPath + "/plots/QTErrorStats/SpecHeatDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".png")
+        plt.close()
 
 # QT Error stats for X (WIP)
 for J_ratio in J_ratios:
@@ -245,25 +251,33 @@ for J_ratio in J_ratios:
             path = saveToPath + "/out/QTErrorStats/SuscDiffs/DiffN" + str(int(N)) + "J" + J_ratio + "It" + str(rep) + ".txt"
             file = open(path)
             lines = file.readlines()
-            betas = []
+            Ts = []
             deltas = []
             for line in lines:
                 data = line.split(" ")
-                betas.append(float(data[0]))
+                if data[0] == "-nan" or data[0] == "nan" or float(data[0]) == 0:
+                    continue
+                Ts.append(1/float(data[0]))
                 deltas.append(float(data[1]))
             lab = "$N$ = " + str(int(N))
-            ax.plot(betas, deltas, label=lab)
+            ax.plot(Ts, deltas, label=lab)
+        dBeta = 1/Ts[0]
         ax.legend()
         J_ratioNum = J_ratio.replace("_", ".")
-        ax.set(xlabel="Inverse Temperature $\\beta$ ($1/J_2$)", ylabel="Error of DQT Susceptibility $\\Delta\\chi$",
-               title="$J_1/J_2 =\\,$" + J_ratioNum + ", $n =$ " + str(rep) + ", $d\\beta$ =" )
+        ax.set(xlabel="Temperature $T$ ($J_2$)", ylabel="Realative Error of DQT Susceptibility $\\delta\\chi$",
+               title="$J_1/J_2 =\\,$" + J_ratioNum + ", $n =$ " + str(rep) + ", $d\\beta$ =" + str(dBeta))
+        ax.set_xlim(0, 10)
+        ax.semilogy()
         fig.savefig(saveToPath + "/plots/QTErrorStats/SuscDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".pdf")
         fig.savefig(saveToPath + "/plots/QTErrorStats/SuscDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".png")
+        plt.close()
 
-
+maxErrs = []
 # Specific Heat DQT (T)
 for J_ratio in J_ratios:
+    maxErrs.append([])
     for rep in reps:
+        maxErrs[-1].append([])
         fig, ax = plt.subplots()
         for N in np.linspace(nMin, nMax, nNum):
             path = saveToPath + "/out/SpecificHeats_DQT/SpecHeatDQTN" + str(int(N)) + "J" + J_ratio + "It" + str(rep) + ".txt"
@@ -284,24 +298,57 @@ for J_ratio in J_ratios:
             Ts = np.asarray(Ts)
             specHeat = np.asarray(specHeat)
             errs = np.asarray(errs)
+            relErrs = []
+            for u in range(len(errs)):
+                if specHeat[u] > 0 and Ts[u] > 0.25:
+                    relErrs.append(errs[u]/np.abs(specHeat[u]))
             ax.plot(Ts, specHeat, label=lab)
             ax.fill_between(Ts, specHeat - errs, specHeat + errs, alpha=0.1)
+            maxErrs[-1][-1].append(np.mean(relErrs))
         ax.legend()
-        ax.set_ylim(0, 0.4)
+        #ax.set_ylim(0, 0.4)
         ax.set_xlim(0, 3)
         J_ratio = J_ratio.replace("_", ".")
         ax.set(xlabel="$\\beta$ ($1/J_2$)", ylabel="Specific heat per Spin $C/N$", title="$J_1/J_2 =\\,$" + J_ratio + ", $n=$ " + str(rep) + ", $d\\beta$ =" + str(dBeta))
         J_ratio = J_ratio.replace(".", "_")
         #fig.savefig(saveToPath + "/plots/SpecificHeats_DQT/SpecHeatJ" + J_ratio + "It" + str(rep) + ".pdf")
         #fig.savefig(saveToPath + "/plots/SpecificHeats_DQT/SpecHeatJ" + J_ratio + "It" + str(rep) + ".png")
-        plt.show()
+        #plt.show()
+        plt.close()
+i = 0
+N_list = np.linspace(nMin, nMax, nNum)
+for J_ratio in J_ratios:
+    j = 0
+    fig, ax = plt.subplots()
+    for rep in reps:
+        lab = "$n=$ " + str(rep)
+        ax.plot(N_list, maxErrs[i][j], ".-", label=lab)
+        j += 1
+    ax.legend()
+    ax.legend(prop={'size': 6})
+    J_ratio = J_ratio.replace("_", ".")
+    ax.set_xlabel("$N$", fontsize = 24)
+    ax.set_ylabel("Mittlerer relativer Standardfehler des Mittelwerts $\\overline\\sigma^{-}_{C / N}$", fontsize = 24)
+    ax.set_title("$J_1/J_2 =$ " + J_ratio + ", $d\\beta =$ " + str(dBeta) + ", $T>0.25$", fontsize = 30)
+    fig.set_figwidth(12)
+    fig.set_figheight(9)
+    J_ratio = J_ratio.replace(".", "_")
+    ax.semilogy()
+    fig.savefig(saveToPath + "/plots/QTErrorStats/SpecHeatMeanSEOM/SpecHeatMeanSEOM" + J_ratio + "rel" + ".pdf")
+    fig.savefig(saveToPath + "/plots/QTErrorStats/SpecHeatMeanSEOM/SpecHeatMeanSEOM" + J_ratio + "rel" + ".png")
+    #plt.show()
+    plt.close()
+    i += 1
 """
 # Susceptibility DQT (T)
+maxErrs = []
 for J_ratio in J_ratios:
+    maxErrs.append([])
     for rep in reps:
+        maxErrs[-1].append([])
         fig, ax = plt.subplots()
         for N in np.linspace(nMin, nMax, nNum):
-            path = saveToPath + "/out/Susceptibilities_DQT/SuscDQTN" + str(int(N)) + "J" + J_ratio + "It" + str(rep)+ ".txt"
+            path = saveToPath + "/out/Susceptibilities_DQT/SuscDQTN" + str(int(N)) + "J" + J_ratio + "It" + str(rep) + ".txt"
             file = open(path)
             lines = file.readlines()
             Ts = []
@@ -317,16 +364,46 @@ for J_ratio in J_ratios:
             Ts = np.asarray(Ts)
             susc = np.asarray(susc)
             errs = np.asarray(errs)
+            relErrs = []
+            for u in range(len(errs)):
+                if susc[u] > 0 and Ts[u] > 0.25:
+                    relErrs.append(errs[u]/np.abs(susc[u]))
             lab = "$N$ = " + str(int(N))
             ax.plot(Ts, susc, label=lab)
             ax.fill_between(Ts, susc - errs, susc + errs, alpha=0.1)
             dBeta = 1/Ts[0]
+            maxErrs[-1][-1].append(np.mean(relErrs))
         ax.legend()
         ax.set_xlim(0, 3)
         J_ratio = J_ratio.replace("_", ".")
         ax.set(xlabel="$T$ ($J_2$)", ylabel="Susceptibility per Spin $\\chi / N$", title="$J_1/J_2 =\\,$" + J_ratio + ", $n=$ " + str(rep) + ", $d\\beta$ =" + str(dBeta))
         J_ratio = J_ratio.replace(".", "_")
-        #fig.savefig(saveToPath + "/plots/Susceptibilities_DQT/SuscJ" + J_ratio + ".pdf")
-        #fig.savefig(saveToPath + "/plots/Susceptibilities_DQT/SuscJ" + J_ratio + ".png")
-        plt.show()
+        #fig.savefig(saveToPath + "/plots/Susceptibilities_DQT/SuscJ" + J_ratio + "It" + str(rep) + ".pdf")
+        #fig.savefig(saveToPath + "/plots/Susceptibilities_DQT/SuscJ" + J_ratio + "It" + str(rep) + ".png")
+        #plt.show()
+        plt.close()
 
+i = 0
+N_list = np.linspace(nMin, nMax, nNum)
+for J_ratio in J_ratios:
+    j = 0
+    fig, ax = plt.subplots()
+    for rep in reps:
+        lab = "$n=$ " + str(rep)
+        ax.plot(N_list, maxErrs[i][j], ".-", label=lab)
+        j += 1
+    ax.legend()
+    ax.legend(prop={'size': 6})
+    J_ratio = J_ratio.replace("_", ".")
+    ax.set_xlabel("$N$", fontsize = 24)
+    ax.set_ylabel("Mittlerer relativer Standardfehler des Mittelwerts $\\overline\\sigma^{-}_{\\chi / N}$", fontsize = 24)
+    ax.set_title("$J_1/J_2 =$ " + J_ratio + ", $d\\beta =$ " + str(dBeta), fontsize = 30)
+    fig.set_figwidth(12)
+    fig.set_figheight(9)
+    J_ratio = J_ratio.replace(".", "_")
+    ax.semilogy()
+    fig.savefig(saveToPath + "/plots/QTErrorStats/SuscMeanSEOM/SuscMeanSEOM" + J_ratio + ".pdf")
+    fig.savefig(saveToPath + "/plots/QTErrorStats/SuscMeanSEOM/SuscMeanSEOM" + J_ratio + ".png")
+    #plt.show()
+    plt.close()
+    i += 1

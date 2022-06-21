@@ -17,7 +17,7 @@ double partitionFunction(const vector<double> & ergs, double betaOrT, bool isBet
         temp_representative = 1/betaOrT;
     }
     for (double erg : ergs) {
-        Z += std::exp( -temp_representative * erg ) ;
+        Z += std::exp( -temp_representative * erg );
     }
     return Z;
 }

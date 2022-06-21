@@ -33,7 +33,7 @@ def alt_fit_fn(beta, A, B):
     return A + 2 * np.log(beta) - B * beta
 
 
-def fd_up_fit_fn(beta, A, B, C):
+def fd_up_fit_fn(beta, A, C, B):
     return beta**2 * A * ( B**2 * (np.exp(-2*beta*B) + np.exp(-beta*(B+C))) + C**2 * (np.exp(-2*beta*C) + np.exp(-beta*(B+C))) )
 
 
@@ -48,7 +48,7 @@ def weird_transform(Js, Vals):
 nMin = 6
 nMax = 20
 nNum = int((nMax - nMin) / 2) + 1
-numOfRuns = 5
+numOfRuns = 1
 
 gapsQT = []
 gapsQTavg = []
@@ -105,7 +105,7 @@ for N in np.linspace(nMin, nMax, nNum):
                 #    lnCs = np.log(Cs)
                 #    parameters, covariance = opt.curve_fit(alt_fit_fn, betas, lnCs)
                 #else:
-                    parameters, covariance = opt.curve_fit(fd_up_fit_fn, betas, Cs)
+                    parameters, covariance = opt.curve_fit(exp_fit_fn, betas, Cs)
             except RuntimeError:
                 parameters = [0, 0]
                 covariance = [0, 0]
@@ -192,7 +192,7 @@ for N in np.linspace(6, 16, 6):
             #    lnCs = np.log(Cs)
             #    parameters, covariance = opt.curve_fit(alt_fit_fn, betas, lnCs)
             #else:
-                parameters, covariance = opt.curve_fit(fd_up_fit_fn, betas, Cs)
+                parameters, covariance = opt.curve_fit(exp_fit_fn, betas, Cs)
         except RuntimeError:
             parameters = [0, 0]
             covariance = [0, 0]

@@ -13,6 +13,8 @@
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 
+#include <unsupported/Eigen/MatrixFunctions>
+
 #include "momentumHamiltonian_sparse.h"
 #include "naiveHamiltonian_sparse.h"
 #include "matrixExpIteration.h"
@@ -26,7 +28,12 @@ void saveSpecificHeatsForVaryingTemp_DQT_parallel(int N, int dataPointNum, doubl
 void saveSpecificHeatsForVaryingTemp_DQT_avg(int N, int dataPointNum, double J_ratio, double end, const std::string & path, int numOfRuns);
 
 // Calculates susceptibility heat using DQT and average over a number of runs.
-void saveSusceptibilityForVaryingTemp_DQT_avg(int N, int dataPointNum, double J_ratio, double end, const std::string & path, int numOfRuns);
+void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNum, const double J_ratio,
+                                              const double end,const Eigen::SparseMatrix<std::complex<double>> & S2,
+                                              const std::string & path, const int numOfRuns);
+
+// Calculates partition function using DQT and average over a number of runs. Also calculates standard deviation.
+void savePartitionFunction_DQT(const int N, const int dataPointNum, const double J_ratio, const double end, const std::string & path, const int numOfRuns);
 
 // Calculates absolute error using QT and ED data from files with equal number of entries and equal dBeta.
 void calcAbsDQTError(const std::string & EDpath, const std::string & DQTpath, const std::string & outPath);

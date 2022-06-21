@@ -90,4 +90,7 @@ std::vector<double> readDoubleVectorFromFile(const std::string & path);
 
 std::tuple<double, double, double> findLowestErgAndK_momentum(const std::list<std::list<Eigen::MatrixXcd>> & H, int N, int n_up);
 
+// Saves partition function for a given value of J1/J2 for varying temperature/beta.
+void savePartitionFunction(int N, int dataPointNum, double J_ratio, double start, double end, std::string path);
+
 #endif //SPINCHAINED_DATAGENERATORS_H

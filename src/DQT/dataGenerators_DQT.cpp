@@ -111,8 +111,8 @@ void saveSpecificHeatsForVaryingTemp_DQT_avg(const int N, const int dataPointNum
     saveTripleToFile(out, path);
 }
 
-// Calculates susceptibility heat using DQT and average over a number of runs. TODO add stddev
-void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNum, const double J_ratio, const double end, const string & path, const int numOfRuns) {
+// Calculates susceptibility heat using DQT and average over a number of runs. TODO add stddev, pass S2 ref as arg
+void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNum, const double J_ratio, const double end, const SparseMatrix<complex<double>> & S2, const string & path, const int numOfRuns) {
     const double dBeta = end / (double) dataPointNum;
     Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
 
@@ -121,10 +121,9 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
     vector<double> stdDevs;
 
     if (N % 2 == 0 && N >= 6) {
-        const SparseMatrix<complex<double>> S2 = spinOp2_momentum_sparse(N);
         const SparseMatrix<complex<double>> H  = momentumHamiltonian_sparse(J_ratio, N);
 
-#pragma omp parallel for default(none) shared(Xs)
+#pragma omp parallel for default(none) shared(Xs, S2)
         for (int k = 0; k < numOfRuns; k++) {
 
             VectorXcd psi = randomComplexVectorNormalised((int) pow(2, N), 1.0);
@@ -164,6 +163,59 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
     saveTripleToFile(out, path);
 }
 
+// Calculates partition function using DQT and average over a number of runs. Also calculates standard deviation.
+void savePartitionFunction_DQT(const int N, const int dataPointNum, const double J_ratio, const double end, const string & path, const int numOfRuns) {
+    const double dBeta = end / (double) dataPointNum;
+    Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
+
+    vector<vector<double>> Zs(dataPointNum);
+    vector<double> actualZs;
+    vector<double> stdDevs;
+
+    if (N % 2 == 0 && N >= 6) {
+        const Eigen::MatrixXcd H = momentumHamiltonian_sparse(J_ratio, N);
+        const SparseMatrix<complex<double>> H_s = momentumHamiltonian_sparse(J_ratio, N);
+        //const SparseMatrix<complex<double>> H2 = H*H;
+
+#pragma omp parallel for default(none) shared(Zs)
+        for (int k = 0; k < numOfRuns; k++) {
+            VectorXcd psi = randomComplexVectorNormalised((int) pow(2, N), 1.0);
+            double beta = 0;
+            for (int i = 0; i < dataPointNum; i++) {
+                //double avg_H2 = psi.dot(H * (H * psi)).real();
+                //double avg_H = psi.dot(H * psi).real();
+
+                //double Z = 1 - beta * avg_H + pow(beta, 2)/2.0 * avg_H2;
+                double Z = (psi.dot( (-beta*H).exp() * psi)).real();
+#pragma omp critical
+                Zs[i].emplace_back(Z);
+
+                beta += dBeta;
+                iterateState_beta(H_s, psi, dBeta);
+                psi.normalize();
+            }
+        }
+
+        for (vector<double> & Z : Zs) {
+            double mean = std::accumulate(Z.begin(), Z.end(), 0.0) / numOfRuns;
+            double stdDev = 0.0;
+            for (double z : Z) {
+                stdDev += pow( (mean - z), 2);
+            }
+            stdDev = sqrt(stdDev/(double) numOfRuns);
+            actualZs.emplace_back(mean);
+            stdDevs.emplace_back(stdDev);
+        }
+    }
+
+    list<std::tuple<double, double, double>> out;
+    for (int j = 0; j < dataPointNum; j++) {
+        std::tuple<double, double, double> a(betas[j], actualZs[j], stdDevs[j]);
+        out.emplace_back( a );
+    }
+    saveTripleToFile(out, path);
+}
+
 // Calculates absolute error using QT and ED data from files with equal number of entries and equal dBeta.
 void calcAbsDQTError(const string & EDpath, const string & DQTpath, const string & outPath) {
     vector<std::pair<double, double>> EDData  = readPairVectorFromFile(EDpath );
@@ -176,12 +228,21 @@ void calcAbsDQTError(const string & EDpath, const string & DQTpath, const string
 }
 
 // Calculates relative error using QT and ED data from files with equal number of entries and equal dBeta.
+// If value is too small (1e-10), it is ignored.
 void calcRelDQTError(const string & EDpath, const string & DQTpath, const string & outPath) {
     vector<std::pair<double, double>> EDData  = readPairVectorFromFile(EDpath );
     vector<std::pair<double, double>> DQTData = readPairVectorFromFile(DQTpath);
     list<std::pair<double, double>> betasAndDiffs;
     for (int i = 0; i < EDData.size(); i++) {
-        betasAndDiffs.emplace_back(std::pair<double, double>( EDData[i].first, abs( (EDData[i].second - DQTData[i].second) / EDData[i].second ) ));
+        double absDiff = EDData[i].second - DQTData[i].second;
+        double relDiff;
+        relDiff = absDiff / EDData[i].second;
+        /*if (EDData[i].second > 1e-10 && absDiff > 1e-10) {
+            relDiff = absDiff / EDData[i].second;
+        } else {
+            relDiff = 0.0;
+        }*/
+        betasAndDiffs.emplace_back(std::pair<double, double>( EDData[i].first, abs( relDiff)));
     }
     savePairsToFile(betasAndDiffs, outPath);
 }

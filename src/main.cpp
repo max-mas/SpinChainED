@@ -145,13 +145,13 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef QTtestingArea
     vector<double> J_ratios = {0.1, 0.5, 1, 2};
-    vector<int> runNums = {1, 3, 10};
-    int nMin = 14;
+    vector<int> runNums = {2, 5};
+    int nMin = 16;
     int nMax = 16;
     std::string saveTo_path = "/home/mmaschke/BA_Code/Data";
     int dataPointNum = 5000;
 
-
+    /*
     for (int N = nMin; N <= nMax; N += 2) {
 #pragma omp parallel for default(none) shared(runNums, saveTo_path, N, dataPointNum, std::cout, J_ratios)
         for (int l = 0; l < J_ratios.size(); l++) {
@@ -167,9 +167,10 @@ int main(int argc, char* argv[]) {
                              + std::to_string(numOfRuns) << std::endl;
             }
         }
-    }
+    }*/
 
     for (int N = nMin; N <= nMax; N += 2) {
+        const Eigen::SparseMatrix<std::complex<double>> S2 = spinOp2_momentum_sparse(N);
 #pragma omp parallel for default(none) shared(runNums, saveTo_path, N, dataPointNum, std::cout, J_ratios)
         for (int l = 0; l < J_ratios.size(); l++) {
             double J_ratio = J_ratios[l];
@@ -179,20 +180,21 @@ int main(int argc, char* argv[]) {
                 std::replace(j.begin(), j.end(), '.', '_');
                 std::string path = saveTo_path + "/out/Susceptibilities_DQT/SuscDQTN" + std::to_string(N)
                                    + std::string("J") + j + std::string("It") + std::to_string(numOfRuns) + ".txt";
-                saveSusceptibilityForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 50, path, numOfRuns);
+                saveSusceptibilityForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 50, S2, path, numOfRuns);
                 std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
                                 + std::to_string(numOfRuns) << std::endl;
             }
         }
     }
+
 #endif
 #ifdef QTDataForFit
     Eigen::VectorXd Js = Eigen::VectorXd::LinSpaced(50, 0, 2);
     nMin = 6;
     nMax = 12;
-    int numOfRuns = 5;
+    int numOfRuns = 1;
 
-
+    /*
     for (int N = nMin; N <= nMax; N += 2) {
         for (int i = 1; i <= numOfRuns; i++) {
 #pragma omp parallel for default(none) shared(Js, saveTo_path, dataPointNum, std::cout, i, N)
@@ -208,15 +210,16 @@ int main(int argc, char* argv[]) {
             }
         }
     }
-    /*
+
     for (int N = nMin; N <= nMax; N += 2) {
+        const Eigen::SparseMatrix<std::complex<double>> S2 = spinOp2_momentum_sparse(N);
         for (int i = 1; i <= numOfRuns; i++) {
             for (double J_ratio: Js) {
                 std::string j = std::to_string(J_ratio);
                 std::replace(j.begin(), j.end(), '.', '_');
                 std::string path = saveTo_path + "/out/Susceptibilities_DQT/forFit/" + std::to_string(i) + "/SuscDQTN" + std::to_string(N)
                                    + std::string("J") + j + std::string("It") + std::to_string(1) + ".txt";
-                saveSusceptibilityForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 50, path, 1);
+                saveSusceptibilityForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 50, S2, path, 1);
                 std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
                              + std::to_string(1) << std::endl;
             }
@@ -252,9 +255,9 @@ int main(int argc, char* argv[]) {
 
 #endif
 #ifdef statisticsTest
-    for (double J_ratio: J_ratios) {
-        for (int numOfRuns : runNums) {
-            for (int N = 6; N <= 12; N += 2) {
+    for (int N = 6; N <= 16; N += 2) {
+        for (double J_ratio: J_ratios) {
+            for (int numOfRuns : runNums) {
                 std::string j = std::to_string(J_ratio);
                 std::replace(j.begin(), j.end(), '.', '_');
                 std::string EDPath = saveTo_path + "/out/SpecificHeats/SpecHeatN" + std::to_string(N)
@@ -270,9 +273,9 @@ int main(int argc, char* argv[]) {
         }
     }
 
-    for (double J_ratio: J_ratios) {
-        for (int numOfRuns : runNums) {
-            for (int N = 6; N <= 12; N += 2) {
+    for (int N = 6; N <= 16; N += 2) {
+        for (double J_ratio: J_ratios) {
+            for (int numOfRuns : runNums) {
                 std::string j = std::to_string(J_ratio);
                 std::replace(j.begin(), j.end(), '.', '_');
                 std::string EDPath = saveTo_path + "/out/Susceptibilities/SuscN" + std::to_string(N)
