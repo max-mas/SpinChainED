@@ -43,3 +43,5 @@ At the moment, these are:
 
 
 Required for build: Eigen, OpenMP (usually part of gcc), Intel MKL
+
+The Hamiltonian-generating methods of this project have been inspired by Anders W. Sandvik, Computational Studies of Quantum Spin Systems,  https://doi.org/10.1063/1.3518900
