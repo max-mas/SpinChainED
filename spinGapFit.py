@@ -46,9 +46,10 @@ def weird_transform(Js, Vals):
 
 
 nMin = 6
-nMax = 20
+nMax = 22
 nNum = int((nMax - nMin) / 2) + 1
 numOfRuns = 1
+resids = True
 
 gapsQT = []
 gapsQTavg = []
@@ -60,6 +61,8 @@ for N in np.linspace(nMin, nMax, nNum):
     gapsQT.append([])
     j = 0
     for k in range(1, numOfRuns + 1):
+        if N == 18 and k > 1:
+            continue
 
         runPath = path + str(k) + "/"
 
@@ -113,6 +116,39 @@ for N in np.linspace(nMin, nMax, nNum):
             perr = np.sqrt(np.diag(covariance))
             gapsQT[i][k - 1][0].append(J)
             gapsQT[i][k - 1][1].append(parameters[1])
+            if k == 1 and resids:
+                fitted = []
+                for beta in betas:
+                    try:
+                        fitted.append(exp_fit_fn(beta, parameters[0], parameters[1]))
+                    except:
+                        fitted.append(0)
+                fig2, ax2 = plt.subplots()
+                ax2.plot(betas, Cs, label="QT", alpha=0.4)
+                ax2.plot(betas, fitted, label="Fit")
+                ax2.legend()
+                ax2.semilogy()
+                ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Specific heat per Spin $\\chi/N$", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
+                fig2.set_figwidth(12)
+                fig2.set_figheight(9)
+                fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/Fits/QT/fitN"+str(N)+"J"+J_str+".png")
+                plt.close(fig2)
+                fig2, ax2 = plt.subplots()
+                ax2.plot(betas, np.abs(np.asarray(fitted)-np.asarray(Cs)))
+                ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Specific heat fit residual", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
+                fig2.set_figwidth(12)
+                fig2.set_figheight(9)
+                ax2.semilogy()
+                fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/Fits/QTResid/residN"+str(N)+"J"+J_str+".png")
+                plt.close(fig2)
+                fig2, ax2 = plt.subplots()
+                ax2.plot(betas, np.abs((np.asarray(fitted)-np.asarray(Cs))/np.asarray(Cs)))
+                ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Specific heat fit relative residual", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
+                fig2.set_figwidth(12)
+                fig2.set_figheight(9)
+                ax2.semilogy()
+                fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/Fits/QTResidRel/relresidN"+str(N)+"J"+J_str+".png")
+                plt.close(fig2)
             print(str(N) + " " + J_str + " " + str(perr[1]))
 
         j += 1
@@ -128,8 +164,14 @@ for N in np.linspace(nMin, nMax, nNum):
         avg = 0.0
         dev = 0.0
         for l in range(numOfRuns):
+            if N == 18 and l == 0:
+                avg += gapsQT[i][l][1][n]
+                break
             avg += gapsQT[i][l][1][n] / numOfRuns
         for l in range(numOfRuns):
+            if N == 18 and l == 0:
+                dev += 0
+                break
             dev += (gapsQT[i][l][1][n] - avg) ** 2 / numOfRuns
         dev = np.sqrt(dev)/np.sqrt(numOfRuns)
         gapsQTavg[i][1].append(avg)
@@ -200,6 +242,39 @@ for N in np.linspace(6, 16, 6):
         perr = np.sqrt(np.diag(covariance))
         gapsEQ[i][0].append(J)
         gapsEQ[i][1].append(parameters[1])
+        if resids:
+            fitted = []
+            for beta in betas:
+                try:
+                    fitted.append(exp_fit_fn(beta, parameters[0], parameters[1]))
+                except:
+                    fitted.append(0)
+            fig2, ax2 = plt.subplots()
+            ax2.plot(betas, Cs, label="ED", alpha=0.4)
+            ax2.plot(betas, fitted, label="Fit")
+            ax2.legend()
+            ax2.semilogy()
+            ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Specific heat per Spin $\\chi/N$", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
+            fig2.set_figwidth(12)
+            fig2.set_figheight(9)
+            fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/Fits/ED/fitN"+str(N)+"J"+J_str+".png")
+            plt.close(fig2)
+            fig2, ax2 = plt.subplots()
+            ax2.plot(betas, np.abs(np.asarray(fitted)-np.asarray(Cs)))
+            ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Specific heat fit residual", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
+            fig2.set_figwidth(12)
+            fig2.set_figheight(9)
+            ax2.semilogy()
+            fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/Fits/EDResid/residN"+str(N)+"J"+J_str+".png")
+            plt.close(fig2)
+            fig2, ax2 = plt.subplots()
+            ax2.plot(betas, np.abs((np.asarray(fitted)-np.asarray(Cs))/np.asarray(Cs)))
+            ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Specific heat fit relative residual", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
+            fig2.set_figwidth(12)
+            fig2.set_figheight(9)
+            ax2.semilogy()
+            fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/Fits/EDResidRel/relresidN"+str(N)+"J"+J_str+".png")
+            plt.close(fig2)
         print(str(N) + " " + J_str + " " + str(perr[1]))
     i += 1
 N = nMin
@@ -210,8 +285,8 @@ for arr in gapsEQ:
     N += 2
 
 plt.gca().set_prop_cycle(None)
-for N in np.linspace(6, 14, 5):
-    path = "/home/mmaschke/BA_Code/Data/out/ActualExcitationErgs/ExcErgs" + str(int(N)) + ".txt"
+for N in np.linspace(6, 18, 7):
+    path = "/home/mmaschke/BA_Code/Data/out/ExcitationErgs/ExcErgs" + str(int(N)) + ".txt"
     file = open(path)
     lines = file.readlines()
     Ts = []
@@ -230,9 +305,9 @@ ax.set_xlim(0, 2)
 fig.set_figwidth(12)
 fig.set_figheight(9)
 
-fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/ExcErg" + str(numOfRuns) + ".pdf")
-fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/ExcErg" + str(numOfRuns) + ".png")
-plt.show()
+#fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/ExcErg" + str(numOfRuns) + ".pdf")
+#fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/ExcErg" + str(numOfRuns) + ".png")
+#plt.show()
 
 """
 file = open(path)
