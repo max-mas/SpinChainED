@@ -7,6 +7,7 @@ import copy
 plt.rcParams['text.usetex'] = True
 plt.rc('axes', labelsize=16)
 plt.rc('axes', titlesize=20)
+plt.rcParams["figure.figsize"] = (12, 9)
 
 
 def read_vec_from_file(arg_path):
@@ -55,7 +56,7 @@ for i in range(0, len(flags_str)):
 if flags[0]:
     fig, ax = plt.subplots()
     for N in np.linspace(nMin, nMax, nNum):
-        path = saveToPath + "/out/ExcitationErgs/ExcErgs" + str(int(N)) + ".txt"
+        path = saveToPath + "/out/ActualExcitationErgs/ExcErgs" + str(int(N)) + ".txt"
         file = open(path)
         lines = file.readlines()
         Js = []
@@ -67,11 +68,13 @@ if flags[0]:
         lab = "$N$ = " + str(int(N))
         ax.plot(Js, weird_transform(Js, excErg), label=lab)
         ax.legend()
-        ax.set(xlabel="$J_1/J_2$", ylabel="Reduced Spin Gap Energy $\\Delta/(J_1+J_2)$ ($J_2$)")
+        ax.set(xlabel="$J_1/J_2$", ylabel="Reduced Excitation Energy $\\Delta/(J_1+J_2)$ ($J_2$)")
         ax.set_xlim(0, 2)
         ax.set_ylim(0, 0.75)
-    fig.savefig(saveToPath + "/plots/ExcitationErgs/Excergs.pdf")
-    fig.savefig(saveToPath + "/plots/ExcitationErgs/Excergs.png")
+    #fig.savefig(saveToPath + "/plots/ActualExcitationErgs/Excergs.pdf")
+    #fig.savefig(saveToPath + "/plots/ActualExcitationErgs/Excergs.png")
+    plt.show()
+    plt.close()
 
 # Ground state erg
 if flags[1]:
@@ -286,7 +289,7 @@ for J_ratio in J_ratios:
         fig.savefig(saveToPath + "/plots/QTErrorStats/SuscDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".pdf")
         fig.savefig(saveToPath + "/plots/QTErrorStats/SuscDiffs/Diff" + "J" + J_ratio + "It" + str(rep) + ".png")
         plt.close()
-"""
+
 maxErrs = []
 # Specific Heat DQT (T)
 for J_ratio in J_ratios:
@@ -296,10 +299,10 @@ for J_ratio in J_ratios:
         fig, ax = plt.subplots()
         for N in np.linspace(nMin, nMax, nNum):
             path = saveToPath + "/out/SpecificHeats_DQT/SpecHeatDQTN" + str(int(N)) + "J" + J_ratio + "It" + str(rep) + ".txt"
-            if N > 16 and rep > 1 or N > 16 and J_ratio == "2_000000":
+            if N > 16:
+                path = "/home/mmaschke/BA_Code/remoteData/out/SpecificHeats_DQT/SpecHeatDQTN" + str(int(N)) + "J" + J_ratio + "It" + str(rep) + ".txt"
+            if N > 16 and rep == 10:
                 continue
-            elif N > 16 and rep == 1 and J_ratio != "2_000000":
-                path = saveToPath + "/out/SpecificHeats_DQT/SpecHeatDQTN" + str(int(N)) + "J" + J_ratio + ".txt"
             file = open(path)
             lines = file.readlines()
             Ts = []
@@ -347,15 +350,15 @@ for J_ratio in J_ratios:
 
         ax.legend()
         #ax.set_ylim(0, 0.4)
-        ax.set_xlim(0, 1)
+        ax.set_xlim(0, 2)
         J_ratio = J_ratio.replace("_", ".")
         ax.set(xlabel="$\\beta$ ($1/J_2$)", ylabel="Specific heat per Spin $C/N$", title="$J_1/J_2 =\\,$" + J_ratio + ", $n=$ " + str(rep) + ", $d\\beta$ =" + str(dBeta))
         J_ratio = J_ratio.replace(".", "_")
-        fig.savefig(saveToPath + "/plots/SpecificHeats_DQT/SpecHeatJ" + J_ratio + "It" + str(rep) + ".pdf")
-        fig.savefig(saveToPath + "/plots/SpecificHeats_DQT/SpecHeatJ" + J_ratio + "It" + str(rep) + ".png")
+        fig.savefig("/home/mmaschke/BA_Code/Data/plots/SpecificHeats_DQT/SpecHeatJ" + J_ratio + "It" + str(rep) + ".pdf")
+        fig.savefig("/home/mmaschke/BA_Code/Data/plots/SpecificHeats_DQT/SpecHeatJ" + J_ratio + "It" + str(rep) + ".png")
         #plt.show()
         plt.close()
-"""
+
 i = 0
 N_list = np.linspace(nMin, nMax, nNum)
 for J_ratio in J_ratios:

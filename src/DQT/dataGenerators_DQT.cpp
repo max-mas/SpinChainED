@@ -111,7 +111,7 @@ void saveSpecificHeatsForVaryingTemp_DQT_avg(const int N, const int dataPointNum
     saveTripleToFile(out, path);
 }
 
-// Calculates susceptibility heat using DQT and average over a number of runs. TODO add stddev, pass S2 ref as arg
+// Calculates susceptibility heat using DQT and average over a number of runs.
 void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNum, const double J_ratio, const double end, const SparseMatrix<complex<double>> & S2, const string & path, const int numOfRuns) {
     const double dBeta = end / (double) dataPointNum;
     Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
