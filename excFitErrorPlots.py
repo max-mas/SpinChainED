@@ -36,7 +36,7 @@ for N in np.linspace(6, 16, 6):
 ax.semilogy()
 ax.legend()
 ax.set(xlabel="$J_1/J_2$", ylabel="$|\\left(\\Delta_{n=1}-\\Delta_{n=5}\\right)/\\Delta_{n=5}|$", title="Relative Differenz der angepassten Spinlücken \n für $n=1$ und $n=5$")
-fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/MeanDiffs/RelDiffs.png")
+#fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/MeanDiffs/RelDiffs.png")
 plt.show()
 
 """

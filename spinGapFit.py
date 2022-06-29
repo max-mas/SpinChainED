@@ -46,11 +46,12 @@ def weird_transform(Js, Vals):
     return A
 
 
-nMin = 6
-nMax = 18
+nMin = 20
+nMax = 20
 nNum = int((nMax - nMin) / 2) + 1
-numOfRuns = 5
-resids = False
+numOfRuns = 1
+resids = True
+diffs = False
 
 gapsQT = []
 gapsQTavg = []
@@ -83,21 +84,25 @@ for N in np.linspace(nMin, nMax, nNum):
             J = float(J_str)
 
             betas = []
+            fullBetas = []
             Cs = []
+            fullCs = []
             lines = file.readlines()
             cutoff = 20
             upperCutoff = 50
-            if J > 1.5:
-                cutoff = 15
+            #if J > 1.5:
+            #    cutoff = 15
             #elif 0.4 < J < 0.75:
             #    upperCutoff = 30
 
             for line in lines:
                 data = line.split(" ")
-                if float(data[0]) < cutoff or float(data[0]) > upperCutoff:
-                    continue
+                fullBetas.append(float(data[0]))
                 if data[1] == "nan\n" or data[1] == "-nan\n" or data[1] == "inf\n" or data[1] == "-inf\n":
                     data[1] = "0"
+                fullCs.append(float(data[1].replace("\n", "")))
+                if float(data[0]) < cutoff or float(data[0]) > upperCutoff:
+                    continue
                 betas.append(float(data[0]))
                 Cs.append(float(data[1].replace("\n", "")))
 
@@ -118,31 +123,36 @@ for N in np.linspace(nMin, nMax, nNum):
             gapsQT[i][k - 1][0].append(J)
             gapsQT[i][k - 1][1].append(parameters[1])
             if k == 1 and resids:
+                fullFitted = []
                 fitted = []
-                for beta in betas:
+                for beta in fullBetas:
                     try:
-                        fitted.append(exp_fit_fn(beta, parameters[0], parameters[1]))
+                        fullFitted.append(exp_fit_fn(beta, parameters[0], parameters[1]))
+                        if beta > cutoff:
+                            fitted.append(exp_fit_fn(beta, parameters[0], parameters[1]))
                     except:
-                        fitted.append(0)
+                        fullFitted.append(0)
+                        if beta > cutoff:
+                            fitted.append(0)
                 fig2, ax2 = plt.subplots()
-                ax2.plot(betas, Cs, label="QT", alpha=0.4)
-                ax2.plot(betas, fitted, label="Fit")
+                ax2.plot(fullBetas, fullCs, label="QT", alpha=0.4)
+                ax2.plot(fullBetas, fullFitted, label="Fit")
                 ax2.legend()
                 ax2.semilogy()
-                ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Specific heat per Spin $\\chi/N$", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
-                #fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/Fits/QT/fitN"+str(N)+"J"+J_str+".png")
+                ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Susceptibility per Spin $\\chi/N$", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
+                fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/QT/fitN"+str(N)+"J"+J_str+".png")
                 plt.close(fig2)
                 fig2, ax2 = plt.subplots()
-                ax2.plot(betas, np.abs(np.asarray(fitted)-np.asarray(Cs)))
-                ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Specific heat fit residual", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
+                ax2.plot(fullBetas, np.abs(np.asarray(fullFitted)-np.asarray(fullCs)))
+                ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Susceptibility fit residual", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
                 ax2.semilogy()
-                #fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/Fits/QTResid/residN"+str(N)+"J"+J_str+".png")
+                fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/QTResid/residN"+str(N)+"J"+J_str+".png")
                 plt.close(fig2)
                 fig2, ax2 = plt.subplots()
-                ax2.plot(betas, np.abs((np.asarray(fitted)-np.asarray(Cs))/np.asarray(Cs)))
-                ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Specific heat fit relative residual", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
+                ax2.plot(fullBetas, np.abs((np.asarray(fullFitted)-np.asarray(fullCs))/np.asarray(fullCs)))
+                ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Susceptibility fit relative residual", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
                 ax2.semilogy()
-                #fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/Fits/QTResidRel/relresidN"+str(N)+"J"+J_str+".png")
+                fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/QTResidRel/relresidN"+str(N)+"J"+J_str+".png")
                 plt.close(fig2)
             print(str(N) + " " + J_str + " " + str(perr[1]))
 
@@ -183,7 +193,7 @@ for arr in gapsQTavg:
             fmt=".-", label=lab, alpha=0.5, capsize=2)
     N += 2
     i += 1
-
+"""
 gapsED = []
 path = "/home/mmaschke/BA_Code/remoteData/out/Susceptibilities/forFit/"
 i = 0
@@ -203,21 +213,25 @@ for N in np.linspace(6, 16, 6):
             continue
         J = float(J_str)
         betas = []
+        fullBetas = []
         Cs = []
+        fullCs = []
         lines = file.readlines()
         cutoff = 20
         upperCutoff = 50
-        if J > 1.5:
-            cutoff = 15
+        #if J > 1.5:
+        #    cutoff = 15
         #elif 0.4 < J < 0.75:
         #    upperCutoff = 30
 
         for line in lines:
             data = line.split(" ")
-            if float(data[0]) < cutoff or float(data[0]) > upperCutoff:
-                continue
+            fullBetas.append(float(data[0]))
             if data[1] == "nan\n" or data[1] == "-nan\n" or data[1] == "inf\n" or data[1] == "-inf\n":
                 data[1] = "0"
+            fullCs.append(float(data[1].replace("\n", "")))
+            if float(data[0]) < cutoff or float(data[0]) > upperCutoff:
+                continue
             betas.append(float(data[0]))
             Cs.append(float(data[1].replace("\n", "")))
 
@@ -238,31 +252,36 @@ for N in np.linspace(6, 16, 6):
         gapsED[i][0].append(J)
         gapsED[i][1].append(parameters[1])
         if resids:
+            fullFitted = []
             fitted = []
-            for beta in betas:
+            for beta in fullBetas:
                 try:
-                    fitted.append(exp_fit_fn(beta, parameters[0], parameters[1]))
+                    fullFitted.append(exp_fit_fn(beta, parameters[0], parameters[1]))
+                    if beta > cutoff:
+                        fitted.append(exp_fit_fn(beta, parameters[0], parameters[1]))
                 except:
-                    fitted.append(0)
+                    fullFitted.append(0)
+                    if beta > cutoff:
+                        fitted.append(0)
             fig2, ax2 = plt.subplots()
-            ax2.plot(betas, Cs, label="ED", alpha=0.4)
-            ax2.plot(betas, fitted, label="Fit")
+            ax2.plot(fullBetas, fullCs, label="ED", alpha=0.4)
+            ax2.plot(fullBetas, fullFitted, label="Fit")
             ax2.legend()
             ax2.semilogy()
-            ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Specific heat per Spin $\\chi/N$", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
-            #fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/Fits/ED/fitN"+str(N)+"J"+J_str+".png")
+            ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Susceptibility per Spin $\\chi/N$", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
+            fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/ED/fitN"+str(N)+"J"+J_str+".png")
             plt.close(fig2)
             fig2, ax2 = plt.subplots()
-            ax2.plot(betas, np.abs(np.asarray(fitted)-np.asarray(Cs)))
-            ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Specific heat fit residual", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
+            ax2.plot(fullBetas, np.abs(np.asarray(fullFitted)-np.asarray(fullCs)))
+            ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Susceptibility fit residual", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
             ax2.semilogy()
-            #fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/Fits/EDResid/residN"+str(N)+"J"+J_str+".png")
+            fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/EDResid/residN"+str(N)+"J"+J_str+".png")
             plt.close(fig2)
             fig2, ax2 = plt.subplots()
-            ax2.plot(betas, np.abs((np.asarray(fitted)-np.asarray(Cs))/np.asarray(Cs)))
-            ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Specific heat fit relative residual", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
+            ax2.plot(fullBetas, np.abs((np.asarray(fullFitted)-np.asarray(fullCs))/np.asarray(fullCs)))
+            ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Susceptibility fit relative residual", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
             ax2.semilogy()
-            #fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/exc/Fits/EDResidRel/relresidN"+str(N)+"J"+J_str+".png")
+            fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/EDResidRel/relresidN"+str(N)+"J"+J_str+".png")
             plt.close(fig2)
         print(str(N) + " " + J_str + " " + str(perr[1]))
     i += 1
@@ -278,19 +297,20 @@ for arr in gapsQTavg:
         file.write(str(arr[0][i]) + " " + str(arr[1][i]) + "\n")
     file.close()
     N += 2
-
-meanRelDiffsN = [[], []]
-N = nMin
-path = "/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/MeanDiffs/MeanRelDiffsIt" + str(numOfRuns) + ".txt"
-file = open(path, "w")
-plt.gca().set_prop_cycle(None)
-for i in range(len(gapsQTavg)):
-    diffs = np.abs((np.asarray(gapsQTavg[i][1]) - np.asarray(gapsED[i][1]))/np.asarray(gapsED[i][1]))
-    meanRelDiffsN[0].append(N)
-    meanRelDiffsN[1].append(np.mean(diffs))
-    file.write(str(N) + " " + str(meanRelDiffsN[1][-1]) + "\n")
-    N += 2
-file.close()
+"""
+if diffs:
+    meanRelDiffsN = [[], []]
+    N = nMin
+    path = "/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/MeanDiffs/MeanRelDiffsIt" + str(numOfRuns) + ".txt"
+    file = open(path, "w")
+    plt.gca().set_prop_cycle(None)
+    for i in range(len(gapsQTavg)):
+        diffs = np.abs((np.asarray(gapsQTavg[i][1]) - np.asarray(gapsED[i][1]))/np.asarray(gapsED[i][1]))
+        meanRelDiffsN[0].append(N)
+        meanRelDiffsN[1].append(np.mean(diffs))
+        file.write(str(N) + " " + str(meanRelDiffsN[1][-1]) + "\n")
+        N += 2
+    file.close()
 
 plt.gca().set_prop_cycle(None)
 for N in np.linspace(6, 18, 7):
@@ -306,14 +326,14 @@ for N in np.linspace(6, 18, 7):
     lab = "$N$ = " + str(int(N)) + " exact"
     ax.plot(Ts, weird_transform(Ts, excErg), label=lab)
 
-ax.set(xlabel="$J_1/J_2$", ylabel="Reduced Excitation Energy $\\Delta/(J_1+J_2)$", title="$n = $ " + str(numOfRuns))
+ax.set(xlabel="$J_1/J_2$", ylabel="Reduced Spin Gap Energy $\\Delta/(J_1+J_2)$", title="$n = $ " + str(numOfRuns))
 ax.legend(prop={'size': 6})
 ax.set_ylim(0, 0.8)
 ax.set_xlim(0, 2)
 
 #fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/ExcErg" + str(numOfRuns) + ".pdf")
 #fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/ExcErg" + str(numOfRuns) + ".png")
-#plt.show()
+plt.show()
 
 """
 file = open(path)

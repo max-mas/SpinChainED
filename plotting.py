@@ -46,7 +46,7 @@ flags_str = sys.argv[6]
 saveToPath = sys.argv[7]
 flags = []
 
-reps = [1, 2, 3, 5, 10]
+reps = [1, 2, 3]
 
 for i in range(0, len(flags_str)):
     flag = int(flags_str[i])
@@ -112,22 +112,21 @@ if flags[2]:
                 data = line.split(" ")
                 if float(data[0]) == 0:
                     continue
-                Ts.append(1/float(data[0]))
+                Ts.append(1/float(data[0])/float(J_ratio.replace("_", ".")))
                 if N == 18:
                     Ts[-1] = 1/Ts[-1]
                 specHeat.append(float(data[1].replace("\n", "")))
             lab = "$N$ = " + str(int(N))
             ax.plot(Ts, specHeat, label=lab)
-            dBeta = 1/Ts[0]
         ax.legend()
         #ax.set_ylim(0, 0.4)
-        ax.set_xlim(0, 3)
+        #ax.set_xlim(0, 10)
         J_ratio = J_ratio.replace("_", ".")
         ax.set(xlabel="$T$ ($J_2$)", ylabel="Specific heat per Spin $C/N$", title="$J_1/J_2=\\,$ " + J_ratio)
         J_ratio = J_ratio.replace(".", "_")
-        fig.savefig(saveToPath + "/plots/SpecificHeats/SpecHeatJ" + J_ratio + ".pdf")
-        fig.savefig(saveToPath + "/plots/SpecificHeats/SpecHeatJ" + J_ratio + ".png")
-        #plt.show()
+        #fig.savefig(saveToPath + "/plots/SpecificHeats/SpecHeatJ" + J_ratio + ".pdf")
+        #fig.savefig(saveToPath + "/plots/SpecificHeats/SpecHeatJ" + J_ratio + ".png")
+        plt.show()
 
 # Specific Heat (J)
 if flags[3]:
