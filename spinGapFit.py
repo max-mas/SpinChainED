@@ -1,3 +1,4 @@
+import scipy.interpolate
 from matplotlib import pyplot as plt
 import numpy as np
 import scipy.optimize as opt
@@ -46,11 +47,11 @@ def weird_transform(Js, Vals):
     return A
 
 
-nMin = 20
-nMax = 20
+nMin = 6
+nMax = 16
 nNum = int((nMax - nMin) / 2) + 1
 numOfRuns = 1
-resids = True
+resids = False
 diffs = False
 
 gapsQT = []
@@ -90,8 +91,8 @@ for N in np.linspace(nMin, nMax, nNum):
             lines = file.readlines()
             cutoff = 20
             upperCutoff = 50
-            #if J > 1.5:
-            #    cutoff = 15
+            if J > 1.5:
+                cutoff = 15
             #elif 0.4 < J < 0.75:
             #    upperCutoff = 30
 
@@ -193,11 +194,11 @@ for arr in gapsQTavg:
             fmt=".-", label=lab, alpha=0.5, capsize=2)
     N += 2
     i += 1
-"""
+
 gapsED = []
 path = "/home/mmaschke/BA_Code/remoteData/out/Susceptibilities/forFit/"
 i = 0
-for N in np.linspace(6, 16, 6):
+for N in np.linspace(6, 6, 1):
     gapsED.append([])
     gapsED[i].append([])
     gapsED[i].append([])
@@ -288,7 +289,7 @@ for N in np.linspace(6, 16, 6):
 path = "/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/MeanDiffs/GapN"
 N = nMin
 plt.gca().set_prop_cycle(None)
-for arr in gapsQTavg:
+for arr in gapsED:
     lab = "$N$ = " + str(int(N)) + " ED Fit"
     ax.plot(arr[0], weird_transform(arr[0], arr[1]), ".-", label=lab, alpha=0.2)
     filePath = path + str(N) + "It" + str(numOfRuns)
@@ -297,7 +298,7 @@ for arr in gapsQTavg:
         file.write(str(arr[0][i]) + " " + str(arr[1][i]) + "\n")
     file.close()
     N += 2
-"""
+
 if diffs:
     meanRelDiffsN = [[], []]
     N = nMin
@@ -313,7 +314,7 @@ if diffs:
     file.close()
 
 plt.gca().set_prop_cycle(None)
-for N in np.linspace(6, 18, 7):
+for N in np.linspace(6, 16, 6):
     path = "/home/mmaschke/BA_Code/Data/out/ExcitationErgs/ExcErgs" + str(int(N)) + ".txt"
     file = open(path)
     lines = file.readlines()
@@ -333,7 +334,38 @@ ax.set_xlim(0, 2)
 
 #fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/ExcErg" + str(numOfRuns) + ".pdf")
 #fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/ExcErg" + str(numOfRuns) + ".png")
+#plt.show()
+plt.close(fig)
+
+fig, ax = plt.subplots()
+plt.gca().set_prop_cycle(None)
+i = 0
+for N in np.linspace(6, 16, 6):
+    path = "/home/mmaschke/BA_Code/Data/out/ExcitationErgs/ExcErgs" + str(int(N)) + ".txt"
+    file = open(path)
+    lines = file.readlines()
+    Ts = []
+    excErg = []
+    for line in lines:
+        data = line.split(" ")
+        Ts.append(float(data[0]))
+        excErg.append(float(data[1].replace("\n", "")))
+    exactInterp = scipy.interpolate.interp1d(Ts, excErg)
+    fitBetas = np.linspace(0, 2, 50)
+    exactValsAtFitBetas = exactInterp(fitBetas)
+
+    lab = "$N$ = " + str(int(N))
+    ax.plot(fitBetas, np.abs((np.asarray(gapsQTavg[i][1]) - np.asarray(exactValsAtFitBetas))/np.asarray(exactValsAtFitBetas)), label=lab)
+    i += 1
+ax.set(xlabel="$J_1/J_2$", ylabel="Relative Residual of fitted Spin Gap $|\\Delta_{ED}-\\Delta_{QT,\\,fit}|/\\Delta_{ED}$", title="$n = $ " + str(numOfRuns))
+ax.legend(prop={'size': 8})
+ax.semilogy()
+ax.set_xlim(0, 2)
+fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/GapResidRel/GapResidRel" + str(numOfRuns) + ".pdf")
+fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/GapResidRel/GapResidRel" + str(numOfRuns) + ".png")
 plt.show()
+
+
 
 """
 file = open(path)

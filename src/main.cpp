@@ -1,5 +1,7 @@
 #include "main.h"
 
+#include <sys/resource.h>
+
 using std::vector;
 
 //#define saveExcitationErgs
@@ -9,9 +11,10 @@ using std::vector;
 //#define saveSusceptibility
 //#define saveSusceptibilityForJ
 //#define saveDispersion
-//#define QTtestingArea
+#define QTtestingArea
 //#define QTDataForFit
 //#define statisticsTest
+#define EDbenchmark
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -147,7 +150,7 @@ int main(int argc, char* argv[]) {
     vector<double> J_ratios = {0.1, 0.5, 1, 2};
     vector<int> runNums = {2, 5};
     int nMin = 16;
-    int nMax = 16;
+    int nMax = 12;
     std::string saveTo_path = "/home/mmaschke/BA_Code/Data";
     int dataPointNum = 5000;
 
@@ -291,9 +294,87 @@ int main(int argc, char* argv[]) {
         }
     }
 #endif
+#ifdef EDbenchmark
+    int minN = 6;
+    int maxN = 12;
+    std::chrono::steady_clock::time_point start;
+    std::chrono::steady_clock::time_point finish;
+
+    std::cout << "Naive:" << std::endl;
+    for (int N = minN; N <= maxN; N+=2) {
+        struct rusage usage{};
+        start = std::chrono::steady_clock::now();
+        Eigen::MatrixXd H = naiveHamiltonian(0, N);
+        Eigen::VectorXcd eig = H.eigenvalues();
+        finish = std::chrono::steady_clock::now();
+        int ret = getrusage(RUSAGE_SELF, &usage);
+
+        long time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+        long max_ram_byte = usage.ru_maxrss;
+        std::cout << "N = " << N << ", time = " << time_ns << " ns, ram = " << max_ram_byte << " KB" << std::endl;
+    }
+
+    std::cout << "Magnetization:" << std::endl;
+    for (int N = minN; N <= maxN; N+=2) {
+        struct rusage usage{};
+        start = std::chrono::steady_clock::now();
+        std::list<Eigen::MatrixXd> H = magnetizationHamiltonian(0, N);
+        vector<double> eig = getEnergiesFromBlocks(H, true);
+        finish = std::chrono::steady_clock::now();
+        int ret = getrusage(RUSAGE_SELF, &usage);
+
+        long time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+        long max_ram_byte = usage.ru_maxrss;
+        std::cout << "N = " << N << ", time = " << time_ns << " ns, ram = " << max_ram_byte << " KB" << std::endl;
+    }
+
+    std::cout << "Momentum:" << std::endl;
+    for (int N = minN; N <= maxN; N+=2) {
+        struct rusage usage{};
+        start = std::chrono::steady_clock::now();
+        std::list<std::list<Eigen::MatrixXcd>> H = momentumHamiltonian(0, N, 0, N);
+        vector<double> eig = getEnergiesFromBlocks(H, true);
+        finish = std::chrono::steady_clock::now();
+        int ret = getrusage(RUSAGE_SELF, &usage);
+
+        long time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+        long max_ram_byte = usage.ru_maxrss;
+        std::cout << "N = " << N << ", time = " << time_ns << " ns, ram = " << max_ram_byte << " KB" << std::endl;
+    }
+
+    std::cout << "Parity:" << std::endl;
+    for (int N = 8; N <= maxN; N+=4) {
+        struct rusage usage{};
+        start = std::chrono::steady_clock::now();
+        std::list<std::list<std::list<Eigen::MatrixXd>>> H = parityHamiltonian(0, N);
+        vector<double> eig = getEnergiesFromBlocks(H, true);
+        finish = std::chrono::steady_clock::now();
+        int ret = getrusage(RUSAGE_SELF, &usage);
+
+        long time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+        long max_ram_byte = usage.ru_maxrss;
+        std::cout << "N = " << N << ", time = " << time_ns << " ns, ram = " << max_ram_byte << " KB" << std::endl;
+    }
+
+    std::cout << "Spin Inversion:" << std::endl;
+    for (int N = 8; N <= maxN; N+=4) {
+        struct rusage usage{};
+        start = std::chrono::steady_clock::now();
+        std::list<std::list<std::list<Eigen::MatrixXd>>> H = spinInversionHamiltonian(0, N, 0, N);
+        vector<double> eig = getEnergiesFromBlocks(H, true);
+        finish = std::chrono::steady_clock::now();
+        int ret = getrusage(RUSAGE_SELF, &usage);
+
+        long time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+        long max_ram_byte = usage.ru_maxrss;
+        std::cout << "N = " << N << ", time = " << time_ns << " ns, ram = " << max_ram_byte << " KB" << std::endl;
+    }
+
+
+#endif
 
     std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
-    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count()
+    std::cout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds>(end - begin).count()
               << "[ms]" << std::endl;
     return 0;
 }
