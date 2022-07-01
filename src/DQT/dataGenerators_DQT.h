@@ -25,7 +25,9 @@
 void saveSpecificHeatsForVaryingTemp_DQT_parallel(int N, int dataPointNum, double J_ratio, double end, std::string path);
 
 // Calculates specific heat using DQT and average over a number of runs. Also calculates standard deviation.
-void saveSpecificHeatsForVaryingTemp_DQT_avg(int N, int dataPointNum, double J_ratio, double end, const std::string & path, int numOfRuns);
+void
+saveSpecificHeatsForVaryingTemp_DQT_avg(const int N, const int dataPointNum, const double J_ratio, const double end,
+                                        const std::string &path, const int numOfRuns, bool bench=true);
 
 // Calculates susceptibility heat using DQT and average over a number of runs.
 void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNum, const double J_ratio,

@@ -61,7 +61,12 @@ void saveSpecificHeatsForVaryingTemp_DQT_parallel(int N, int dataPointNum, doubl
 }
 
 // Calculates specific heat using DQT and average over a number of runs. Also calculates standard deviation.
-void saveSpecificHeatsForVaryingTemp_DQT_avg(const int N, const int dataPointNum, const double J_ratio, const double end, const string & path, const int numOfRuns) {
+void
+saveSpecificHeatsForVaryingTemp_DQT_avg(const int N, const int dataPointNum, const double J_ratio, const double end,
+                                        const string &path, const int numOfRuns, bool bench) {
+    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+
+
     const double dBeta = end / (double) dataPointNum;
     Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
 
@@ -109,10 +114,31 @@ void saveSpecificHeatsForVaryingTemp_DQT_avg(const int N, const int dataPointNum
         out.emplace_back( a );
     }
     saveTripleToFile(out, path);
+
+    if (bench) {
+        std::chrono::steady_clock::time_point finish = std::chrono::steady_clock::now();
+        std::ifstream statFile("/proc/self/stat");
+        std::string statLine;
+        std::getline(statFile, statLine);
+        std::istringstream iss(statLine);
+        std::string entry;
+        long long memUsage;
+        for (int i = 1; i <= 24; i++) {
+            std::getline(iss, entry, ' ');
+            if (i == 24) {
+                memUsage = stoi(entry);
+            }
+        }
+
+        long time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+        std::cout << "N = " << N << ", time = " << time_ns/1e9 << " s, ram = " << 4096*memUsage/1e9 << " GB" << std::endl;
+    }
 }
 
 // Calculates susceptibility heat using DQT and average over a number of runs.
-void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNum, const double J_ratio, const double end, const SparseMatrix<complex<double>> & S2, const string & path, const int numOfRuns) {
+void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNum, const double J_ratio,
+                                              const double end, const SparseMatrix<complex<double>> & S2,
+                                              const string & path, const int numOfRuns) {
     const double dBeta = end / (double) dataPointNum;
     Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
 
@@ -164,7 +190,8 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
 }
 
 // Calculates partition function using DQT and average over a number of runs. Also calculates standard deviation.
-void savePartitionFunction_DQT(const int N, const int dataPointNum, const double J_ratio, const double end, const string & path, const int numOfRuns) {
+void savePartitionFunction_DQT(const int N, const int dataPointNum, const double J_ratio, const double end,
+                               const string & path, const int numOfRuns) {
     const double dBeta = end / (double) dataPointNum;
     Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
 

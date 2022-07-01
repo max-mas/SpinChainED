@@ -1,6 +1,7 @@
 #include "main.h"
 
 #include <sys/resource.h>
+#include <malloc.h>
 
 using std::vector;
 
@@ -296,80 +297,37 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef EDbenchmark
     int minN = 6;
-    int maxN = 12;
+    int maxN = 16;
     std::chrono::steady_clock::time_point start;
     std::chrono::steady_clock::time_point finish;
-
-    std::cout << "Naive:" << std::endl;
-    for (int N = minN; N <= maxN; N+=2) {
-        struct rusage usage{};
-        start = std::chrono::steady_clock::now();
-        Eigen::MatrixXd H = naiveHamiltonian(0, N);
-        Eigen::VectorXcd eig = H.eigenvalues();
-        finish = std::chrono::steady_clock::now();
-        int ret = getrusage(RUSAGE_SELF, &usage);
-
-        long time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
-        long max_ram_byte = usage.ru_maxrss;
-        std::cout << "N = " << N << ", time = " << time_ns << " ns, ram = " << max_ram_byte << " KB" << std::endl;
-    }
-
-    std::cout << "Magnetization:" << std::endl;
-    for (int N = minN; N <= maxN; N+=2) {
-        struct rusage usage{};
-        start = std::chrono::steady_clock::now();
-        std::list<Eigen::MatrixXd> H = magnetizationHamiltonian(0, N);
-        vector<double> eig = getEnergiesFromBlocks(H, true);
-        finish = std::chrono::steady_clock::now();
-        int ret = getrusage(RUSAGE_SELF, &usage);
-
-        long time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
-        long max_ram_byte = usage.ru_maxrss;
-        std::cout << "N = " << N << ", time = " << time_ns << " ns, ram = " << max_ram_byte << " KB" << std::endl;
-    }
-
+    /*
     std::cout << "Momentum:" << std::endl;
     for (int N = minN; N <= maxN; N+=2) {
-        struct rusage usage{};
         start = std::chrono::steady_clock::now();
         std::list<std::list<Eigen::MatrixXcd>> H = momentumHamiltonian(0, N, 0, N);
         vector<double> eig = getEnergiesFromBlocks(H, true);
         finish = std::chrono::steady_clock::now();
-        int ret = getrusage(RUSAGE_SELF, &usage);
+        std::ifstream statFile("/proc/self/stat");
+        std::string statLine;
+        std::getline(statFile, statLine);
+        std::istringstream iss(statLine);
+        std::string entry;
+        long long memUsage;
+        for (int i = 1; i <= 24; i++) {
+            std::getline(iss, entry, ' ');
+            if (i == 24) {
+                memUsage = stoi(entry);
+            }
+        }
 
         long time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
-        long max_ram_byte = usage.ru_maxrss;
-        std::cout << "N = " << N << ", time = " << time_ns << " ns, ram = " << max_ram_byte << " KB" << std::endl;
+        std::cout << "N = " << N << ", time = " << time_ns/1e9 << " s, ram = " << 4096*memUsage/1e9 << " GB" << std::endl;
+    }*/
+
+    std::cout << "DQT Specific Heat, 5000 Data Points:" << std::endl;
+    for (int N = minN; N <= maxN; N+=2) {
+        saveSpecificHeatsForVaryingTemp_DQT_avg(N, 5000, 0, 50, "", 1, true);
     }
-
-    std::cout << "Parity:" << std::endl;
-    for (int N = 8; N <= maxN; N+=4) {
-        struct rusage usage{};
-        start = std::chrono::steady_clock::now();
-        std::list<std::list<std::list<Eigen::MatrixXd>>> H = parityHamiltonian(0, N);
-        vector<double> eig = getEnergiesFromBlocks(H, true);
-        finish = std::chrono::steady_clock::now();
-        int ret = getrusage(RUSAGE_SELF, &usage);
-
-        long time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
-        long max_ram_byte = usage.ru_maxrss;
-        std::cout << "N = " << N << ", time = " << time_ns << " ns, ram = " << max_ram_byte << " KB" << std::endl;
-    }
-
-    std::cout << "Spin Inversion:" << std::endl;
-    for (int N = 8; N <= maxN; N+=4) {
-        struct rusage usage{};
-        start = std::chrono::steady_clock::now();
-        std::list<std::list<std::list<Eigen::MatrixXd>>> H = spinInversionHamiltonian(0, N, 0, N);
-        vector<double> eig = getEnergiesFromBlocks(H, true);
-        finish = std::chrono::steady_clock::now();
-        int ret = getrusage(RUSAGE_SELF, &usage);
-
-        long time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
-        long max_ram_byte = usage.ru_maxrss;
-        std::cout << "N = " << N << ", time = " << time_ns << " ns, ram = " << max_ram_byte << " KB" << std::endl;
-    }
-
 
 #endif
 
