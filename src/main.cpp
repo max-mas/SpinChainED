@@ -13,12 +13,15 @@ using std::vector;
 //#define saveSusceptibilityForJ
 //#define saveDispersion
 #define QTtestingArea
-//#define QTDataForFit
+#define QTDataForFit
 //#define statisticsTest
-#define EDbenchmark
+//#define EDbenchmark
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
+    const int cpu_cnt = (int) std::thread::hardware_concurrency() / 2;
+    omp_set_num_threads(cpu_cnt);
 
 #ifndef QTtestingArea
     if (argc < 11) {
@@ -27,10 +30,6 @@ int main(int argc, char* argv[]) {
             "Flag order: ExcErgs, GrdState, SpecHeat, SpecHeatJ, Susc, SuscJ, Disp.\n";
         return 69;
     }
-
-    const int cpu_cnt = (int) std::thread::hardware_concurrency() ;// / 2;
-    omp_set_num_threads(cpu_cnt);
-
 
     int nMin = atoi(argv[1]);
     int nMax = atoi(argv[2]);
@@ -194,8 +193,8 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef QTDataForFit
     Eigen::VectorXd Js = Eigen::VectorXd::LinSpaced(50, 0, 2);
-    nMin = 6;
-    nMax = 12;
+    nMin = 20;
+    nMax = 26;
     int numOfRuns = 1;
 
     /*
@@ -213,23 +212,25 @@ int main(int argc, char* argv[]) {
                              + std::to_string(1) << std::endl;
             }
         }
-    }
-
+    }*/
+    dataPointNum = 500;
     for (int N = nMin; N <= nMax; N += 2) {
         const Eigen::SparseMatrix<std::complex<double>> S2 = spinOp2_momentum_sparse(N);
         for (int i = 1; i <= numOfRuns; i++) {
-            for (double J_ratio: Js) {
+#pragma omp parallel for default(none) shared(Js, saveTo_path, dataPointNum, std::cout, N, numOfRuns, i)
+            for (int k = 0; k < Js.size(); k++) {
+                double J_ratio = Js[k];
                 std::string j = std::to_string(J_ratio);
                 std::replace(j.begin(), j.end(), '.', '_');
-                std::string path = saveTo_path + "/out/Susceptibilities_DQT/forFit/" + std::to_string(i) + "/SuscDQTN" + std::to_string(N)
+                std::string path = saveTo_path + "/out/Susceptibilities_DQT/forFit/test/" + std::to_string(i) + "/SuscDQTN" + std::to_string(N)
                                    + std::string("J") + j + std::string("It") + std::to_string(1) + ".txt";
-                saveSusceptibilityForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 50, S2, path, 1);
+                saveSusceptibilityForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 100, S2, path, 1);
                 std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
                              + std::to_string(1) << std::endl;
             }
         }
     }
-
+    /*
     for (int i = 1; i <= numOfRuns; i++) {
         for (int N = nMin; N <= nMax; N += 2) {
             for (double J_ratio: Js) {

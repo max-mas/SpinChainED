@@ -28,7 +28,7 @@ def read_vec_from_file(arg_path):
 
 
 def exp_fit_fn(beta, A, B):
-    return beta * A * np.exp(-beta * B)
+    return beta * A * np.exp(-beta * B) #* (C/beta + D/beta**2)
 
 
 def alt_fit_fn(beta, A, B):
@@ -48,17 +48,18 @@ def weird_transform(Js, Vals):
 
 
 nMin = 6
-nMax = 16
+nMax = 20
 nNum = int((nMax - nMin) / 2) + 1
 numOfRuns = 1
 resids = False
 diffs = False
+save = False
 
 gapsQT = []
 gapsQTavg = []
 gapsQTdev = []
 
-path = "/home/mmaschke/BA_Code/remoteData/out/Susceptibilities_DQT/forFit/"
+path = "/home/mmaschke/BA_Code/Data/out/Susceptibilities_DQT/forFit/test/"
 i = 0
 for N in np.linspace(nMin, nMax, nNum):
     gapsQT.append([])
@@ -89,12 +90,10 @@ for N in np.linspace(nMin, nMax, nNum):
             Cs = []
             fullCs = []
             lines = file.readlines()
-            cutoff = 20
-            upperCutoff = 50
+            cutoff = 25
+            upperCutoff = 100
             if J > 1.5:
                 cutoff = 15
-            #elif 0.4 < J < 0.75:
-            #    upperCutoff = 30
 
             for line in lines:
                 data = line.split(" ")
@@ -182,7 +181,11 @@ for N in np.linspace(nMin, nMax, nNum):
         dev = np.sqrt(dev)/np.sqrt(numOfRuns)
         gapsQTavg[i][1].append(avg)
         gapsQTdev[i][1].append(dev)
-
+    if save:
+        writePath = "/home/mmaschke/BA_Code/Data/out/GapFit/spin/gapsLowJ" + str(int(N)) + ".txt"
+        writeFile = open(writePath, "w")
+        for n in range(len(gapsQTavg[i][0])):
+            writeFile.write(str(gapsQTavg[i][0][n]) + " " + str(gapsQTavg[i][1][n]) + "\n")
     i += 1
 
 fig, ax = plt.subplots()
@@ -314,7 +317,7 @@ if diffs:
     file.close()
 
 plt.gca().set_prop_cycle(None)
-for N in np.linspace(6, 16, 6):
+for N in np.linspace(6, 18, 7):
     path = "/home/mmaschke/BA_Code/Data/out/ExcitationErgs/ExcErgs" + str(int(N)) + ".txt"
     file = open(path)
     lines = file.readlines()
@@ -334,7 +337,7 @@ ax.set_xlim(0, 2)
 
 #fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/ExcErg" + str(numOfRuns) + ".pdf")
 #fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/ExcErg" + str(numOfRuns) + ".png")
-#plt.show()
+plt.show()
 plt.close(fig)
 
 fig, ax = plt.subplots()
@@ -361,8 +364,8 @@ ax.set(xlabel="$J_1/J_2$", ylabel="Relative Residual of fitted Spin Gap $|\\Delt
 ax.legend(prop={'size': 8})
 ax.semilogy()
 ax.set_xlim(0, 2)
-fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/GapResidRel/GapResidRel" + str(numOfRuns) + ".pdf")
-fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/GapResidRel/GapResidRel" + str(numOfRuns) + ".png")
+#fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/GapResidRel/GapResidRel" + str(numOfRuns) + ".pdf")
+#fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/GapResidRel/GapResidRel" + str(numOfRuns) + ".png")
 plt.show()
 
 

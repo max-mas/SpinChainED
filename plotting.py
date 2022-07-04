@@ -112,15 +112,19 @@ if flags[2]:
                 data = line.split(" ")
                 if float(data[0]) == 0:
                     continue
-                Ts.append(1/float(data[0])/float(J_ratio.replace("_", ".")))
+                Ts.append(1/float(data[0]))
                 if N == 18:
                     Ts[-1] = 1/Ts[-1]
                 specHeat.append(float(data[1].replace("\n", "")))
             lab = "$N$ = " + str(int(N))
             ax.plot(Ts, specHeat, label=lab)
+        b = 1/np.asarray(Ts)
+        ax.plot(Ts, 3*np.exp(b)/(np.exp(b)+3)**2 * b**2, "r-", label="High-T")
+        ax.plot(Ts, 3/13/np.asarray(Ts)**2, "b-", label="High-T 2nd Order")
+        ax.plot(Ts, 3/16/np.asarray(Ts)**2, "g-", label="High-T 2nd Order")
         ax.legend()
-        #ax.set_ylim(0, 0.4)
-        #ax.set_xlim(0, 10)
+        ax.set_ylim(0, 0.4)
+        ax.set_xlim(0, 4)
         J_ratio = J_ratio.replace("_", ".")
         ax.set(xlabel="$T$ ($J_2$)", ylabel="Specific heat per Spin $C/N$", title="$J_1/J_2=\\,$ " + J_ratio)
         J_ratio = J_ratio.replace(".", "_")
