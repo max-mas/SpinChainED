@@ -192,12 +192,12 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
 // Calculates susceptibility heat using DQT and average over a number of runs.
 void saveSusceptibilityForVaryingTemp_DQT_parallel(const int N, const int dataPointNum, const double J_ratio,
                                               const double end, const vector<SparseMatrix<complex<double>>> & S2_list,
-                                              const string & path, const int numOfRuns) {
+                                              const string & path) {
     double beta = 0; // iteration always starts at beta = 0
     const double dBeta = end / (double) dataPointNum;
     Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
 
-    vector<double> Xs(dataPointNum);
+    vector<double> Xs;
 
     if (N % 2 == 0 && N >= 6) {
         const vector<SparseMatrix<complex<double>>> H  = momentumHamiltonian_sparse_blocks(J_ratio, N, 0, N);
@@ -210,9 +210,9 @@ void saveSusceptibilityForVaryingTemp_DQT_parallel(const int N, const int dataPo
 
         for (int i = 0; i < dataPointNum; i++) {
             vector<double> avg_S2_vec;
-#pragma omp parallel for default(none) shared(psi_vec, avg_S2_vec, i)
+//#pragma omp parallel for default(none) shared(psi_vec, avg_S2_vec, i, S2_list)
             for (int j = 0; j < H.size(); j++) {
-                double S2_block = psi_vec[j].dot(H[j] * (H[j] * psi_vec[j])).real();
+                double S2_block = (psi_vec[j].adjoint() * S2_list[j] * psi_vec[j])(0,0).real();
 
                 writeThreadSafe(avg_S2_vec, {S2_block});
                 iterateState_beta(H[j], psi_vec[j], dBeta);

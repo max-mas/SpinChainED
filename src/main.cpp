@@ -193,8 +193,8 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef QTDataForFit
     Eigen::VectorXd Js = Eigen::VectorXd::LinSpaced(50, 0, 2);
-    nMin = 22;
-    nMax = 26;
+    nMin = 6;
+    nMax = 12;
     int numOfRuns = 1;
 
     /*
@@ -205,29 +205,29 @@ int main(int argc, char* argv[]) {
                 double J_ratio = Js[k];
                 std::string j = std::to_string(J_ratio);
                 std::replace(j.begin(), j.end(), '.', '_');
-                std::string path = saveTo_path + "/out/SpecificHeats_DQT/forFit/" + std::to_string(i) + "/SpecHeatDQTN" + std::to_string(N)
+                std::string path = saveTo_path + "/out/SpecificHeats_DQT/forFit/test/" + std::to_string(i) + "/SpecHeatDQTN" + std::to_string(N)
                                    + std::string("J") + j + std::string("It") + std::to_string(1) + ".txt";
                 saveSpecificHeatsForVaryingTemp_DQT_parallel(N, dataPointNum, J_ratio, 50, path);
                 std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
                              + std::to_string(1) << std::endl;
             }
         }
-    }*/
-
+    }
+    */
     for (int N = nMin; N <= nMax; N += 2) {
         std::vector<Eigen::SparseMatrix<std::complex<double>>> S2_vec;
         for (int i = 0; i <= N; i++) {
             S2_vec.emplace_back( spinOpS2_momentum_sparse_m(N, i) );
         }
         for (int i = 1; i <= numOfRuns; i++) {
-#pragma omp parallel for default(none) shared(Js, saveTo_path, dataPointNum, std::cout, N, numOfRuns, i, S2_vec)
+//#pragma omp parallel for default(none) shared(Js, saveTo_path, dataPointNum, std::cout, N, numOfRuns, i, S2_vec)
             for (int k = 0; k < Js.size(); k++) {
                 double J_ratio = Js[k];
                 std::string j = std::to_string(J_ratio);
                 std::replace(j.begin(), j.end(), '.', '_');
                 std::string path = saveTo_path + "/out/Susceptibilities_DQT/forFit/test/" + std::to_string(i) + "/SuscDQTN" + std::to_string(N)
                                    + std::string("J") + j + std::string("It") + std::to_string(1) + ".txt";
-                saveSusceptibilityForVaryingTemp_DQT_parallel(N, dataPointNum, J_ratio, 100, S2_vec, path, 1);
+                saveSusceptibilityForVaryingTemp_DQT_parallel(N, dataPointNum, J_ratio, 50, S2_vec, path);
                 std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
                              + std::to_string(1) << std::endl;
             }

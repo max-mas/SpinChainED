@@ -48,7 +48,7 @@ def weird_transform(Js, Vals):
 
 
 nMin = 6
-nMax = 22
+nMax = 12
 nNum = int((nMax - nMin) / 2) + 1
 numOfRuns = 1
 resids = False
@@ -59,7 +59,7 @@ gapsQT = []
 gapsQTavg = []
 gapsQTdev = []
 
-path = "/home/mmaschke/BA_Code/remoteData/out/Susceptibilities_DQT/forFit/"
+path = "/home/mmaschke/BA_Code/Data/out/Susceptibilities_DQT/forFit/test/"
 i = 0
 for N in np.linspace(nMin, nMax, nNum):
     gapsQT.append([])

@@ -265,6 +265,10 @@ vector<SparseMatrix<complex<double>>> momentumHamiltonian_sparse_blocks(double J
         vector<int> s_vector_m = getStates_m(N, m_setter);
         int M = s_vector_m.size();
 
+        int currentMatRootIndex = 0;
+        // init (m,k)-block
+        list<Eigen::Triplet<complex<double>>> elementList;
+
         // loop over all possible momenta k
         for (int k = -trunc((N+2)/4) + 1 ; k <= trunc(N/4); k++ ) {
 
@@ -280,9 +284,6 @@ vector<SparseMatrix<complex<double>>> momentumHamiltonian_sparse_blocks(double J
             }
             int K = s_vector_k.size();
 
-            // init (m,k)-block
-            SparseMatrix<complex<double>> H_block(K, K);
-            list<Eigen::Triplet<complex<double>>> elementList;
 
 
             // fill elements of (m,k)-block
@@ -292,9 +293,9 @@ vector<SparseMatrix<complex<double>>> momentumHamiltonian_sparse_blocks(double J
                 for (int i = 0; i < N; i++) {
                     int j = (i + 1) % N;
                     if (getBit(a, i) == getBit(a, j)) {
-                        elementList.emplace_back(l, l, 0.25);
+                        elementList.emplace_back(l + currentMatRootIndex, l + currentMatRootIndex, 0.25);
                     } else {
-                        elementList.emplace_back(l, l, -0.25);
+                        elementList.emplace_back( + currentMatRootIndex, l + currentMatRootIndex, -0.25);
 
                         int b = a;
                         flipBit(b, i);
@@ -306,14 +307,14 @@ vector<SparseMatrix<complex<double>>> momentumHamiltonian_sparse_blocks(double J
                             complex<double> offDiagEl = 0.5 * sqrt((double) R_vector[l] / (double) R_vector[f])
                                                         * std::exp(
                                     complex<double>(0, 4.0 * M_PI * (double) k * (double) r_L[1] / (double) N));
-                            elementList.emplace_back(l, f, offDiagEl);
+                            elementList.emplace_back(l + currentMatRootIndex, f + currentMatRootIndex, offDiagEl);
                         }
                     }
                     int n = (i + 2) % N;
                     if (getBit(a, i) == getBit(a, n) && i < N) {
-                        elementList.emplace_back(l, l, J_ratio * 0.25);
+                        elementList.emplace_back(l + currentMatRootIndex, l + currentMatRootIndex, J_ratio * 0.25);
                     } else if (i < N) {
-                        elementList.emplace_back(l, l, -J_ratio * 0.25);
+                        elementList.emplace_back(l + currentMatRootIndex, l + currentMatRootIndex, -J_ratio * 0.25);
 
                         int b = a;
                         flipBit(b, i);
@@ -325,14 +326,16 @@ vector<SparseMatrix<complex<double>>> momentumHamiltonian_sparse_blocks(double J
                             complex<double> offDiagEl = 0.5 * sqrt((double) R_vector[l] / (double) R_vector[f])
                                                         * std::exp(
                                     complex<double>(0, 4.0 * M_PI * (double) k * (double) r_L[1] / (double) N));
-                            elementList.emplace_back(l, f, J_ratio * offDiagEl);
+                            elementList.emplace_back(l + currentMatRootIndex, f + currentMatRootIndex, J_ratio * offDiagEl);
                         }
                     }
                 }
             }
-            H_block.setFromTriplets(elementList.begin(), elementList.end());
-            H_subspace_list.push_back(H_block);
+            currentMatRootIndex += K;
         }
+        SparseMatrix<complex<double>> H_block(M, M);
+        H_block.setFromTriplets(elementList.begin(), elementList.end());
+        H_subspace_list.push_back(H_block);
     }
     return vector<SparseMatrix<complex<double>>>(H_subspace_list.begin(), H_subspace_list.end());
 }
