@@ -14,7 +14,29 @@ plt.rcParams["figure.figsize"] = (12, 9)
 
 
 def shanks(a0, a1, a2):
-    return a2 - (a2 - a1)**2/((a2 - a1) - (a1 - a0))
+    return a2 - (a2 - a1) ** 2 / ((a2 - a1) - (a1 - a0))
+
+
+def epsilon(a):
+    N = len(a)
+    eps = np.zeros((N, N+1))
+    for l in range(N):
+        eps[l][1] = a[l]
+    for k in range(N+2):
+        if k < 2:
+            continue
+        for l in range(N):
+            if l >= N-(k-1):
+                continue
+            eps[l][k] = eps[l + 1][k - 2] + 1 / (eps[l + 1][k - 1] - eps[l][k - 1])
+    if N % 2 == 0:
+        return eps[0][N-1]
+    else:
+        return eps[0][N]
+
+
+def euler(a1, a2):
+    return ()
 
 
 def weird_transform(Js, Vals):
@@ -26,59 +48,91 @@ def weird_transform(Js, Vals):
 
 
 nMin = 6
-nMax = 18
-nNum = 4#int((nMax - nMin) / 2) + 1
+nMax = 22
+nNum = 7  # int((nMax - nMin) / 2) + 1
+nNumLow = 4
 dataPointNum = 50
 
-gaps = []
+fullGaps = []
+gapsLow = []
+for N in [6, 8, 10, 12, 14, 16, 18]:
+    path1 = "/home/mmaschke/BA_Code/Data/out/ExcitationErgs/ExcErgs" + str(int(N)) + ".txt"
+    file1 = open(path1, "r")
+    lines1 = file1.readlines()
+    fullJs = []
+    JsLow = []
+    gapsNLow = []
+    fullGapsN = []
+    for line1 in lines1:
+        data1 = line1.split(" ")
+        fullJs.append(float(data1[0]))
+        fullGapsN.append(float(data1[1].replace("\n", "")))
+        if float(data1[0]) < 0.6:
+            JsLow.append(float(data1[0]))
+            gapsNLow.append(float(data1[1].replace("\n", "")))
+    gapsLow.append(gapsNLow)
+    fullGaps.append(fullGapsN)
 
+gapsHigh = []
 for N in [6, 10, 14, 18]:
-    path = "/home/mmaschke/BA_Code/Data/out/GapFit/spin/gapsHighJ" + str(int(N)) + ".txt"
-    file = open(path, "r")
-    lines = file.readlines()
-    Js = []
-    gapsN = []
-    for line in lines:
-        data = line.split(" ")
-        Js.append(float(data[0]))
-        gapsN.append(float(data[1].replace("\n", "")))
-    gaps.append(gapsN)
+    path2 = "/home/mmaschke/BA_Code/Data/out/ExcitationErgs/ExcErgs" + str(int(N)) + ".txt"
+    if N == 22:
+        path2 = "/home/mmaschke/BA_Code/Data/out/GapFit/spin/gapsLowJ" + str(int(N)) + ".txt"
+    file2 = open(path2, "r")
+    lines2 = file2.readlines()
+    JsHigh = []
+    gapsNHigh = []
+    for line2 in lines2:
+        data2 = line2.split(" ")
+        if float(data2[0]) >= 0.6:
+            data2 = line2.split(" ")
+            JsHigh.append(float(data2[0]))
+            gapsNHigh.append(float(data2[1].replace("\n", "")))
+    gapsHigh.append(gapsNHigh)
 
-gaps_shanks = []
-gaps_plot = []
-for j in range(dataPointNum):
-    gaps_shanksJ = []
+gaps_extrapLow = []
+gaps_extrapHigh = []
+for j in range(len(gapsLow[0])):
+    gapsNLow = []
     for i in range(nNum):
-        if i < 1 or i >= nNum - 1:
-            continue
-        gaps_shanksJ.append(shanks(gaps[i-1][j], gaps[i][j], gaps[i+1][j]))
-    gaps_shanks.append(gaps_shanksJ)
-    gaps_plot.append(gaps_shanksJ[-1])
-"""
-gaps_shanks2 = []
-for j in range(dataPointNum):
-    gaps_shanksJ = []
+        gapsNLow.append(gapsLow[i][j])
+    gaps_extrapLow.append(epsilon(gapsNLow))
+for j in range(len(gapsHigh[0])):
+    gapsNHigh = []
     for i in range(nNum):
-        if i < 1 or i >= nNum - 3:
-            continue
-        gaps_shanksJ.append(shanks(gaps_shanks[j][i-1], gaps_shanks[j][i], gaps_shanks[j][i+1]))
-    gaps_shanks2.append(gaps_shanksJ)
+        if i < nNumLow:
+            gapsNHigh.append(gapsHigh[i][j])
+    gaps_extrapHigh.append(epsilon(gapsNHigh))
 
-gaps_shanks3 = []
-for j in range(dataPointNum):
-    gaps_shanksJ = []
-    for i in range(nNum):
-        if i < 1 or i >= nNum - 5:
-            continue
-        gaps_shanksJ.append(shanks(gaps_shanks2[j][i-1], gaps_shanks2[j][i], gaps_shanks2[j][i+1]))
-    gaps_shanks3.append(gaps_shanksJ)
-    gaps_plot.append(gaps_shanksJ[-1])
-"""
 fig, ax = plt.subplots()
-ax.scatter(Js, weird_transform(Js, gaps_plot))
-ax.set(xlabel="$J_1/J_2$", ylabel="Reduced Extrapolated Spin Gap Energy $\\Delta/(J_1+J_2)$", title="QT Data")
-#ax.set_ylim(0, 0.8)
+N = 6
+for gap in fullGaps:
+    ax.plot(fullJs, weird_transform(fullJs, gap), label="ED, $N=$" + str(N))
+    N += 2
+ax.plot(JsLow, weird_transform(JsLow, gaps_extrapLow), "r--", label="ED Extrapolation Low")
+ax.plot(JsHigh, weird_transform(JsHigh, gaps_extrapHigh), "g--", label="ED Extrapolation High")
+ax.set(xlabel="$J_1/J_2$", ylabel="Reduced Spin Gap Energy $\\Delta/(J_1+J_2)$", title="ED Data")
+ax.set_ylim(0, 0.8)
 ax.set_xlim(0, 2)
+ax.legend()
 plt.show()
+plt.close(fig)
 
-
+"""
+Ns = np.linspace(nMin, nMax, nNum)
+for j in range(dataPointNum):
+    fig, ax = plt.subplots()
+    N = 6
+    jGaps = []
+    for gap in gaps:
+        jGaps.append(gap[j] / (1 + Js[j]))
+        N += 2
+    ax.plot(Ns, jGaps, ".-")
+    ax.set(xlabel="$N$", ylabel="Reduced Spin Gap Energy $\\Delta/(J_1+J_2)$", title="QT Fit, $J_1/J_2=$" + str(Js[j]))
+    ax.set_ylim(0, 0.8)
+    # ax.semilogy()
+    # ax.set_xlim(0, 2)
+    fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Extrap/Single_pointsQT/J" + str(Js[j]).replace(".", "_") + ".png")
+    # plt.show()
+    plt.close(fig)
+"""

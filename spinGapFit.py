@@ -48,7 +48,7 @@ def weird_transform(Js, Vals):
 
 
 nMin = 6
-nMax = 20
+nMax = 22
 nNum = int((nMax - nMin) / 2) + 1
 numOfRuns = 1
 resids = False
@@ -59,7 +59,7 @@ gapsQT = []
 gapsQTavg = []
 gapsQTdev = []
 
-path = "/home/mmaschke/BA_Code/Data/out/Susceptibilities_DQT/forFit/test/"
+path = "/home/mmaschke/BA_Code/remoteData/out/Susceptibilities_DQT/forFit/"
 i = 0
 for N in np.linspace(nMin, nMax, nNum):
     gapsQT.append([])
@@ -85,21 +85,32 @@ for N in np.linspace(nMin, nMax, nNum):
                 continue
             J = float(J_str)
 
+            cutoff = 25
+            #cutoffPath = "/home/mmaschke/Desktop/FitCuttofs/cutoffsN" + str(int(N))
+            #cutoffFile = open(cutoffPath, "r")
+            #cutoffLines = cutoffFile.readlines()
+            #for line in cutoffLines:
+            #    data = line.split(" ")
+            #    if abs(float(data[0]) - J) < 0.01:
+            #        cutoff = float(data[1].replace("\n", ""))
+
             betas = []
             fullBetas = []
             Cs = []
             fullCs = []
             lines = file.readlines()
-            cutoff = 25
+            #cutoff = 25
             upperCutoff = 100
-            if J > 1.5:
-                cutoff = 15
+            #if J > 1.5:
+            #    cutoff = 15
 
             for line in lines:
                 data = line.split(" ")
                 fullBetas.append(float(data[0]))
                 if data[1] == "nan\n" or data[1] == "-nan\n" or data[1] == "inf\n" or data[1] == "-inf\n":
                     data[1] = "0"
+                if float(data[1].replace("\n", "")) < 1e-16:
+                    data1 = "1e-16\n"
                 fullCs.append(float(data[1].replace("\n", "")))
                 if float(data[0]) < cutoff or float(data[0]) > upperCutoff:
                     continue

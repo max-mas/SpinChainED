@@ -10,6 +10,10 @@ plt.rc('axes', titlesize=20)
 plt.rcParams["figure.figsize"] = (12, 9)
 
 
+def c_approx(j):
+    return 2/9*(39 + 47*j**2 + np.sqrt(9-2*j+j**2) + np.sqrt(9+2*j+j**2) - np.sqrt(9-2*j+j**2)*np.sqrt(9+2*j+j**2) - j*(-2 + np.sqrt(9-2*j+j**2) + np.sqrt(9+2*j+j**2)))
+
+
 def read_vec_from_file(arg_path):
     vals = []
     arg_file = open(arg_path)
@@ -118,14 +122,15 @@ if flags[2]:
                 specHeat.append(float(data[1].replace("\n", "")))
             lab = "$N$ = " + str(int(N))
             ax.plot(Ts, specHeat, label=lab)
+        J_ratio = J_ratio.replace("_", ".")
         b = 1/np.asarray(Ts)
-        ax.plot(Ts, 3*np.exp(b)/(np.exp(b)+3)**2 * b**2, "r-", label="High-T")
-        ax.plot(Ts, 3/13/np.asarray(Ts)**2, "b-", label="High-T 2nd Order")
-        ax.plot(Ts, 3/16/np.asarray(Ts)**2, "g-", label="High-T 2nd Order")
+        #ax.plot(Ts, 3*np.exp(b)/(np.exp(b)+3)**2 * b**2, "r--", label="High-T")
+        #ax.plot(Ts, 3/13/np.asarray(Ts)**2, "b--", label="High-T 2nd Order")
+        #ax.plot(Ts, 3/16/np.asarray(Ts)**2, "g--", label="High-T 2nd Order")
+        ax.plot(Ts, 0.32*b**2, "r--", label="High-T 2nd Order")
         ax.legend()
         ax.set_ylim(0, 0.4)
-        ax.set_xlim(0, 4)
-        J_ratio = J_ratio.replace("_", ".")
+        ax.set_xlim(0, 5)
         ax.set(xlabel="$T$ ($J_2$)", ylabel="Specific heat per Spin $C/N$", title="$J_1/J_2=\\,$ " + J_ratio)
         J_ratio = J_ratio.replace(".", "_")
         #fig.savefig(saveToPath + "/plots/SpecificHeats/SpecHeatJ" + J_ratio + ".pdf")
@@ -159,6 +164,7 @@ if flags[3]:
 if flags[4]:
     for J_ratio in J_ratios:
         fig, ax = plt.subplots()
+        Ts14 = []
         for N in np.linspace(nMin, nMax, nNum):
             path = saveToPath + "/out/Susceptibilities/SuscN" + str(int(N)) + "J" + J_ratio + ".txt"
             file = open(path)
@@ -170,18 +176,26 @@ if flags[4]:
                 if data[0] == "-nan" or data[0] == "nan" or float(data[0]) == 0:
                     continue
                 Ts.append(1/float(data[0]))
+
                 if N == 16:
                     Ts[-1] = 1/Ts[-1]
                 susc.append(float(data[1].replace("\n", "")))
+            if N == 14:
+                Ts14 = copy.deepcopy(Ts)
             lab = "$N$ = " + str(int(N))
             ax.plot(Ts, susc, label=lab)
+        b = 1/np.asarray(Ts14)
+        ax.plot(Ts14, np.asarray(b)/4.0, "r--", label="High-T")
         ax.legend()
-        ax.set_xlim(0, 3)
+        ax.set_ylim(0, 0.15)
+        ax.set_xlim(0, 30)
         J_ratio = J_ratio.replace("_", ".")
         ax.set(xlabel="$T$ ($J_2$)", ylabel="Susceptibility per Spin $\\chi / N$", title="$J_1/J_2 =\\,$" + J_ratio)
         J_ratio = J_ratio.replace(".", "_")
-        fig.savefig(saveToPath + "/plots/Susceptibilities/SuscJ" + J_ratio + ".pdf")
-        fig.savefig(saveToPath + "/plots/Susceptibilities/SuscJ" + J_ratio + ".png")
+        #fig.savefig(saveToPath + "/plots/Susceptibilities/SuscJ" + J_ratio + ".pdf")
+        #fig.savefig(saveToPath + "/plots/Susceptibilities/SuscJ" + J_ratio + ".png")
+        plt.show()
+        plt.close(fig)
 
 # Susceptibility (J)
 if flags[5]:

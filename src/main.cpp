@@ -174,7 +174,7 @@ int main(int argc, char* argv[]) {
 
     for (int N = nMin; N <= nMax; N += 2) {
         const Eigen::SparseMatrix<std::complex<double>> S2 = spinOp2_momentum_sparse(N);
-#pragma omp parallel for default(none) shared(runNums, saveTo_path, N, dataPointNum, std::cout, J_ratios)
+//#pragma omp parallel for default(none) shared(runNums, saveTo_path, N, dataPointNum, std::cout, J_ratios)
         for (int l = 0; l < J_ratios.size(); l++) {
             double J_ratio = J_ratios[l];
             for (int k = 0; k < runNums.size(); k++) {
@@ -193,7 +193,7 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef QTDataForFit
     Eigen::VectorXd Js = Eigen::VectorXd::LinSpaced(50, 0, 2);
-    nMin = 20;
+    nMin = 22;
     nMax = 26;
     int numOfRuns = 1;
 
