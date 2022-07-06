@@ -22,4 +22,3 @@ void iterateState_beta(const SparseMatrix<complex<double>> & H, VectorXcd & psi,
     //psi.normalize();
 }
 
-

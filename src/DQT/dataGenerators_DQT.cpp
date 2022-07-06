@@ -21,7 +21,7 @@ void saveSpecificHeatsForVaryingTemp_DQT_parallel(int N, int dataPointNum, doubl
     vector<double> Cs;
 
      if (N % 2 == 0 && N >= 6) {
-        const vector<SparseMatrix<complex<double>>> H  = momentumHamiltonian_sparse_blocks(J_ratio, N);
+        const vector<SparseMatrix<complex<double>>> H  = momentumHamiltonian_sparse_blocks(J_ratio, N, 0, N);
         vector<VectorXcd> psi_vec;
 
         for (const auto & h : H) {
@@ -187,6 +187,52 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
         out.emplace_back( a );
     }
     saveTripleToFile(out, path);
+}
+
+// Calculates susceptibility heat using DQT and average over a number of runs.
+void saveSusceptibilityForVaryingTemp_DQT_parallel(const int N, const int dataPointNum, const double J_ratio,
+                                              const double end, const vector<SparseMatrix<complex<double>>> & S2_list,
+                                              const string & path, const int numOfRuns) {
+    double beta = 0; // iteration always starts at beta = 0
+    const double dBeta = end / (double) dataPointNum;
+    Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
+
+    vector<double> Xs(dataPointNum);
+
+    if (N % 2 == 0 && N >= 6) {
+        const vector<SparseMatrix<complex<double>>> H  = momentumHamiltonian_sparse_blocks(J_ratio, N, 0, N);
+        vector<VectorXcd> psi_vec;
+
+        for (const auto & h : H) {
+            psi_vec.emplace_back(randomComplexVectorNormalised(h.cols(), 1));
+        }
+        normaliseListOfVectors(psi_vec);
+
+        for (int i = 0; i < dataPointNum; i++) {
+            vector<double> avg_S2_vec;
+#pragma omp parallel for default(none) shared(psi_vec, avg_S2_vec, i)
+            for (int j = 0; j < H.size(); j++) {
+                double S2_block = psi_vec[j].dot(H[j] * (H[j] * psi_vec[j])).real();
+
+                writeThreadSafe(avg_S2_vec, {S2_block});
+                iterateState_beta(H[j], psi_vec[j], dBeta);
+            }
+            double avg_S2 = std::accumulate(avg_S2_vec.begin(), avg_S2_vec.end(), 0.0);
+            double X = beta * avg_S2 /3.0/N;
+            Xs.emplace_back(X);
+
+            normaliseListOfVectors(psi_vec);
+
+            beta += dBeta;
+        }
+    }
+
+    list<std::pair<double, double>> out;
+    for (int j = 0; j < dataPointNum; j++) {
+        std::pair<double, double> a(betas[j], Xs[j]);
+        out.emplace_back( a );
+    }
+    savePairsToFile(out, path);
 }
 
 // Calculates partition function using DQT and average over a number of runs. Also calculates standard deviation.

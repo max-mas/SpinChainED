@@ -34,6 +34,11 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
                                               const double end,const Eigen::SparseMatrix<std::complex<double>> & S2,
                                               const std::string & path, const int numOfRuns);
 
+void saveSusceptibilityForVaryingTemp_DQT_parallel(const int N, const int dataPointNum, const double J_ratio,
+                                                   const double end,
+                                                   const std::vector<Eigen::SparseMatrix<std::complex<double>>> & S2_list,
+                                                   const std::string & path, const int numOfRuns);
+
 // Calculates partition function using DQT and average over a number of runs. Also calculates standard deviation.
 void savePartitionFunction_DQT(const int N, const int dataPointNum, const double J_ratio, const double end, const std::string & path, const int numOfRuns);
 

@@ -13,9 +13,9 @@ using std::vector;
 //#define saveSusceptibilityForJ
 //#define saveDispersion
 #define QTtestingArea
-#define QTDataForFit
+//#define QTDataForFit
 //#define statisticsTest
-//#define EDbenchmark
+#define EDbenchmark
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -297,7 +297,7 @@ int main(int argc, char* argv[]) {
     }
 #endif
 #ifdef EDbenchmark
-    int minN = 6;
+    int minN = 16;
     int maxN = 16;
     std::chrono::steady_clock::time_point start;
     std::chrono::steady_clock::time_point finish;
@@ -327,7 +327,13 @@ int main(int argc, char* argv[]) {
 
     std::cout << "DQT Specific Heat, 5000 Data Points:" << std::endl;
     for (int N = minN; N <= maxN; N+=2) {
-        saveSpecificHeatsForVaryingTemp_DQT_avg(N, 5000, 0, 50, "", 1, true);
+        std::vector<Eigen::SparseMatrix<std::complex<double>>> S2_vec;
+        for (int i = 0; i <= N; i++) {
+            S2_vec.emplace_back( spinOpS2_momentum_sparse_m(N, i) );
+        }
+        const Eigen::SparseMatrix<std::complex<double>> S2 = spinOp2_momentum_sparse(N);
+        saveSusceptibilityForVaryingTemp_DQT_parallel(N, 5000, 0, 50, S2_vec, "", 1);
+        //const Eigen::SparseMatrix<std::complex<double>> H = momentumHamiltonian_sparse(0, N);
     }
 
 #endif

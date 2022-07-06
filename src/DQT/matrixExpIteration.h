@@ -14,5 +14,4 @@
 // Implements RK4 for the imaginary time SE.
 void iterateState_beta(const Eigen::SparseMatrix<std::complex<double>> & H, Eigen::VectorXcd & psi, double dBeta);
 
-
 #endif //SPINCHAINED_MATRIXEXPITERATION_H
