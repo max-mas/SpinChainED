@@ -16,7 +16,7 @@ endif (WIN32)
 if (UNIX)
     include_directories("/home/mmaschke/BA_Code/Libraries/eigen-3.4.0")
     set(MKLROOT /opt/intel/oneapi/mkl/latest)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -pg -m64 -I${MKLROOT}/include -DEIGEN_USE_MKL_ALL")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -m64 -I${MKLROOT}/include -DEIGEN_USE_MKL_ALL")
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -m64 -I${MKLROOT}/include -DEIGEN_USE_MKL_ALL")
 endif (UNIX)
 
