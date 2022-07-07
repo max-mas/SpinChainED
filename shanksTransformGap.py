@@ -48,10 +48,10 @@ def weird_transform(Js, Vals):
 
 
 nMin = 6
-nMax = 22
+nMax = 18
 nNum = 7  # int((nMax - nMin) / 2) + 1
 nNumLow = 4
-dataPointNum = 50
+dataPointNum = 200
 
 fullGaps = []
 gapsLow = []
@@ -115,24 +115,25 @@ ax.set(xlabel="$J_1/J_2$", ylabel="Reduced Spin Gap Energy $\\Delta/(J_1+J_2)$",
 ax.set_ylim(0, 0.8)
 ax.set_xlim(0, 2)
 ax.legend()
-plt.show()
+#plt.show()
 plt.close(fig)
 
-"""
+
+gaps = gapsLow #+ gapsHigh
 Ns = np.linspace(nMin, nMax, nNum)
 for j in range(dataPointNum):
     fig, ax = plt.subplots()
     N = 6
     jGaps = []
-    for gap in gaps:
-        jGaps.append(gap[j] / (1 + Js[j]))
+    for gap in fullGaps:
+        jGaps.append(gap[j] / (1 + fullJs[j]))
         N += 2
-    ax.plot(Ns, jGaps, ".-")
-    ax.set(xlabel="$N$", ylabel="Reduced Spin Gap Energy $\\Delta/(J_1+J_2)$", title="QT Fit, $J_1/J_2=$" + str(Js[j]))
+    ax.plot(1/np.asarray(Ns), jGaps, ".-")
+    ax.set(xlabel="$1/N$", ylabel="Reduced Spin Gap Energy $\\Delta/(J_1+J_2)$", title="ED Fit, $J_1/J_2=$" + str(fullJs[j]))
     ax.set_ylim(0, 0.8)
+    ax.set_xlim(0, 0.5)
     # ax.semilogy()
     # ax.set_xlim(0, 2)
-    fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Extrap/Single_pointsQT/J" + str(Js[j]).replace(".", "_") + ".png")
+    fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Extrap/Single_pointsED/J" + str(fullJs[j]).replace(".", "_") + ".png")
     # plt.show()
     plt.close(fig)
-"""

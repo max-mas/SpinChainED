@@ -47,10 +47,19 @@ int bitSum(const int s) {
     return count;
 }
 
-// Returns index of first occurrence of int s in s_list. Returns -1 if not found.
+// Returns index of first occurrence of int s in s_list.
 int findState(const std::vector<int> &s_list, const int s) {
-    for (int i = 0; i < s_list.size(); i++) {
-        if ( s_list[i] == s ) {return i;}
+    int lower = 0;
+    int upper = s_list.size() - 1;
+    while (lower < upper) {
+        int b = lower + (upper - lower)/2;
+        if (s < s_list[b]) {
+            upper = b - 1;
+        } else if (s > s_list[b]) {
+            lower = b + 1;
+        } else {
+            return b;
+        }
     }
     return -1;
 }

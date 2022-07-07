@@ -20,6 +20,8 @@ void saveSpecificHeatsForVaryingTemp_DQT_parallel(int N, int dataPointNum, doubl
 
     vector<double> Cs;
 
+    std::cout << "why tf" << std::endl;
+
      if (N % 2 == 0 && N >= 6) {
         const vector<SparseMatrix<complex<double>>> H  = momentumHamiltonian_sparse_blocks(J_ratio, N, 0, N);
         vector<VectorXcd> psi_vec;
@@ -146,6 +148,8 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
     vector<double> actualXs;
     vector<double> stdDevs;
 
+    std::cout << "yes pls" << std::endl;
+
     if (N % 2 == 0 && N >= 6) {
         const SparseMatrix<complex<double>> H  = momentumHamiltonian_sparse(J_ratio, N);
 
@@ -178,7 +182,6 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
             actualXs.emplace_back(mean);
             stdDevs.emplace_back(stdDev);
         }
-
     }
 
     list<std::tuple<double, double, double>> out;
@@ -212,9 +215,9 @@ void saveSusceptibilityForVaryingTemp_DQT_parallel(const int N, const int dataPo
             vector<double> avg_S2_vec;
 //#pragma omp parallel for default(none) shared(psi_vec, avg_S2_vec, i, S2_list)
             for (int j = 0; j < H.size(); j++) {
-                double S2_block = (psi_vec[j].adjoint() * S2_list[j] * psi_vec[j])(0,0).real();
+                double S2_avg_block = psi_vec[j].dot(S2_list[j] * psi_vec[j]).real();
 
-                writeThreadSafe(avg_S2_vec, {S2_block});
+                writeThreadSafe(avg_S2_vec, {S2_avg_block});
                 iterateState_beta(H[j], psi_vec[j], dBeta);
             }
             double avg_S2 = std::accumulate(avg_S2_vec.begin(), avg_S2_vec.end(), 0.0);
@@ -343,7 +346,7 @@ vector<std::pair<double, double>> readPairVectorFromFile(const std::string & pat
 void normaliseListOfVectors(vector<VectorXcd> & vec) {
     double norm2 = 0;
     for (VectorXcd & v : vec) {
-        norm2 += pow (v.norm(),2);
+        norm2 += pow(v.norm(),2);
     }
     double norm = sqrt(norm2);
     for (VectorXcd & v : vec) {

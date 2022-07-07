@@ -48,12 +48,12 @@ def weird_transform(Js, Vals):
 
 
 nMin = 6
-nMax = 12
+nMax = 22
 nNum = int((nMax - nMin) / 2) + 1
 numOfRuns = 1
 resids = False
 diffs = False
-save = False
+save = True
 
 gapsQT = []
 gapsQTavg = []
@@ -101,8 +101,12 @@ for N in np.linspace(nMin, nMax, nNum):
             lines = file.readlines()
             #cutoff = 25
             upperCutoff = 100
-            #if J > 1.5:
-            #    cutoff = 15
+            if J > 1.5:
+                cutoff = 15
+            if N == 16 and np.abs(J-0.408163) < 0.01:
+                cutoff = 20
+            if N == 22 and np.abs(J-0.367347) < 0.01:
+                cutoff = 20
 
             for line in lines:
                 data = line.split(" ")
@@ -212,7 +216,7 @@ for arr in gapsQTavg:
 gapsED = []
 path = "/home/mmaschke/BA_Code/remoteData/out/Susceptibilities/forFit/"
 i = 0
-for N in np.linspace(6, 6, 1):
+for N in np.linspace(6, 18, 7):
     gapsED.append([])
     gapsED[i].append([])
     gapsED[i].append([])
@@ -232,10 +236,11 @@ for N in np.linspace(6, 6, 1):
         Cs = []
         fullCs = []
         lines = file.readlines()
-        cutoff = 20
+        cutoff = 25
         upperCutoff = 50
-        #if J > 1.5:
-        #    cutoff = 15
+        if J > 1.5:
+            cutoff = 15
+
         #elif 0.4 < J < 0.75:
         #    upperCutoff = 30
 
@@ -346,15 +351,15 @@ ax.legend(prop={'size': 6})
 ax.set_ylim(0, 0.8)
 ax.set_xlim(0, 2)
 
-#fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/ExcErg" + str(numOfRuns) + ".pdf")
-#fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/ExcErg" + str(numOfRuns) + ".png")
+#fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/ExcErgHigh" + str(numOfRuns) + ".pdf")
+#fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/ExcErgHigh" + str(numOfRuns) + ".png")
 plt.show()
 plt.close(fig)
 
 fig, ax = plt.subplots()
 plt.gca().set_prop_cycle(None)
 i = 0
-for N in np.linspace(6, 16, 6):
+for N in np.linspace(6, 18, 7):
     path = "/home/mmaschke/BA_Code/Data/out/ExcitationErgs/ExcErgs" + str(int(N)) + ".txt"
     file = open(path)
     lines = file.readlines()
