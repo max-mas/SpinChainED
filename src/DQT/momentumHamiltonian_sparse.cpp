@@ -169,11 +169,11 @@ SparseMatrix<complex<double>> spinOp2_momentum_sparse(int N) {
     }
 
     SparseMatrix<complex<double>> H(pow(2, N), pow(2, N));
-    for (int i = 0; i < pow(2, N); i++) {
-        elementList.emplace_back(i, i, N*0.75);
-    }
+    //for (int i = 0; i < pow(2, N); i++) {
+    //    elementList.emplace_back(i, i, N*0.75);
+    //}
     H.setFromTriplets(elementList.begin(), elementList.end());
-    //H.diagonal().array() += N*0.75;
+    H.diagonal().array() += N*0.75;
     H.makeCompressed();
 
     return H;

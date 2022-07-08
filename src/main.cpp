@@ -1,3 +1,4 @@
+#define EIGEN_USE_MKL_ALL
 #include "main.h"
 
 #include <sys/resource.h>
@@ -193,8 +194,8 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef QTDataForFit
     Eigen::VectorXd Js = Eigen::VectorXd::LinSpaced(50, 0, 2);
-    nMin = 14;
-    nMax = 14;
+    nMin = 6;
+    nMax = 12;
     int numOfRuns = 1;
 
     /*
@@ -228,7 +229,8 @@ int main(int argc, char* argv[]) {
                 std::replace(j.begin(), j.end(), '.', '_');
                 std::string path = saveTo_path + "/out/Susceptibilities_DQT/forFit/test/" + std::to_string(i) + "/SuscDQTN" + std::to_string(N)
                                    + std::string("J") + j + std::string("It") + std::to_string(1) + ".txt";
-                path = "";
+                path = "/home/mmaschke/BA_Code/Data/out/Susceptibilities_DQT/forFit/test/grave/SuscDQTN" + std::to_string(N)
+                       + std::string("J") + j + std::string("It") + std::to_string(1) + ".txt";
                 saveSusceptibilityForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 50, S2, path, 1);
                 std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
                              + std::to_string(1) << std::endl;
@@ -332,10 +334,9 @@ int main(int argc, char* argv[]) {
 
     std::cout << "DQT Specific Heat, 5000 Data Points:" << std::endl;
     for (int N = minN; N <= maxN; N+=2) {
-        const Eigen::SparseMatrix<std::complex<double>> S2 = spinOp2_momentum_sparse(N);
-        //const Eigen::SparseMatrix<std::complex<double>> S2 = spinOp2_momentum_sparse(N);
-        saveSusceptibilityForVaryingTemp_DQT_avg(N, 5000, 0, 50, S2, "", 1);
-        //const Eigen::SparseMatrix<std::complex<double>> H = momentumHamiltonian_sparse(0, N);
+        std::list<std::list<Eigen::MatrixXcd>> H = momentumHamiltonian(0, 8, 0, 6);
+        vector<double> erg = getEnergiesFromBlocks(H, true);
+        printEnergies(erg);
     }
 
 #endif

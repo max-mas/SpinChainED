@@ -51,8 +51,8 @@ int bitSum(const int s) {
 int findState(const std::vector<int> &s_list, const int s) {
     int lower = 0;
     int upper = s_list.size() - 1;
-    while (lower < upper) {
-        int b = lower + (upper - lower)/2;
+    while (lower <= upper) {
+        int b = (lower + upper)/2;
         if (s < s_list[b]) {
             upper = b - 1;
         } else if (s > s_list[b]) {
@@ -63,6 +63,12 @@ int findState(const std::vector<int> &s_list, const int s) {
     }
     return -1;
 }
+/*int findState(const std::vector<int> &s_list, const int s) {
+    for (int i = 0; i < s_list.size(); i++) {
+        if ( s_list[i] == s ) {return i;}
+    }
+    return -1;
+}*/
 
 // Cyclic left bit shift by 1 for integers in which only the first N bits must be set! Otherwise, undefined behavior.
 void cycleBits(int &s, const int N) {
