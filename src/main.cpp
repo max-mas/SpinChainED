@@ -13,9 +13,9 @@ using std::vector;
 //#define saveSusceptibilityForJ
 //#define saveDispersion
 #define QTtestingArea
-//#define QTDataForFit
+#define QTDataForFit
 //#define statisticsTest
-#define EDbenchmark
+//#define EDbenchmark
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -193,8 +193,8 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef QTDataForFit
     Eigen::VectorXd Js = Eigen::VectorXd::LinSpaced(50, 0, 2);
-    nMin = 6;
-    nMax = 12;
+    nMin = 14;
+    nMax = 14;
     int numOfRuns = 1;
 
     /*
@@ -228,6 +228,7 @@ int main(int argc, char* argv[]) {
                 std::replace(j.begin(), j.end(), '.', '_');
                 std::string path = saveTo_path + "/out/Susceptibilities_DQT/forFit/test/" + std::to_string(i) + "/SuscDQTN" + std::to_string(N)
                                    + std::string("J") + j + std::string("It") + std::to_string(1) + ".txt";
+                path = "";
                 saveSusceptibilityForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 50, S2, path, 1);
                 std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
                              + std::to_string(1) << std::endl;

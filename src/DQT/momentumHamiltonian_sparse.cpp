@@ -16,7 +16,7 @@ SparseMatrix<complex<double>> momentumHamiltonian_sparse(double J_ratio, int N) 
     typedef Eigen::Triplet<complex<double>> matFil;
 
     // init list of elements to be filled
-    vector<matFil> elementList;
+    list<matFil> elementList;
 
     // "global" index corresponding to the (1,1)-Element of the current block
     int currentMatRootIndex = 0;
@@ -109,7 +109,7 @@ SparseMatrix<complex<double>> spinOp2_momentum_sparse(int N) {
     typedef Eigen::Triplet<complex<double>> matFil;
 
     // init list of elements to be filled
-    vector<matFil> elementList;
+    list<matFil> elementList;
 
     // "global" index corresponding to the (1,1)-Element of the current block
     int currentMatRootIndex = 0;
@@ -169,8 +169,11 @@ SparseMatrix<complex<double>> spinOp2_momentum_sparse(int N) {
     }
 
     SparseMatrix<complex<double>> H(pow(2, N), pow(2, N));
+    for (int i = 0; i < pow(2, N); i++) {
+        elementList.emplace_back(i, i, N*0.75);
+    }
     H.setFromTriplets(elementList.begin(), elementList.end());
-    H.diagonal().array() += N*0.75;
+    //H.diagonal().array() += N*0.75;
     H.makeCompressed();
 
     return H;
@@ -194,7 +197,7 @@ SparseMatrix<complex<double>> spinOpS2_momentum_sparse_m(int N, int n_up) {
     int currentMatRootIndex = 0;
 
     // init list of elements to be filled
-    vector<matFil> elementList;
+    list<matFil> elementList;
 
     // loop over all possible momenta k
     for (int k = -trunc((N+2)/4) + 1 ; k <= trunc(N/4); k++ ) {
@@ -243,8 +246,11 @@ SparseMatrix<complex<double>> spinOpS2_momentum_sparse_m(int N, int n_up) {
 
     long siz = fact(N) / (fact(N-n_up) * fact(n_up));
     SparseMatrix<complex<double>> H(siz,siz);
+    for (int i = 0; i < siz; i++) {
+        elementList.emplace_back(i, i, N*0.75);
+    }
     H.setFromTriplets(elementList.begin(), elementList.end());
-    H.diagonal().array() += N*0.75;
+    //H.diagonal().array() += N*0.75;
     H.makeCompressed();
 
     return H;

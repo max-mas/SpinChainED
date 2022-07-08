@@ -20,8 +20,6 @@ void saveSpecificHeatsForVaryingTemp_DQT_parallel(int N, int dataPointNum, doubl
 
     vector<double> Cs;
 
-    std::cout << "why tf" << std::endl;
-
      if (N % 2 == 0 && N >= 6) {
         const vector<SparseMatrix<complex<double>>> H  = momentumHamiltonian_sparse_blocks(J_ratio, N, 0, N);
         vector<VectorXcd> psi_vec;
@@ -147,8 +145,6 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
     vector<vector<double>> Xs(dataPointNum);
     vector<double> actualXs;
     vector<double> stdDevs;
-
-    std::cout << "yes pls" << std::endl;
 
     if (N % 2 == 0 && N >= 6) {
         const SparseMatrix<complex<double>> H  = momentumHamiltonian_sparse(J_ratio, N);
