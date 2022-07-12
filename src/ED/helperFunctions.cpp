@@ -161,9 +161,18 @@ void printEnergies(const vector<double> & v) {
 }
 
 // Recursive factorial function.
-long fact(int n) {
-    if ((n==0)||(n==1))
+__int128 fact(__int128 n) {
+    /*if ((n==0)||(n==1))
         return 1;
     else
-        return n*fact(n-1);
+        return (long long) n*fact(n-1);
+    */
+    __int128 ret = 1;
+    for (__int128 i = 0; i <= n; i++) {
+        if (i == 0) {
+            continue;
+        }
+        ret *= i;
+    }
+    return ret;
 }

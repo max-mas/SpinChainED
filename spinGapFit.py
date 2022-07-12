@@ -48,9 +48,9 @@ def weird_transform(Js, Vals):
 
 
 nMin = 6
-nMax = 22
+nMax = 20
 nNum = int((nMax - nMin) / 2) + 1
-numOfRuns = 1
+numOfRuns = 20
 resids = False
 diffs = False
 save = True
@@ -59,7 +59,7 @@ gapsQT = []
 gapsQTavg = []
 gapsQTdev = []
 
-path = "/home/mmaschke/BA_Code/Data/out/Susceptibilities_DQT/forFit/test/"
+path = "/home/mmaschke/BA_Code/remoteData2/SpinChainData/out/Susceptibilities_DQT/forFit/"
 i = 0
 for N in np.linspace(nMin, nMax, nNum):
     gapsQT.append([])
@@ -101,12 +101,14 @@ for N in np.linspace(nMin, nMax, nNum):
             lines = file.readlines()
             #cutoff = 25
             upperCutoff = 100
-            if J > 1.5:
+            if J > 1:
                 cutoff = 15
-            if N == 16 and np.abs(J-0.408163) < 0.01:
-                cutoff = 20
-            if N == 22 and np.abs(J-0.367347) < 0.01:
-                cutoff = 20
+            if J < 0.5:
+                cutoff = 12
+            #if N == 16 and np.abs(J-0.408163) < 0.01:
+            #    cutoff = 20
+            #if N == 22 and np.abs(J-0.367347) < 0.01:
+            #    cutoff = 20
 
             for line in lines:
                 data = line.split(" ")
@@ -197,10 +199,10 @@ for N in np.linspace(nMin, nMax, nNum):
         gapsQTavg[i][1].append(avg)
         gapsQTdev[i][1].append(dev)
     if save:
-        writePath = "/home/mmaschke/BA_Code/Data/out/GapFit/spin/gapsLowJ" + str(int(N)) + ".txt"
+        writePath = "/home/mmaschke/BA_Code/Data/out/GapFit/spin/gapsIt20J" + str(int(N)) + ".txt"
         writeFile = open(writePath, "w")
         for n in range(len(gapsQTavg[i][0])):
-            writeFile.write(str(gapsQTavg[i][0][n]) + " " + str(gapsQTavg[i][1][n]) + "\n")
+            writeFile.write(str(gapsQTavg[i][0][n]) + " " + str(gapsQTavg[i][1][n]) + " " + str(gapsQTdev[i][1][n]) + "\n")
     i += 1
 
 fig, ax = plt.subplots()
@@ -216,7 +218,7 @@ for arr in gapsQTavg:
 gapsED = []
 path = "/home/mmaschke/BA_Code/remoteData/out/Susceptibilities/forFit/"
 i = 0
-for N in np.linspace(6, 18, 7):
+for N in np.linspace(6, 6, 1):
     gapsED.append([])
     gapsED[i].append([])
     gapsED[i].append([])
@@ -349,7 +351,7 @@ for N in np.linspace(6, 18, 7):
 ax.set(xlabel="$J_1/J_2$", ylabel="Reduced Spin Gap Energy $\\Delta/(J_1+J_2)$", title="$n = $ " + str(numOfRuns))
 ax.legend(prop={'size': 6})
 ax.set_ylim(0, 0.8)
-ax.set_xlim(0, 2)
+ax.set_xlim(0, 1.25)
 
 #fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/ExcErgHigh" + str(numOfRuns) + ".pdf")
 #fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/ExcErgHigh" + str(numOfRuns) + ".png")
@@ -370,7 +372,7 @@ for N in np.linspace(6, 18, 7):
         Ts.append(float(data[0]))
         excErg.append(float(data[1].replace("\n", "")))
     exactInterp = scipy.interpolate.interp1d(Ts, excErg)
-    fitBetas = np.linspace(0, 2, 50)
+    fitBetas = np.linspace(0, 1.25, 20)
     exactValsAtFitBetas = exactInterp(fitBetas)
 
     lab = "$N$ = " + str(int(N))

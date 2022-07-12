@@ -55,6 +55,6 @@ void printEnergies(const Eigen::VectorXd & v);
 void printEnergies(const std::vector<double> & v);
 
 // Recursive factorial function.
-long fact(int n);
+__int128 fact(__int128 n);
 
 #endif //HEISENBERG_CHAIN_1D_C__HELPERFUNCTIONS_H

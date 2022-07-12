@@ -16,13 +16,14 @@ using std::vector;
 #define QTtestingArea
 #define QTDataForFit
 //#define statisticsTest
-//#define EDbenchmark
+#define EDbenchmark
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
     const int cpu_cnt = (int) std::thread::hardware_concurrency() / 2;
     omp_set_num_threads(cpu_cnt);
+    Eigen::initParallel();
 
 #ifndef QTtestingArea
     if (argc < 11) {
@@ -194,7 +195,7 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef QTDataForFit
     Eigen::VectorXd Js = Eigen::VectorXd::LinSpaced(50, 0, 2);
-    nMin = 6;
+    nMin = 16;
     nMax = 12;
     int numOfRuns = 1;
 
@@ -304,8 +305,8 @@ int main(int argc, char* argv[]) {
     }
 #endif
 #ifdef EDbenchmark
-    int minN = 16;
-    int maxN = 16;
+    int minN = 22;
+    int maxN = 22;
     std::chrono::steady_clock::time_point start;
     std::chrono::steady_clock::time_point finish;
     /*
@@ -334,9 +335,13 @@ int main(int argc, char* argv[]) {
 
     std::cout << "DQT Specific Heat, 5000 Data Points:" << std::endl;
     for (int N = minN; N <= maxN; N+=2) {
-        std::list<std::list<Eigen::MatrixXcd>> H = momentumHamiltonian(0, 8, 0, 6);
-        vector<double> erg = getEnergiesFromBlocks(H, true);
-        printEnergies(erg);
+        std::list<Eigen::SparseMatrix<std::complex<double>>> S2_vec;
+        for (int i = 0; i <= N; i++) {
+            S2_vec.emplace_back( spinOpS2_momentum_sparse_m(N, i) );
+        }
+        std::cout << "S2 built\n";
+        //const Eigen::SparseMatrix<std::complex<double>> S2 = spinOp2_momentum_sparse_large_N(N);
+        //saveSusceptibilityForVaryingTemp_DQT_parallel(N, dataPointNum, 0, 50, S2_vec, "");
     }
 
 #endif

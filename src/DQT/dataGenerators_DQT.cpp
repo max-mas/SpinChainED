@@ -3,6 +3,7 @@
  */
 
 #include "dataGenerators_DQT.h"
+#include <chrono>
 
 using std::string;
 using std::complex;
@@ -149,13 +150,14 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
     if (N % 2 == 0 && N >= 6) {
         const SparseMatrix<complex<double>> H  = momentumHamiltonian_sparse(J_ratio, N);
 
-#pragma omp parallel for default(none) shared(Xs, S2)
+#pragma omp parallel for default(none) shared(Xs, S2, std::cout)
         for (int k = 0; k < numOfRuns; k++) {
 
             VectorXcd psi = randomComplexVectorNormalised((int) pow(2, N), 1.0);
+
             double beta = 0;
             for (int i = 0; i < dataPointNum; i++) {
-                double avg_S2 = psi.dot(S2 * psi).real();
+                double avg_S2 = (psi.adjoint() * S2 * psi)(0, 0).real();
 
                 double x = beta * avg_S2 / (3.0 * N);
 
@@ -360,9 +362,9 @@ VectorXcd randomComplexVectorNormalised(int vecSize, double stdDev) {
 
     for (int i = 0; i < vecSize; i++) {
         double re = distribution(gen);
-        gen();
+        //gen();
         double im = distribution(gen);
-        gen();
+        //gen();
         psi(i) = complex<double>(re, im);
     }
 
