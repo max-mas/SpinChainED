@@ -20,7 +20,7 @@ if (UNIX)
     set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -m64 -I${MKLROOT}/include -DEIGEN_USE_MKL_ALL")
 endif (UNIX)
 
-add_executable(SpinChain)
+add_executable(SpinChain src/DQT/magnetizationHamiltonian_sparse.cpp src/DQT/magnetizationHamiltonian_sparse.h)
 add_subdirectory(src)
 
 if (WIN32)

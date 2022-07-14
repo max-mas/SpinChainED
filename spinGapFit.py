@@ -48,26 +48,23 @@ def weird_transform(Js, Vals):
 
 
 nMin = 6
-nMax = 20
+nMax = 22
 nNum = int((nMax - nMin) / 2) + 1
-numOfRuns = 20
+numOfRuns = 5
 resids = False
 diffs = False
-save = True
+save = False
 
 gapsQT = []
 gapsQTavg = []
 gapsQTdev = []
 
-path = "/home/mmaschke/BA_Code/remoteData2/SpinChainData/out/Susceptibilities_DQT/forFit/"
+path = "/home/mmaschke/BA_Code/remoteData2/out/Susceptibilities_DQT/forFit/"
 i = 0
 for N in np.linspace(nMin, nMax, nNum):
     gapsQT.append([])
     j = 0
     for k in range(1, numOfRuns + 1):
-        if N == 18 and k > 1:
-            continue
-
         runPath = path + str(k) + "/"
 
         gapsQT[i].append([])
@@ -85,14 +82,7 @@ for N in np.linspace(nMin, nMax, nNum):
                 continue
             J = float(J_str)
 
-            cutoff = 25
-            #cutoffPath = "/home/mmaschke/Desktop/FitCuttofs/cutoffsN" + str(int(N))
-            #cutoffFile = open(cutoffPath, "r")
-            #cutoffLines = cutoffFile.readlines()
-            #for line in cutoffLines:
-            #    data = line.split(" ")
-            #    if abs(float(data[0]) - J) < 0.01:
-            #        cutoff = float(data[1].replace("\n", ""))
+            cutoff = 10
 
             betas = []
             fullBetas = []
@@ -102,9 +92,9 @@ for N in np.linspace(nMin, nMax, nNum):
             #cutoff = 25
             upperCutoff = 100
             if J > 1:
-                cutoff = 15
+                cutoff = 10
             if J < 0.5:
-                cutoff = 12
+                cutoff = 10
             #if N == 16 and np.abs(J-0.408163) < 0.01:
             #    cutoff = 20
             #if N == 22 and np.abs(J-0.367347) < 0.01:
@@ -199,7 +189,7 @@ for N in np.linspace(nMin, nMax, nNum):
         gapsQTavg[i][1].append(avg)
         gapsQTdev[i][1].append(dev)
     if save:
-        writePath = "/home/mmaschke/BA_Code/Data/out/GapFit/spin/gapsIt20J" + str(int(N)) + ".txt"
+        writePath = "/home/mmaschke/BA_Code/Data/out/GapFit/spin/gapsIt" + str(numOfRuns) + "highJ" + str(int(N)) + ".txt"
         writeFile = open(writePath, "w")
         for n in range(len(gapsQTavg[i][0])):
             writeFile.write(str(gapsQTavg[i][0][n]) + " " + str(gapsQTavg[i][1][n]) + " " + str(gapsQTdev[i][1][n]) + "\n")

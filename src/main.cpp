@@ -16,7 +16,7 @@ using std::vector;
 #define QTtestingArea
 #define QTDataForFit
 //#define statisticsTest
-#define EDbenchmark
+//#define EDbenchmark
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -196,7 +196,7 @@ int main(int argc, char* argv[]) {
 #ifdef QTDataForFit
     Eigen::VectorXd Js = Eigen::VectorXd::LinSpaced(50, 0, 2);
     nMin = 16;
-    nMax = 12;
+    nMax = 16;
     int numOfRuns = 1;
 
     /*
@@ -221,9 +221,10 @@ int main(int argc, char* argv[]) {
         for (int i = 0; i <= N; i++) {
             S2_vec.emplace_back( spinOpS2_momentum_sparse_m(N, i) );
         }*/
-        const Eigen::SparseMatrix<std::complex<double>> S2 = spinOp2_momentum_sparse(N);
+        std::vector<Eigen::SparseMatrix<double>> S2_vec = spinOp2_magnetization_sparse(N);
+        //const Eigen::SparseMatrix<std::complex<double>> S2 = spinOp2_momentum_sparse(N);
         for (int i = 1; i <= numOfRuns; i++) {
-#pragma omp parallel for default(none) shared(Js, saveTo_path, dataPointNum, std::cout, N, numOfRuns, i)
+//#pragma omp parallel for default(none) shared(Js, saveTo_path, dataPointNum, std::cout, N, numOfRuns, i, S2_vec)
             for (int k = 0; k < Js.size(); k++) {
                 double J_ratio = Js[k];
                 std::string j = std::to_string(J_ratio);
@@ -232,7 +233,7 @@ int main(int argc, char* argv[]) {
                                    + std::string("J") + j + std::string("It") + std::to_string(1) + ".txt";
                 path = "/home/mmaschke/BA_Code/Data/out/Susceptibilities_DQT/forFit/test/grave/SuscDQTN" + std::to_string(N)
                        + std::string("J") + j + std::string("It") + std::to_string(1) + ".txt";
-                saveSusceptibilityForVaryingTemp_DQT_avg(N, dataPointNum, J_ratio, 50, S2, path, 1);
+                saveSusceptibilityForVaryingTemp_DQT_parallel(N, dataPointNum, J_ratio, 50, S2_vec, path);
                 std::cout << std::string("N") + std::to_string(N) + std::string("J") + j + std::string("It")
                              + std::to_string(1) << std::endl;
             }
@@ -305,8 +306,8 @@ int main(int argc, char* argv[]) {
     }
 #endif
 #ifdef EDbenchmark
-    int minN = 22;
-    int maxN = 22;
+    int minN = 24;
+    int maxN = 24;
     std::chrono::steady_clock::time_point start;
     std::chrono::steady_clock::time_point finish;
     /*

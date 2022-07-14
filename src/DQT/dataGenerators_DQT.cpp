@@ -26,7 +26,7 @@ void saveSpecificHeatsForVaryingTemp_DQT_parallel(int N, int dataPointNum, doubl
         vector<VectorXcd> psi_vec;
 
         for (const auto & h : H) {
-            psi_vec.emplace_back(randomComplexVectorNormalised(h.cols(), 1));
+            psi_vec.emplace_back(randomComplexVector(h.cols(), 1));
         }
         normaliseListOfVectors(psi_vec);
 
@@ -160,6 +160,7 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
                 double avg_S2 = (psi.adjoint() * S2 * psi)(0, 0).real();
 
                 double x = beta * avg_S2 / (3.0 * N);
+                std::cout << avg_S2 << std::endl;
 
 #pragma omp critical
                 Xs[i].emplace_back(x);
@@ -192,7 +193,7 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
 
 // Calculates susceptibility heat using DQT and average over a number of runs.
 void saveSusceptibilityForVaryingTemp_DQT_parallel(const int N, const int dataPointNum, const double J_ratio,
-                                              const double end, const vector<SparseMatrix<complex<double>>> & S2_list,
+                                              const double end, const vector<SparseMatrix<double>> & S2_list,
                                               const string & path) {
     double beta = 0; // iteration always starts at beta = 0
     const double dBeta = end / (double) dataPointNum;
@@ -201,19 +202,19 @@ void saveSusceptibilityForVaryingTemp_DQT_parallel(const int N, const int dataPo
     vector<double> Xs;
 
     if (N % 2 == 0 && N >= 6) {
-        const vector<SparseMatrix<complex<double>>> H  = momentumHamiltonian_sparse_blocks(J_ratio, N, 0, N);
+        const vector<SparseMatrix<double>> H  = magnetizationHamiltonian_sparse(J_ratio, N);
         vector<VectorXcd> psi_vec;
 
         for (const auto & h : H) {
-            psi_vec.emplace_back(randomComplexVectorNormalised(h.cols(), 1));
+            psi_vec.emplace_back(randomComplexVector(h.cols(), 1));
         }
         normaliseListOfVectors(psi_vec);
 
         for (int i = 0; i < dataPointNum; i++) {
             vector<double> avg_S2_vec;
-//#pragma omp parallel for default(none) shared(psi_vec, avg_S2_vec, i, S2_list)
+#pragma omp parallel for default(none) shared(psi_vec, avg_S2_vec, i, S2_list)
             for (int j = 0; j < H.size(); j++) {
-                double S2_avg_block = psi_vec[j].dot(S2_list[j] * psi_vec[j]).real();
+                double S2_avg_block = (psi_vec[j].adjoint() * (S2_list[j] * psi_vec[j]))(0, 0).real();
 
                 writeThreadSafe(avg_S2_vec, {S2_avg_block});
                 iterateState_beta(H[j], psi_vec[j], dBeta);
@@ -222,7 +223,10 @@ void saveSusceptibilityForVaryingTemp_DQT_parallel(const int N, const int dataPo
             double X = beta * avg_S2 /3.0/N;
             Xs.emplace_back(X);
 
+            //std::cout << avg_S2 << std::endl;
+
             normaliseListOfVectors(psi_vec);
+
 
             beta += dBeta;
         }
@@ -362,13 +366,32 @@ VectorXcd randomComplexVectorNormalised(int vecSize, double stdDev) {
 
     for (int i = 0; i < vecSize; i++) {
         double re = distribution(gen);
-        //gen();
+        gen();
         double im = distribution(gen);
-        //gen();
+        gen();
         psi(i) = complex<double>(re, im);
     }
 
     psi.normalize();
+
+    return psi;
+}
+
+// Generates a random complex vector using a true random seed for a pseudo random number generator.
+VectorXcd randomComplexVector(int vecSize, double stdDev) {
+    VectorXcd psi(vecSize);
+
+    std::random_device generator; //may not be available
+    std::mt19937 gen(generator());
+    std::normal_distribution<double> distribution(0.0, stdDev);
+
+    for (int i = 0; i < vecSize; i++) {
+        double re = distribution(gen);
+        gen();
+        double im = distribution(gen);
+        gen();
+        psi(i) = complex<double>(re, im);
+    }
 
     return psi;
 }

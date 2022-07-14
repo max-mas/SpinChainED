@@ -16,6 +16,7 @@
 #include <unsupported/Eigen/MatrixFunctions>
 
 #include "momentumHamiltonian_sparse.h"
+#include "magnetizationHamiltonian_sparse.h"
 #include "naiveHamiltonian_sparse.h"
 #include "matrixExpIteration.h"
 
@@ -36,7 +37,7 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
 
 void saveSusceptibilityForVaryingTemp_DQT_parallel(const int N, const int dataPointNum, const double J_ratio,
                                                    const double end,
-                                                   const std::vector<Eigen::SparseMatrix<std::complex<double>>> & S2_list,
+                                                   const std::vector<Eigen::SparseMatrix<double>> & S2_list,
                                                    const std::string & path);
 
 // Calculates partition function using DQT and average over a number of runs. Also calculates standard deviation.
@@ -56,5 +57,7 @@ void normaliseListOfVectors(std::vector<Eigen::VectorXcd> & vec);
 
 // Generates a random complex vector using a true random seed for a pseudo random number generator.
 Eigen::VectorXcd randomComplexVectorNormalised(int vecSize, double stdDev);
+
+Eigen::VectorXcd randomComplexVector(int vecSize, double stdDev);
 
 #endif //SPINCHAINED_DATAGENERATORS_DQT_H
