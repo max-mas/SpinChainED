@@ -16,7 +16,7 @@ using std::vector;
 #define QTtestingArea
 #define QTDataForFit
 //#define statisticsTest
-//#define EDbenchmark
+#define EDbenchmark
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
@@ -194,10 +194,10 @@ int main(int argc, char* argv[]) {
 
 #endif
 #ifdef QTDataForFit
-    Eigen::VectorXd Js = Eigen::VectorXd::LinSpaced(50, 0, 2);
+    Eigen::VectorXd Js = Eigen::VectorXd::LinSpaced(20, 0, 1.25);
     nMin = 16;
-    nMax = 16;
-    int numOfRuns = 1;
+    nMax = 12;
+    int numOfRuns = 20;
 
     /*
     for (int N = nMin; N <= nMax; N += 2) {
@@ -306,8 +306,8 @@ int main(int argc, char* argv[]) {
     }
 #endif
 #ifdef EDbenchmark
-    int minN = 24;
-    int maxN = 24;
+    int minN = 8;
+    int maxN = 8;
     std::chrono::steady_clock::time_point start;
     std::chrono::steady_clock::time_point finish;
     /*
@@ -334,15 +334,41 @@ int main(int argc, char* argv[]) {
         std::cout << "N = " << N << ", time = " << time_ns/1e9 << " s, ram = " << 4096*memUsage/1e9 << " GB" << std::endl;
     }*/
 
-    std::cout << "DQT Specific Heat, 5000 Data Points:" << std::endl;
+    //std::cout << "DQT Specific Heat, 5000 Data Points:" << std::endl;
     for (int N = minN; N <= maxN; N+=2) {
-        std::list<Eigen::SparseMatrix<std::complex<double>>> S2_vec;
-        for (int i = 0; i <= N; i++) {
-            S2_vec.emplace_back( spinOpS2_momentum_sparse_m(N, i) );
+        std::vector<Eigen::SparseMatrix<double>> S2_vec = spinOp2_magnetization_sparse(N);
+        saveSusceptibilityForVaryingTemp_DQT_parallel(N, dataPointNum, 0, 200, S2_vec, "");
+        std::list<Eigen::MatrixXd> H = magnetizationHamiltonian(0, N);
+        Eigen::MatrixXd H_full = blkdiag(H, pow(2, N));
+        //vector<double> eVals = getEnergiesFromBlocks(H, false);
+        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> sol;
+        sol.compute(H_full);
+        Eigen::MatrixXd eVecsAbs2 = sol.eigenvectors().cwiseAbs2();
+        Eigen::VectorXd eVals = sol.eigenvalues();
+        int grdStateIndex = 0;
+        int f = 0;
+        double cmp = 30;
+        for (double e : eVals) {
+            if (e < cmp) {
+                grdStateIndex = f;
+                cmp = e;
+            }
+            f++;
         }
-        std::cout << "S2 built\n";
-        //const Eigen::SparseMatrix<std::complex<double>> S2 = spinOp2_momentum_sparse_large_N(N);
-        //saveSusceptibilityForVaryingTemp_DQT_parallel(N, dataPointNum, 0, 50, S2_vec, "");
+        std::cout << "_______________________\n";
+        std::cout << eVals(grdStateIndex) << "\n";
+        std::cout << "_______________________\n";
+
+        Eigen::VectorXd grdState = eVecsAbs2.col(grdStateIndex);
+        //grdState.normalize();
+        printEnergies(grdState);
+
+        std::cout << "_______________________\n";
+        for (int i = 0; i < grdState.size(); i++) {
+            if (grdState(i) > 1e-10) {
+                std::cout << i << std::endl;
+            }
+        }
     }
 
 #endif

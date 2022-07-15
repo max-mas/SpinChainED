@@ -169,6 +169,7 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
                 iterateState_beta(H, psi, dBeta);
                 psi.normalize();
             }
+
         }
 
         for (vector<double> & X : Xs) {
@@ -210,6 +211,14 @@ void saveSusceptibilityForVaryingTemp_DQT_parallel(const int N, const int dataPo
         }
         normaliseListOfVectors(psi_vec);
 
+        vector<double> weights2;
+        for (VectorXcd v : psi_vec) {
+            for (complex<double> c : v) {
+                weights2.emplace_back(pow(abs(c), 2));
+            }
+        }
+        printEnergies(weights2);
+
         for (int i = 0; i < dataPointNum; i++) {
             vector<double> avg_S2_vec;
 #pragma omp parallel for default(none) shared(psi_vec, avg_S2_vec, i, S2_list)
@@ -223,13 +232,20 @@ void saveSusceptibilityForVaryingTemp_DQT_parallel(const int N, const int dataPo
             double X = beta * avg_S2 /3.0/N;
             Xs.emplace_back(X);
 
-            //std::cout << avg_S2 << std::endl;
-
             normaliseListOfVectors(psi_vec);
-
 
             beta += dBeta;
         }
+
+        std::cout << "______________________________________\n";
+        weights2.clear();
+        for (VectorXcd v : psi_vec) {
+            for (complex<double> c : v) {
+                weights2.emplace_back(pow(abs(c), 2));
+            }
+        }
+        printEnergies(weights2);
+
     }
 
     list<std::pair<double, double>> out;
