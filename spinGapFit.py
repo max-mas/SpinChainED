@@ -48,7 +48,7 @@ def weird_transform(Js, Vals):
 
 
 nMin = 6
-nMax = 22
+nMax = 24
 nNum = int((nMax - nMin) / 2) + 1
 numOfRuns = 20
 resids = False
@@ -65,6 +65,8 @@ for N in np.linspace(nMin, nMax, nNum):
     gapsQT.append([])
     j = 0
     for k in range(1, numOfRuns + 1):
+        #if (k == 8 or k == 20) and N == 24:
+        #    continue
         runPath = path + str(k) + "/"
 
         gapsQT[i].append([])
@@ -89,17 +91,27 @@ for N in np.linspace(nMin, nMax, nNum):
             Cs = []
             fullCs = []
             lines = file.readlines()
-            upperCutoff = 100
+            upperCutoff = 200
+
             if J > 1:
-                cutoff = 12
-            if J < 0.5:
+                cutoff = 15
+            if N > 12 and np.abs(J-0) < 0.01:
+                cutoff = 20
+            if N > 12 and np.abs(J-0.065789) < 0.01:
+                cutoff = 20
+            if N > 12 and np.abs(J-0.131579) < 0.01:
                 cutoff = 22
-            #if N == 16 and np.abs(J-0.408163) < 0.01:
-            #    cutoff = 20
-            #if N == 22 and np.abs(J-0.367347) < 0.01:
-            #    cutoff = 20
-            if N == 20 and np.abs(J-0.065789) < 0.01:
+            if N > 12 and np.abs(J-0.197368) < 0.01:
+                cutoff = 20
+            if N > 12 and np.abs(J-0.263158) < 0.01:
+                cutoff = 22
+            if N > 12 and np.abs(J-0.328947) < 0.01:
+                cutoff = 20
+            if N > 12 and np.abs(J-0.394737) < 0.01:
+                cutoff = 20
+            if N > 12 and np.abs(J-0.460526) < 0.01:
                 cutoff = 18
+
 
             for line in lines:
                 data = line.split(" ")
@@ -122,7 +134,10 @@ for N in np.linspace(nMin, nMax, nNum):
                 #    lnCs = np.log(Cs)
                 #    parameters, covariance = opt.curve_fit(alt_fit_fn, betas, lnCs)
                 #else:
-                    parameters, covariance = opt.curve_fit(exp_fit_fn, betas, Cs)
+                    if N == 24:
+                        parameters, covariance = opt.curve_fit(exp_fit_fn, betas, Cs, [1, 0.5])
+                    else:
+                        parameters, covariance = opt.curve_fit(exp_fit_fn, betas, Cs)
             except RuntimeError:
                 parameters = [0, 0]
                 covariance = [0, 0]
@@ -177,14 +192,8 @@ for N in np.linspace(nMin, nMax, nNum):
         avg = 0.0
         dev = 0.0
         for l in range(numOfRuns):
-            if N == 18 and l == 0:
-                avg += gapsQT[i][l][1][n]
-                break
             avg += gapsQT[i][l][1][n] / numOfRuns
         for l in range(numOfRuns):
-            if N == 18 and l == 0:
-                dev += 0
-                break
             dev += (gapsQT[i][l][1][n] - avg) ** 2 / numOfRuns
         dev = np.sqrt(dev)/np.sqrt(numOfRuns)
         gapsQTavg[i][1].append(avg)

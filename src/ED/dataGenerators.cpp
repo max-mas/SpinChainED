@@ -151,7 +151,8 @@ void saveSpecificHeatsForVaryingJ(int N, int dataPointNum, double betaOrT, doubl
 
 // Saves specific heat for a given value of J1/J2 for varying temperature/beta.
 void saveSpecificHeatsForVaryingTemp(int N, int dataPointNum, double J_ratio, double start, double end,
-                                     bool isBeta, std::string path) {
+                                     bool isBeta, std::string path, bool bench) {
+    std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
     Eigen::VectorXd Ts = Eigen::VectorXd::LinSpaced(dataPointNum, start, end);
     vector<double> C;
 
@@ -161,11 +162,45 @@ void saveSpecificHeatsForVaryingTemp(int N, int dataPointNum, double J_ratio, do
         for (int i = 0; i < Ts.size(); i++) {
             C.emplace_back(specificHeat(erg, Ts[i], isBeta) / N);
         }
+        if (bench) {
+            std::chrono::steady_clock::time_point finish = std::chrono::steady_clock::now();
+            std::ifstream statFile("/proc/self/stat");
+            std::string statLine;
+            std::getline(statFile, statLine);
+            std::istringstream iss(statLine);
+            std::string entry;
+            long long memUsage;
+            for (int i = 1; i <= 24; i++) {
+                std::getline(iss, entry, ' ');
+                if (i == 24) {
+                    memUsage = stoi(entry);
+                }
+            }
+            long time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - begin).count();
+            std::cout << "N = " << N << ", time = " << time_ns/1e9 << " s, ram = " << 4096*memUsage/1e9 << " GB" << std::endl;
+        }
     } else if (N % 2 == 0 && N >= 6) {
         list<list<MatrixXcd>> H = momentumHamiltonian(J_ratio, N, 0, N);
         vector<double> erg = getMomentumErgsThreaded(H, N, true);
         for (int i = 0; i < Ts.size(); i++) {
             C.emplace_back(specificHeat(erg, Ts[i], isBeta) / N);
+        }
+        if (bench) {
+            std::chrono::steady_clock::time_point finish = std::chrono::steady_clock::now();
+            std::ifstream statFile("/proc/self/stat");
+            std::string statLine;
+            std::getline(statFile, statLine);
+            std::istringstream iss(statLine);
+            std::string entry;
+            long long memUsage;
+            for (int i = 1; i <= 24; i++) {
+                std::getline(iss, entry, ' ');
+                if (i == 24) {
+                    memUsage = stoi(entry);
+                }
+            }
+            long time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - begin).count();
+            std::cout << "N = " << N << ", time = " << time_ns/1e9 << " s, ram = " << 4096*memUsage/1e9 << " GB" << std::endl;
         }
     }
 

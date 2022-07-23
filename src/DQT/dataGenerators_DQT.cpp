@@ -239,12 +239,19 @@ void saveSusceptibilityForVaryingTemp_DQT_parallel(const int N, const int dataPo
 
         std::cout << "______________________________________\n";
         weights2.clear();
+        double norm = 0;
         for (VectorXcd v : psi_vec) {
             for (complex<double> c : v) {
                 weights2.emplace_back(pow(abs(c), 2));
+                norm += pow(abs(c), 2);
+                std::cout << c << "\n";
             }
         }
-        printEnergies(weights2);
+        norm = sqrt(norm);
+        //printEnergies(weights2);
+        std::cout << "______________________________________\n";
+        std::cout << norm << "\n";
+        std::cout << "______________________________________\n";
 
     }
 

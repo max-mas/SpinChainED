@@ -39,7 +39,7 @@ void saveSpecificHeatsForVaryingJ(int N, int dataPointNum, double betaOrT, doubl
 
 // Saves specific heat for a given value of J1/J2 for varying temperature/beta.
 void saveSpecificHeatsForVaryingTemp(int N, int dataPointNum, double J_ratio, double start, double end,
-                                     bool isBeta, std::string path);
+                                     bool isBeta, std::string path, bool bench=true);
 
 // Saves susceptibilities at a given temperature/beta for varying values of J1/J2.
 void saveSusceptibilitiesForVaryingJ(int N, int dataPointNum, double betaOrT, double start, double end,

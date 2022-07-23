@@ -21,7 +21,7 @@ using std::vector;
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
-    const int cpu_cnt = (int) std::thread::hardware_concurrency() / 2;
+    const int cpu_cnt = 1;//(int) std::thread::hardware_concurrency() / 2;
     omp_set_num_threads(cpu_cnt);
     Eigen::initParallel();
 
@@ -306,69 +306,20 @@ int main(int argc, char* argv[]) {
     }
 #endif
 #ifdef EDbenchmark
-    int minN = 8;
-    int maxN = 8;
+    int minN = 6;
+    int maxN = 16;
     std::chrono::steady_clock::time_point start;
     std::chrono::steady_clock::time_point finish;
-    /*
-    std::cout << "Momentum:" << std::endl;
-    for (int N = minN; N <= maxN; N+=2) {
-        start = std::chrono::steady_clock::now();
-        std::list<std::list<Eigen::MatrixXcd>> H = momentumHamiltonian(0, N, 0, N);
-        vector<double> eig = getEnergiesFromBlocks(H, true);
-        finish = std::chrono::steady_clock::now();
-        std::ifstream statFile("/proc/self/stat");
-        std::string statLine;
-        std::getline(statFile, statLine);
-        std::istringstream iss(statLine);
-        std::string entry;
-        long long memUsage;
-        for (int i = 1; i <= 24; i++) {
-            std::getline(iss, entry, ' ');
-            if (i == 24) {
-                memUsage = stoi(entry);
-            }
-        }
 
-        long time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
-        std::cout << "N = " << N << ", time = " << time_ns/1e9 << " s, ram = " << 4096*memUsage/1e9 << " GB" << std::endl;
+    /*
+    std::cout << "ED:" << std::endl;
+    for (int N = minN; N <= maxN; N+=2) {
+        saveSpecificHeatsForVaryingTemp(N, 5000, 0, 0, 50, true, "", true);
     }*/
 
-    //std::cout << "DQT Specific Heat, 5000 Data Points:" << std::endl;
+    std::cout << "QT:" << std::endl;
     for (int N = minN; N <= maxN; N+=2) {
-        std::vector<Eigen::SparseMatrix<double>> S2_vec = spinOp2_magnetization_sparse(N);
-        saveSusceptibilityForVaryingTemp_DQT_parallel(N, dataPointNum, 0, 200, S2_vec, "");
-        std::list<Eigen::MatrixXd> H = magnetizationHamiltonian(0, N);
-        Eigen::MatrixXd H_full = blkdiag(H, pow(2, N));
-        //vector<double> eVals = getEnergiesFromBlocks(H, false);
-        Eigen::SelfAdjointEigenSolver<Eigen::MatrixXd> sol;
-        sol.compute(H_full);
-        Eigen::MatrixXd eVecsAbs2 = sol.eigenvectors().cwiseAbs2();
-        Eigen::VectorXd eVals = sol.eigenvalues();
-        int grdStateIndex = 0;
-        int f = 0;
-        double cmp = 30;
-        for (double e : eVals) {
-            if (e < cmp) {
-                grdStateIndex = f;
-                cmp = e;
-            }
-            f++;
-        }
-        std::cout << "_______________________\n";
-        std::cout << eVals(grdStateIndex) << "\n";
-        std::cout << "_______________________\n";
-
-        Eigen::VectorXd grdState = eVecsAbs2.col(grdStateIndex);
-        //grdState.normalize();
-        printEnergies(grdState);
-
-        std::cout << "_______________________\n";
-        for (int i = 0; i < grdState.size(); i++) {
-            if (grdState(i) > 1e-10) {
-                std::cout << i << std::endl;
-            }
-        }
+        saveSpecificHeatsForVaryingTemp_DQT_avg(N, 5000, 0, 50, "", 1, true);
     }
 
 #endif

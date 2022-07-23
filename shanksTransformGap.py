@@ -52,15 +52,16 @@ def lin(x, a, b):
 
 
 nMin = 6
-nMax = 22
-nNum = 9  # int((nMax - nMin) / 2) + 1
+nMax = 24
+nNum = 10  # int((nMax - nMin) / 2) + 1
 nNumLow = 5
 dataPointNum = 20
+ED = False
 
 fullGaps = []
 fullErrs = []
 gapsLow = []
-for N in [6, 8, 10, 12, 14, 16, 18, 20, 22]:
+for N in [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]:
     path1 = "/home/mmaschke/BA_Code/Data/out/GapFit/spin/gapsIt20lowJ" + str(int(N)) + ".txt"
     file1 = open(path1, "r")
     lines1 = file1.readlines()
@@ -73,7 +74,10 @@ for N in [6, 8, 10, 12, 14, 16, 18, 20, 22]:
         data1 = line1.split(" ")
         fullJs.append(float(data1[0]))
         fullGapsN.append(float(data1[1].replace("\n", "")))
-        fullErrsN.append(float(data1[2].replace("\n", "")))
+        if ED:
+            fullErrsN.append(0)
+        else:
+            fullErrsN.append(float(data1[2].replace("\n", "")))
         if float(data1[0]) < 0.65:
             JsLow.append(float(data1[0]))
             gapsNLow.append(float(data1[1].replace("\n", "")))
@@ -82,21 +86,28 @@ for N in [6, 8, 10, 12, 14, 16, 18, 20, 22]:
     fullErrs.append(fullErrsN)
 
 gapsHigh = []
+gapErrsHigh = []
 for N in [6, 10, 14, 18, 22]:
     path2 = "/home/mmaschke/BA_Code/Data/out/GapFit/spin/gapsIt20lowJ" + str(int(N)) + ".txt"
     #if N == 22:
-    #    path2 = "/home/mmaschke/BA_Code/Data/out/GapFit/spin/gapsLowJ" + str(int(N)) + ".txt"
+    #    path2 = "/home/mmaschke/BA_Code/Data/out/GapFit/spin/gapsIt20lowJ" + str(int(N)) + ".txt"
     file2 = open(path2, "r")
     lines2 = file2.readlines()
     JsHigh = []
     gapsNHigh = []
+    gapErrsNHigh = []
     for line2 in lines2:
         data2 = line2.split(" ")
         if float(data2[0]) >= 0.65:
             data2 = line2.split(" ")
             JsHigh.append(float(data2[0]))
             gapsNHigh.append(float(data2[1].replace("\n", "")))
+        if ED:
+            gapErrsNHigh.append(0)
+        else:
+            gapErrsNHigh.append(float(data1[2].replace("\n", "")))
     gapsHigh.append(gapsNHigh)
+    gapErrsHigh.append(gapErrsNHigh)
 
 gaps_extrapLow = []
 gaps_extrapHigh = []
@@ -117,9 +128,9 @@ N = 6
 for gap in fullGaps:
     ax.plot(fullJs, weird_transform(fullJs, gap), label="ED, $N=$" + str(N))
     N += 2
-ax.plot(JsLow, weird_transform(JsLow, gaps_extrapLow), "r--", label="QT Extrapolation Low")
-ax.plot(JsHigh, weird_transform(JsHigh, gaps_extrapHigh), "g--", label="QT Extrapolation High")
-ax.set(xlabel="$J_1/J_2$", ylabel="Reduced Spin Gap Energy $\\Delta/(J_1+J_2)$", title="QT Data")
+ax.plot(JsLow, weird_transform(JsLow, gaps_extrapLow), "r--", label="ED Extrapolation Low")
+ax.plot(JsHigh, weird_transform(JsHigh, gaps_extrapHigh), "g--", label="ED Extrapolation High")
+ax.set(xlabel="$J_1/J_2$", ylabel="Reduced Spin Gap Energy $\\Delta/(J_1+J_2)$", title="ED Data")
 ax.set_ylim(0, 0.8)
 ax.set_xlim(0, 2)
 ax.legend()
@@ -128,6 +139,7 @@ plt.close(fig)
 
 
 offsets = []
+offsetErrs = []
 gaps = gapsLow #+ gapsHigh
 Ns = np.linspace(nMin, nMax, nNum)
 NsHigh = [6, 10, 14, 18, 22]
@@ -137,18 +149,27 @@ for j in range(dataPointNum):
     jGaps = []
     jErrs = []
     for gapErr in zip(fullGaps, fullErrs):
-        jGaps.append(gapErr[0][j] / (1 + fullJs[j]))
-        jErrs.append(gapErr[1][j] / (1 + fullJs[j]))
+        jGaps.append(gapErr[0][j])
+        jErrs.append(gapErr[1][j])
     jGapsHigh = []
-    for gap in gapsHigh:
-        jGapsHigh.append(gap[j-len(gapsLow[0])] / (1 + fullJs[j]))
-    if fullJs[j] >= 0.65:
-        parameters, covariance = scipy.optimize.curve_fit(lin, 1/np.asarray(NsHigh), jGapsHigh)
+    jErrsHigh = []
+    for gapErr in zip(gapsHigh, gapErrsHigh):
+        jGapsHigh.append(gapErr[0][j-len(gapsLow[0])])
+        jErrsHigh.append(gapErr[1][j])
+    if ED:
+        if fullJs[j] >= 0.65:
+            parameters, covariance = scipy.optimize.curve_fit(lin, 1/np.asarray(NsHigh), jGapsHigh)
+        else:
+            parameters, covariance = scipy.optimize.curve_fit(lin, 1/np.asarray(Ns), jGaps)
     else:
-        parameters, covariance = scipy.optimize.curve_fit(lin, 1/np.asarray(Ns), jGaps)
+        if fullJs[j] >= 0.65:
+            parameters, covariance = scipy.optimize.curve_fit(lin, 1/np.asarray(NsHigh), jGapsHigh, sigma=jErrsHigh, absolute_sigma=False)
+        else:
+            parameters, covariance = scipy.optimize.curve_fit(lin, 1/np.asarray(Ns), jGaps, sigma=jErrs, absolute_sigma=False)
     offsets.append(parameters[1])
-    ax.errorbar(1/np.asarray(Ns), jGaps, fmt=".-", xerr=None, yerr=jErrs, capsize=2)
-    ax.plot(RecipNsPlot, lin(RecipNsPlot, parameters[0], parameters[1]), "--")
+    offsetErrs.append(np.sqrt(covariance[1][1]))
+    ax.errorbar(1/np.asarray(Ns), np.asarray(jGaps)/(1+fullJs[j]), fmt=".-", xerr=None, yerr=np.asarray(jErrs)/(1+fullJs[j]), capsize=2)
+    ax.plot(RecipNsPlot, np.asarray(lin(RecipNsPlot, parameters[0], parameters[1]))/(1+fullJs[j]), "--")
     ax.set(xlabel="$1/N$", ylabel="Reduced Spin Gap Energy $\\Delta/(J_1+J_2)$", title="QT Fit, $J_1/J_2=$" + str(fullJs[j]))
     ax.set_ylim(0, 0.8)
     ax.set_xlim(0, 0.5)
@@ -161,12 +182,16 @@ for j in range(dataPointNum):
 fig, ax = plt.subplots()
 N = 6
 for gapErr in zip(fullGaps, fullErrs):
-    ax.errorbar(fullJs, weird_transform(fullJs, gapErr[0]), yerr=weird_transform(fullJs, gapErr[1]), xerr=None, label="QT, $N=$" + str(N),
-                fmt=".-", capsize=2)
+    if ED:
+        ax.plot(fullJs, weird_transform(fullJs, gapErr[0]), label="QT, $N=$" + str(N))
+    else:
+        ax.errorbar(fullJs, weird_transform(fullJs, gapErr[0]), yerr=weird_transform(fullJs, gapErr[1]), xerr=None, label="QT, $N=$" + str(N),
+                    fmt=".-", capsize=2)
     N += 2
-ax.plot(fullJs, weird_transform(fullJs, offsets), "r--", label="QT Fit-Extrapolation")
-ax.set(xlabel="$J_1/J_2$", ylabel="Reduced Spin Gap Energy $\\Delta/(J_1+J_2)$", title="QT Data")
-#ax.set_ylim(0, 0.8)
+ax.plot(fullJs, weird_transform(fullJs, offsets), "r.--", label="QT Fit-Extrapolation")
+ax.fill_between(fullJs,  weird_transform(fullJs, np.asarray(offsets) - np.asarray(offsetErrs)),  weird_transform(fullJs, np.asarray(offsets) + np.asarray(offsetErrs)), color="r", alpha=0.1)
+ax.set(xlabel="$J_1/J_2$", ylabel="Reduced Spin Gap Energy $\\Delta/(J_1+J_2)$", title="QT Data, $n=20$")
+ax.set_ylim(-0.05, 0.75)
 ax.set_xlim(0, 1.25)
 ax.legend()
 plt.show()
