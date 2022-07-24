@@ -52,18 +52,25 @@ def lin(x, a, b):
     return a*x + b
 
 
+def quad(x, a, b, c):
+    return a*x**2 + b*x + c
+
+
 nMin = 6
-nMax = 24
-nNum = 10  # int((nMax - nMin) / 2) + 1
-nNumLow = 5
-dataPointNum = 20
-ED = False
+nMax = 18
+nNum = 7  # int((nMax - nMin) / 2) + 1
+nNumLow = 4
+dataPointNum = 200
+ED = True
+lowCutoff = 0.65
+fitRangeLow = 0.4
+fitRangeHigh = 0.8
 
 fullGaps = []
 fullErrs = []
 gapsLow = []
-for N in [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]:
-    path1 = "D:/Code/C++/spinChainData/ba_data_2207/Data/out/GapFit/spin/gapsIt20lowJ" + str(int(N)) + ".txt"
+for N in [6, 8, 10, 12, 14, 16, 18]:
+    path1 = "D:/Code/C++/spinChainData/ba_data_2207/Data/out/ExcitationErgs/Excergs" + str(int(N)) + ".txt"
     file1 = open(path1, "r")
     lines1 = file1.readlines()
     fullJs = []
@@ -79,7 +86,7 @@ for N in [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]:
             fullErrsN.append(0)
         else:
             fullErrsN.append(float(data1[2].replace("\n", "")))
-        if float(data1[0]) < 0.65:
+        if float(data1[0]) < lowCutoff:
             JsLow.append(float(data1[0]))
             gapsNLow.append(float(data1[1].replace("\n", "")))
     gapsLow.append(gapsNLow)
@@ -88,8 +95,8 @@ for N in [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]:
 
 gapsHigh = []
 gapErrsHigh = []
-for N in [6, 10, 14, 18, 22]:
-    path2 = "D:/Code/C++/spinChainData/ba_data_2207/Data/out/GapFit/spin/gapsIt20lowJ" + str(int(N)) + ".txt"
+for N in [6, 10, 14, 18]:
+    path2 = "D:/Code/C++/spinChainData/ba_data_2207/Data/out/ExcitationErgs/Excergs" + str(int(N)) + ".txt"
     #if N == 22:
     #    path2 = "/home/mmaschke/BA_Code/Data/out/GapFit/spin/gapsIt20lowJ" + str(int(N)) + ".txt"
     file2 = open(path2, "r")
@@ -99,7 +106,7 @@ for N in [6, 10, 14, 18, 22]:
     gapErrsNHigh = []
     for line2 in lines2:
         data2 = line2.split(" ")
-        if float(data2[0]) >= 0.65:
+        if float(data2[0]) >= lowCutoff:
             data2 = line2.split(" ")
             JsHigh.append(float(data2[0]))
             gapsNHigh.append(float(data2[1].replace("\n", "")))
@@ -143,7 +150,7 @@ offsets = []
 offsetErrs = []
 gaps = gapsLow #+ gapsHigh
 Ns = np.linspace(nMin, nMax, nNum)
-NsHigh = [6, 10, 14, 18, 22]
+NsHigh = [6, 10, 14, 18]
 RecipNsPlot = np.linspace(0.001, 0.5, 200)
 for j in range(dataPointNum):
     fig, ax = plt.subplots()
@@ -158,25 +165,25 @@ for j in range(dataPointNum):
         jGapsHigh.append(gapErr[0][j-len(gapsLow[0])])
         jErrsHigh.append(gapErr[1][j])
     if ED:
-        if fullJs[j] >= 0.65:
-            parameters, covariance = scipy.optimize.curve_fit(lin, 1/np.asarray(NsHigh), jGapsHigh)
+        if fullJs[j] >= lowCutoff:
+            parameters, covariance = scipy.optimize.curve_fit(quad, 1/np.asarray(NsHigh), jGapsHigh, bounds=[[-np.inf, -np.inf, -np.inf], [1, np.inf, np.inf]])
         else:
-            parameters, covariance = scipy.optimize.curve_fit(lin, 1/np.asarray(Ns), jGaps)
+            parameters, covariance = scipy.optimize.curve_fit(quad, 1/np.asarray(Ns), jGaps, bounds=[[-np.inf, -np.inf, -np.inf], [0.5, np.inf, np.inf]])
     else:
-        if fullJs[j] >= 0.65:
-            parameters, covariance = scipy.optimize.curve_fit(lin, 1/np.asarray(NsHigh), jGapsHigh, sigma=jErrsHigh, absolute_sigma=False)
+        if fullJs[j] >= lowCutoff:
+            parameters, covariance = scipy.optimize.curve_fit(quad, 1/np.asarray(NsHigh), jGapsHigh, sigma=jErrsHigh, absolute_sigma=False)
         else:
-            parameters, covariance = scipy.optimize.curve_fit(lin, 1/np.asarray(Ns), jGaps, sigma=jErrs, absolute_sigma=False)
-    offsets.append(parameters[1])
-    offsetErrs.append(np.sqrt(covariance[1][1]))
+            parameters, covariance = scipy.optimize.curve_fit(quad, 1/np.asarray(Ns), jGaps, sigma=jErrs, absolute_sigma=False)
+    offsets.append(parameters[2])
+    offsetErrs.append(np.sqrt(covariance[2][2]))
     ax.errorbar(1/np.asarray(Ns), np.asarray(jGaps)/(1+fullJs[j]), fmt=".-", xerr=None, yerr=np.asarray(jErrs)/(1+fullJs[j]), capsize=2)
-    ax.plot(RecipNsPlot, np.asarray(lin(RecipNsPlot, parameters[0], parameters[1]))/(1+fullJs[j]), "--")
-    ax.set(xlabel="$1/N$", ylabel="Reduzierte Spinlücke $\\Delta/(J_1+J_2)$", title="$j=$" + str(fullJs[j]))
+    ax.plot(RecipNsPlot, np.asarray(quad(RecipNsPlot, parameters[0], parameters[1], parameters[2]))/(1+fullJs[j]), "--")
+    ax.set(xlabel="$1/N$", ylabel="Reduzierte Spinlücke $\\Delta/(J_1+J_2)$")
     ax.set_ylim(0, 0.8)
     ax.set_xlim(0, 0.2)
     #ax.semilogy()
     #ax.set_xlim(0, 2)
-    #fig.savefig("D:/Code/C++/spinChainData/ba_data_2207/Data/plots/GapFit/spin/Extrap/Single_pointsQT/J" + str(fullJs[j]).replace(".", "_") + ".pdf")
+    #fig.savefig("D:/Code/C++/spinChainData/ba_data_2207/Data/plots/GapFit/spin/Extrap/Single_pointsED/J" + str(fullJs[j]).replace(".", "_") + ".pdf")
     #plt.show()
     plt.close(fig)
 
@@ -189,7 +196,7 @@ for gapErr in zip(fullGaps, fullErrs):
         ax.errorbar(fullJs, weird_transform(fullJs, gapErr[0]), yerr=weird_transform(fullJs, gapErr[1]), xerr=None, label="$N=$" + str(N),
                     fmt=".-", capsize=2, lw=1)
     N += 2
-ax.plot(fullJs, weird_transform(fullJs, offsets), "r.--", label="Fit-Extrapolation", lw=1)
+ax.plot(fullJs, weird_transform(fullJs, offsets), "r--", label="Fit-Extrapolation", lw=1)
 ax.fill_between(fullJs,  weird_transform(fullJs, np.asarray(offsets) - np.asarray(offsetErrs)),  weird_transform(fullJs, np.asarray(offsets) + np.asarray(offsetErrs)), color="r", alpha=0.1)
 ax.set(xlabel="$j$", ylabel="Reduzierte Spinlücke $\\Delta/(J_1+J_2)$")
 ax.set_ylim(-0.05, 0.75)
