@@ -1,5 +1,6 @@
 import scipy.interpolate
 from matplotlib import pyplot as plt
+import matplotlib.lines as lines
 import numpy as np
 import scipy.optimize as opt
 from matplotlib.ticker import MaxNLocator
@@ -8,9 +9,9 @@ import natsort
 import copy
 
 plt.rcParams['text.usetex'] = True
-plt.rc('axes', labelsize=24)
-plt.rc('axes', titlesize=30)
-plt.rcParams["figure.figsize"] = (12, 9)
+plt.rc('font', family='serif')
+plt.rc('axes', labelsize=16)
+plt.rc('axes', titlesize=20)
 
 
 def shanks(a0, a1, a2):
@@ -62,7 +63,7 @@ fullGaps = []
 fullErrs = []
 gapsLow = []
 for N in [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]:
-    path1 = "/home/mmaschke/BA_Code/Data/out/GapFit/spin/gapsIt20lowJ" + str(int(N)) + ".txt"
+    path1 = "D:/Code/C++/spinChainData/ba_data_2207/Data/out/GapFit/spin/gapsIt20lowJ" + str(int(N)) + ".txt"
     file1 = open(path1, "r")
     lines1 = file1.readlines()
     fullJs = []
@@ -88,7 +89,7 @@ for N in [6, 8, 10, 12, 14, 16, 18, 20, 22, 24]:
 gapsHigh = []
 gapErrsHigh = []
 for N in [6, 10, 14, 18, 22]:
-    path2 = "/home/mmaschke/BA_Code/Data/out/GapFit/spin/gapsIt20lowJ" + str(int(N)) + ".txt"
+    path2 = "D:/Code/C++/spinChainData/ba_data_2207/Data/out/GapFit/spin/gapsIt20lowJ" + str(int(N)) + ".txt"
     #if N == 22:
     #    path2 = "/home/mmaschke/BA_Code/Data/out/GapFit/spin/gapsIt20lowJ" + str(int(N)) + ".txt"
     file2 = open(path2, "r")
@@ -170,12 +171,12 @@ for j in range(dataPointNum):
     offsetErrs.append(np.sqrt(covariance[1][1]))
     ax.errorbar(1/np.asarray(Ns), np.asarray(jGaps)/(1+fullJs[j]), fmt=".-", xerr=None, yerr=np.asarray(jErrs)/(1+fullJs[j]), capsize=2)
     ax.plot(RecipNsPlot, np.asarray(lin(RecipNsPlot, parameters[0], parameters[1]))/(1+fullJs[j]), "--")
-    ax.set(xlabel="$1/N$", ylabel="Reduced Spin Gap Energy $\\Delta/(J_1+J_2)$", title="QT Fit, $J_1/J_2=$" + str(fullJs[j]))
+    ax.set(xlabel="$1/N$", ylabel="Reduzierte Spinlücke $\\Delta/(J_1+J_2)$", title="$j=$" + str(fullJs[j]))
     ax.set_ylim(0, 0.8)
-    ax.set_xlim(0, 0.5)
+    ax.set_xlim(0, 0.2)
     #ax.semilogy()
     #ax.set_xlim(0, 2)
-    fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Extrap/Single_pointsQT/J" + str(fullJs[j]).replace(".", "_") + ".png")
+    #fig.savefig("D:/Code/C++/spinChainData/ba_data_2207/Data/plots/GapFit/spin/Extrap/Single_pointsQT/J" + str(fullJs[j]).replace(".", "_") + ".pdf")
     #plt.show()
     plt.close(fig)
 
@@ -183,15 +184,18 @@ fig, ax = plt.subplots()
 N = 6
 for gapErr in zip(fullGaps, fullErrs):
     if ED:
-        ax.plot(fullJs, weird_transform(fullJs, gapErr[0]), label="QT, $N=$" + str(N))
+        ax.plot(fullJs, weird_transform(fullJs, gapErr[0]), label="$N=$" + str(N))
     else:
-        ax.errorbar(fullJs, weird_transform(fullJs, gapErr[0]), yerr=weird_transform(fullJs, gapErr[1]), xerr=None, label="QT, $N=$" + str(N),
-                    fmt=".-", capsize=2)
+        ax.errorbar(fullJs, weird_transform(fullJs, gapErr[0]), yerr=weird_transform(fullJs, gapErr[1]), xerr=None, label="$N=$" + str(N),
+                    fmt=".-", capsize=2, lw=1)
     N += 2
-ax.plot(fullJs, weird_transform(fullJs, offsets), "r.--", label="QT Fit-Extrapolation")
+ax.plot(fullJs, weird_transform(fullJs, offsets), "r.--", label="Fit-Extrapolation", lw=1)
 ax.fill_between(fullJs,  weird_transform(fullJs, np.asarray(offsets) - np.asarray(offsetErrs)),  weird_transform(fullJs, np.asarray(offsets) + np.asarray(offsetErrs)), color="r", alpha=0.1)
-ax.set(xlabel="$J_1/J_2$", ylabel="Reduced Spin Gap Energy $\\Delta/(J_1+J_2)$", title="QT Data, $n=20$")
+ax.set(xlabel="$j$", ylabel="Reduzierte Spinlücke $\\Delta/(J_1+J_2)$")
 ax.set_ylim(-0.05, 0.75)
 ax.set_xlim(0, 1.25)
-ax.legend()
+
+ax.axhline(0, 0, 1, color="grey", ls="--", alpha=0.3, lw=0.8)
+
+ax.legend(fontsize=5)
 plt.show()
