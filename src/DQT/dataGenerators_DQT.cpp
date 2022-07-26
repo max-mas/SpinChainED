@@ -33,7 +33,7 @@ void saveSpecificHeatsForVaryingTemp_DQT_parallel(int N, int dataPointNum, doubl
         for (int i = 0; i < dataPointNum; i++) {
             vector<double> avg_H2_vec;
             vector<double> avg_H_vec;
-#pragma omp parallel for default(none) shared(psi_vec, avg_H2_vec, avg_H_vec, dBeta, i, H)
+#pragma omp parallel for default(none) shared(psi_vec, avg_H2_vec, avg_H_vec, dBeta)
             for (int j = 0; j < H.size(); j++) {
                 double avg_H2_block = psi_vec[j].dot(H[j] * (H[j] * psi_vec[j])).real();
                 double avg_H_block  = psi_vec[j].dot(H[j] * psi_vec[j]).real();
@@ -76,9 +76,9 @@ saveSpecificHeatsForVaryingTemp_DQT_avg(const int N, const int dataPointNum, con
     vector<double> stdDevs;
 
     if (N % 2 == 0 && N >= 6) {
-        const SparseMatrix<complex<double>> H = momentumHamiltonian_sparse(J_ratio, N);
+        const SparseMatrix<double> H = magnetizationHamiltonian_sparse_full(J_ratio, N);
 
-#pragma omp parallel for default(none) shared(Cs, numOfRuns, N, H, dBeta, dataPointNum)
+#pragma omp parallel for default(none) shared(Cs)
         for (int k = 0; k < numOfRuns; k++) {
             VectorXcd psi = randomComplexVectorNormalised((int) pow(2, N), 1.0);
             double beta = 0;
@@ -107,6 +107,24 @@ saveSpecificHeatsForVaryingTemp_DQT_avg(const int N, const int dataPointNum, con
             actualCs.emplace_back(mean);
             stdDevs.emplace_back(stdDev);
         }
+        if (bench) {
+            std::chrono::steady_clock::time_point finish = std::chrono::steady_clock::now();
+            std::ifstream statFile("/proc/self/stat");
+            std::string statLine;
+            std::getline(statFile, statLine);
+            std::istringstream iss(statLine);
+            std::string entry;
+            long long memUsage;
+            for (int i = 1; i <= 24; i++) {
+                std::getline(iss, entry, ' ');
+                if (i == 24) {
+                    memUsage = stoi(entry);
+                }
+            }
+
+            long time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
+            std::cout << "N = " << N << ", time = " << time_ns/1e9 << " s, ram = " << 4096*memUsage/1e9 << " GB" << std::endl;
+        }
     }
 
     list<std::tuple<double, double, double>> out;
@@ -116,29 +134,12 @@ saveSpecificHeatsForVaryingTemp_DQT_avg(const int N, const int dataPointNum, con
     }
     saveTripleToFile(out, path);
 
-    if (bench) {
-        std::chrono::steady_clock::time_point finish = std::chrono::steady_clock::now();
-        std::ifstream statFile("/proc/self/stat");
-        std::string statLine;
-        std::getline(statFile, statLine);
-        std::istringstream iss(statLine);
-        std::string entry;
-        long long memUsage;
-        for (int i = 1; i <= 24; i++) {
-            std::getline(iss, entry, ' ');
-            if (i == 24) {
-                memUsage = stoi(entry);
-            }
-        }
 
-        long time_ns = std::chrono::duration_cast<std::chrono::nanoseconds>(finish - start).count();
-        std::cout << "N = " << N << ", time = " << time_ns/1e9 << " s, ram = " << 4096*memUsage/1e9 << " GB" << std::endl;
-    }
 }
 
 // Calculates susceptibility heat using DQT and average over a number of runs.
 void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNum, const double J_ratio,
-                                              const double end, const SparseMatrix<complex<double>> & S2,
+                                              const double end, const SparseMatrix<double> & S2,
                                               const string & path, const int numOfRuns) {
     const double dBeta = end / (double) dataPointNum;
     Eigen::VectorXd betas = Eigen::VectorXd::LinSpaced(dataPointNum, 0, end);
@@ -148,9 +149,9 @@ void saveSusceptibilityForVaryingTemp_DQT_avg(const int N, const int dataPointNu
     vector<double> stdDevs;
 
     if (N % 2 == 0 && N >= 6) {
-        const SparseMatrix<complex<double>> H  = momentumHamiltonian_sparse(J_ratio, N);
+        const SparseMatrix<double> H  = magnetizationHamiltonian_sparse_full(J_ratio, N);
 
-#pragma omp parallel for default(none) shared(Xs, S2, std::cout, numOfRuns, dataPointNum, dBeta, H, N)
+#pragma omp parallel for default(none) shared(Xs, S2, std::cout)
         for (int k = 0; k < numOfRuns; k++) {
 
             VectorXcd psi = randomComplexVectorNormalised((int) pow(2, N), 1.0);
@@ -203,17 +204,17 @@ void saveSusceptibilityForVaryingTemp_DQT_parallel(const int N, const int dataPo
     vector<double> Xs;
 
     if (N % 2 == 0 && N >= 6) {
-        const vector<SparseMatrix<double>> H  = magnetizationHamiltonian_sparse(J_ratio, N);
+        const vector<SparseMatrix<double>> H = magnetizationHamiltonian_sparse(J_ratio, N);
         vector<VectorXcd> psi_vec;
 
-        for (const auto & h : H) {
+        for (const auto &h: H) {
             psi_vec.emplace_back(randomComplexVector(h.cols(), 1));
         }
         normaliseListOfVectors(psi_vec);
 
         vector<double> weights2;
-        for (VectorXcd v : psi_vec) {
-            for (complex<double> c : v) {
+        for (VectorXcd v: psi_vec) {
+            for (complex<double> c: v) {
                 weights2.emplace_back(pow(abs(c), 2));
             }
         }
@@ -221,7 +222,7 @@ void saveSusceptibilityForVaryingTemp_DQT_parallel(const int N, const int dataPo
 
         for (int i = 0; i < dataPointNum; i++) {
             vector<double> avg_S2_vec;
-#pragma omp parallel for default(none) shared(psi_vec, avg_S2_vec, i, S2_list, H, dBeta)
+#pragma omp parallel for default(none) shared(psi_vec, avg_S2_vec, i, S2_list)
             for (int j = 0; j < H.size(); j++) {
                 double S2_avg_block = (psi_vec[j].adjoint() * (S2_list[j] * psi_vec[j]))(0, 0).real();
 
@@ -229,30 +230,13 @@ void saveSusceptibilityForVaryingTemp_DQT_parallel(const int N, const int dataPo
                 iterateState_beta(H[j], psi_vec[j], dBeta);
             }
             double avg_S2 = std::accumulate(avg_S2_vec.begin(), avg_S2_vec.end(), 0.0);
-            double X = beta * avg_S2 /3.0/N;
+            double X = beta * avg_S2 / 3.0 / N;
             Xs.emplace_back(X);
 
             normaliseListOfVectors(psi_vec);
 
             beta += dBeta;
         }
-
-        std::cout << "______________________________________\n";
-        weights2.clear();
-        double norm = 0;
-        for (VectorXcd v : psi_vec) {
-            for (complex<double> c : v) {
-                weights2.emplace_back(pow(abs(c), 2));
-                norm += pow(abs(c), 2);
-                std::cout << c << "\n";
-            }
-        }
-        norm = sqrt(norm);
-        //printEnergies(weights2);
-        std::cout << "______________________________________\n";
-        std::cout << norm << "\n";
-        std::cout << "______________________________________\n";
-
     }
 
     list<std::pair<double, double>> out;
@@ -278,7 +262,7 @@ void savePartitionFunction_DQT(const int N, const int dataPointNum, const double
         const SparseMatrix<complex<double>> H_s = momentumHamiltonian_sparse(J_ratio, N);
         //const SparseMatrix<complex<double>> H2 = H*H;
 
-#pragma omp parallel for default(none) shared(Zs, numOfRuns, dataPointNum, dBeta, H_s, H, N)
+#pragma omp parallel for default(none) shared(Zs)
         for (int k = 0; k < numOfRuns; k++) {
             VectorXcd psi = randomComplexVectorNormalised((int) pow(2, N), 1.0);
             double beta = 0;

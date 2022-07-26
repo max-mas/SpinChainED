@@ -14,14 +14,14 @@ using std::vector;
 //#define saveSusceptibilityForJ
 //#define saveDispersion
 #define QTtestingArea
-#define QTDataForFit
-//#define statisticsTest
-#define EDbenchmark
+//#define QTDataForFit
+#define statisticsTest
+//#define EDbenchmark
 
 int main(int argc, char* argv[]) {
     std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
 
-    const int cpu_cnt = 1;//(int) std::thread::hardware_concurrency() / 2;
+    const int cpu_cnt = (int) std::thread::hardware_concurrency() / 2;
     omp_set_num_threads(cpu_cnt);
     Eigen::initParallel();
 
@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
 #endif
 #ifdef QTtestingArea
     vector<double> J_ratios = {0.1, 0.5, 1, 2};
-    vector<int> runNums = {2, 5};
+    vector<int> runNums = {1, 2, 3, 5, 10, 20};
     int nMin = 16;
     int nMax = 12;
     std::string saveTo_path = "/home/mmaschke/BA_Code/Data";
@@ -269,7 +269,8 @@ int main(int argc, char* argv[]) {
 
 #endif
 #ifdef statisticsTest
-    for (int N = 6; N <= 16; N += 2) {
+    /*
+    for (int N = 6; N <= 20; N += 2) {
         for (double J_ratio: J_ratios) {
             for (int numOfRuns : runNums) {
                 std::string j = std::to_string(J_ratio);
@@ -285,9 +286,9 @@ int main(int argc, char* argv[]) {
                              + std::to_string(numOfRuns) << std::endl;
             }
         }
-    }
+    }*/
 
-    for (int N = 6; N <= 16; N += 2) {
+    for (int N = 6; N <= 18; N += 2) {
         for (double J_ratio: J_ratios) {
             for (int numOfRuns : runNums) {
                 std::string j = std::to_string(J_ratio);
@@ -306,21 +307,56 @@ int main(int argc, char* argv[]) {
     }
 #endif
 #ifdef EDbenchmark
-    int minN = 6;
-    int maxN = 16;
+    int minN = 18;
+    int maxN = 24;
     std::chrono::steady_clock::time_point start;
     std::chrono::steady_clock::time_point finish;
 
-    /*
+
     std::cout << "ED:" << std::endl;
     for (int N = minN; N <= maxN; N+=2) {
-        saveSpecificHeatsForVaryingTemp(N, 5000, 0, 0, 50, true, "", true);
-    }*/
-
+        start = std::chrono::steady_clock::now();
+        //saveSpecificHeatsForVaryingTemp(N, 5000, 0, 0, 50, true, "", true);
+        std::list<Eigen::MatrixXd> H = {naiveHamiltonian(0, N)};
+        vector<double> v = getEnergiesFromBlocks(H, false);
+        finish = std::chrono::steady_clock::now();
+        std::cout << "t = " << std::chrono::duration_cast<std::chrono::seconds>(finish - start).count() << " s"
+                  << std::endl;
+    }
+    /*
     std::cout << "QT:" << std::endl;
     for (int N = minN; N <= maxN; N+=2) {
+
         saveSpecificHeatsForVaryingTemp_DQT_avg(N, 5000, 0, 50, "", 1, true);
-    }
+        std::ifstream statFile("/proc/self/stat");
+        std::string statLine;
+        std::getline(statFile, statLine);
+        std::istringstream iss(statLine);
+        std::string entry;
+        long long memUsage1;
+        for (int i = 1; i <= 24; i++) {
+            std::getline(iss, entry, ' ');
+            if (i == 24) {
+                memUsage1 = stoi(entry);
+            }
+        }
+        Eigen::SparseMatrix<double> H = magnetizationHamiltonian_sparse_full(0, N);
+
+        std::ifstream statFile2("/proc/self/stat");
+        std::string statLine2;
+        std::getline(statFile2, statLine2);
+        std::istringstream iss2(statLine2);
+        std::string entry2;
+        long long memUsage;
+        for (int i = 1; i <= 24; i++) {
+            std::getline(iss2, entry2, ' ');
+            if (i == 24) {
+                memUsage = stoi(entry2);
+            }
+        }
+        std::cout << "H_mem = " << 4096*(memUsage-memUsage1)/1e9 << " GB" << std::endl;
+
+    }*/
 
 #endif
 

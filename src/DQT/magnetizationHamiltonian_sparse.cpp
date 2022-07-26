@@ -4,6 +4,69 @@ using std::vector;
 using std::list;
 using Eigen::SparseMatrix;
 
+SparseMatrix<double> magnetizationHamiltonian_sparse_full(double J_ratio, int N) {
+    // N must be even and > 6 or this no longer describes the correct system.
+    if (N < 6 || N%2 == 1) {
+        throw std::invalid_argument("N must be larger than 6 and even.");
+    }
+
+    typedef Eigen::Triplet<double> matFil;
+    // init list of elements to be filled
+    list<matFil> elementList;
+
+    int currentMatRootIndex = 0;
+
+    // loop over all magnetizations
+    for (int m_setter = 0; m_setter <= N; m_setter++) {
+        // Calculate magnetization and number of "up"-states for given magnetization.
+        double m = -N/2.0 + m_setter;
+        int n_up = round( m + N/2.0);
+
+        // Find states compatible with m and store them in list.
+        vector<int> s_vector_m = getStates_m(N, n_up);
+        int M = s_vector_m.size();
+
+        // Generate Block with correct size and fill elements.
+
+        for (int k = 0; k < M; k++) {
+            int a = s_vector_m[k];
+            for (int i = 0; i <N; i++) {
+                int j = (i+1) % N;
+                if (getBit(a, i) == getBit(a, j)) {
+                    elementList.emplace_back(matFil(k + currentMatRootIndex, k + currentMatRootIndex, 0.25));
+                } else {
+                    elementList.emplace_back(matFil(k + currentMatRootIndex, k + currentMatRootIndex, -0.25));
+
+                    int b = a;
+                    flipBit(b, i);
+                    flipBit(b, j);
+                    int l = findState(s_vector_m, b);
+                    elementList.emplace_back(matFil(k + currentMatRootIndex, l + currentMatRootIndex, 0.5));
+                }
+            }
+            for (int i = 0; i < N; i++) {
+                int j = (i+2) % N;
+                if (getBit(a, i) == getBit(a, j)) {
+                    elementList.emplace_back(matFil(k + currentMatRootIndex, k + currentMatRootIndex, J_ratio*0.25));
+                } else {
+                    elementList.emplace_back(matFil(k + currentMatRootIndex, k + currentMatRootIndex, J_ratio*-0.25));
+
+                    int b = a;
+                    flipBit(b, i);
+                    flipBit(b, j);
+                    int l = findState(s_vector_m, b);
+                    elementList.emplace_back(matFil(k + currentMatRootIndex, l + currentMatRootIndex, J_ratio*0.5));
+                }
+            }
+        }
+        currentMatRootIndex += M;
+    }
+    SparseMatrix<double> H(pow(2,N), pow(2,N));
+    H.setFromTriplets(elementList.begin(), elementList.end());
+    H.makeCompressed();
+    return H;
+}
+
 vector<SparseMatrix<double>> magnetizationHamiltonian_sparse(double J_ratio, int N) {
     // N must be even and > 6 or this no longer describes the correct system.
     if (N < 6 || N%2 == 1) {
@@ -67,6 +130,59 @@ vector<SparseMatrix<double>> magnetizationHamiltonian_sparse(double J_ratio, int
         H_subspace_list.emplace_back(H_block);
     }
     return H_subspace_list;
+}
+
+SparseMatrix<double> spinOp2_magnetization_sparse_full(int N) {
+    // N must be even and > 6 or this no longer describes the correct system.
+    if (N < 6 || N%2 == 1) {
+        throw std::invalid_argument("N must be larger than 6 and even.");
+    }
+
+    typedef Eigen::Triplet<double> matFil;
+
+    // init list of elements to be filled
+    list<matFil> elementList;
+    int currentMatRootIndex = 0;
+
+    // loop over all magnetizations
+    for (int m_setter = 0; m_setter <= N; m_setter++) {
+        // Calculate magnetization and number of "up"-states for given magnetization.
+        double m = -N/2.0 + m_setter;
+        int n_up = round( m + N/2.0);
+
+        // Find states compatible with m and store them in list.
+        vector<int> s_vector_m = getStates_m(N, n_up);
+        int M = s_vector_m.size();
+
+        // Generate Block with correct size and fill elements.
+
+        for (int k = 0; k < M; k++) {
+            int a = s_vector_m[k];
+            for (int i = 0; i <N; i++) {
+                for (int j = 0; j < i; j++) {
+                    if (getBit(a, i) == getBit(a, j)) {
+                        elementList.emplace_back(matFil(k + currentMatRootIndex, k + currentMatRootIndex, 0.5));
+                    } else {
+                        elementList.emplace_back(matFil(k + currentMatRootIndex, k + currentMatRootIndex, -0.5));
+
+                        int b = a;
+                        flipBit(b, i);
+                        flipBit(b, j);
+                        int l = findState(s_vector_m, b);
+                        elementList.emplace_back(matFil(k + currentMatRootIndex, l + currentMatRootIndex, 1));
+                    }
+                }
+            }
+        }
+        for (int i = 0; i < M; i++) {
+            elementList.emplace_back(i + currentMatRootIndex, i + currentMatRootIndex, N*0.75);
+        }
+        currentMatRootIndex += M;
+    }
+    SparseMatrix<double> H(pow(2,N), pow(2,N));
+    H.setFromTriplets(elementList.begin(), elementList.end());
+    H.makeCompressed();
+    return H;
 }
 
 vector<SparseMatrix<double>> spinOp2_magnetization_sparse(int N) {
