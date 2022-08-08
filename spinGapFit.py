@@ -8,9 +8,11 @@ import natsort
 import copy
 
 plt.rcParams['text.usetex'] = True
+plt.rcParams['text.latex.preamble'] = [r'\usepackage{amsmath}']
+plt.rc('font', family='serif')
 plt.rc('axes', labelsize=24)
-plt.rc('axes', titlesize=30)
-plt.rcParams["figure.figsize"] = (12, 9)
+plt.rc('xtick', labelsize=16)
+plt.rc('ytick', labelsize=16)
 
 
 def read_vec_from_file(arg_path):
@@ -51,20 +53,27 @@ nMin = 6
 nMax = 24
 nNum = int((nMax - nMin) / 2) + 1
 numOfRuns = 20
-resids = False
+resids = True
 diffs = False
 save = False
 
 gapsQT = []
 gapsQTavg = []
 gapsQTdev = []
+fullCsGlobal = []
+fullCsFittedGlobal = []
 
 path = "/home/mmaschke/BA_Code/remoteData2/out/Susceptibilities_DQT/forFit/test/"
 i = 0
 for N in np.linspace(nMin, nMax, nNum):
     gapsQT.append([])
+    fullCsGlobal.append([])
+    fullCsFittedGlobal.append([])
     j = 0
     for k in range(1, numOfRuns + 1):
+        fullCsGlobal[i].append([])
+        fullCsFittedGlobal[i].append([])
+
         #if (k == 8 or k == 20) and N == 24:
         #    continue
         runPath = path + str(k) + "/"
@@ -145,7 +154,9 @@ for N in np.linspace(nMin, nMax, nNum):
             perr = np.sqrt(np.diag(covariance))
             gapsQT[i][k - 1][0].append(J)
             gapsQT[i][k - 1][1].append(parameters[1])
-            if k == 1 and resids:
+
+
+            if resids:
                 fullFitted = []
                 fitted = []
                 for beta in fullBetas:
@@ -157,26 +168,35 @@ for N in np.linspace(nMin, nMax, nNum):
                         fullFitted.append(0)
                         if beta > cutoff:
                             fitted.append(0)
+                """
                 fig2, ax2 = plt.subplots()
                 ax2.plot(fullBetas, fullCs, label="QT", alpha=0.4)
-                ax2.plot(fullBetas, fullFitted, label="Fit")
-                ax2.legend()
+                ax2.plot(fullBetas, fullFitted, label="Anpassung $\propto \\beta \\text{e}^{-\\beta\\Delta}$")
+                ax2.legend(fontsize=14)
                 ax2.semilogy()
-                ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Susceptibility per Spin $\\chi/N$", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
-                fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/QT/fitN"+str(N)+"J"+J_str+".png")
+                ax2.set(xlabel="$\\beta$ $(1/J_1)$", ylabel="Suszeptibilität pro Spin $\\chi/N$")
+                ax2.set_ylim(1e-16, 1)
+                ax2.set_xlim(0,50)
+                fig2.tight_layout()
+                fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/QT/"+str(k)+"/fitN"+str(N)+"J"+J_str+".pdf")
+                """
+                fullCsGlobal[i][k - 1].append(fullCs)
+                fullCsFittedGlobal[i][k - 1].append(fullFitted)
+                """
                 plt.close(fig2)
                 fig2, ax2 = plt.subplots()
                 ax2.plot(fullBetas, np.abs(np.asarray(fullFitted)-np.asarray(fullCs)))
-                ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Susceptibility fit residual", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
+                ax2.set(xlabel="$\\beta$ $1/J_1$", ylabel="Susceptibility fit residual")
                 ax2.semilogy()
                 fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/QTResid/residN"+str(N)+"J"+J_str+".png")
                 plt.close(fig2)
                 fig2, ax2 = plt.subplots()
                 ax2.plot(fullBetas, np.abs((np.asarray(fullFitted)-np.asarray(fullCs))/np.asarray(fullCs)))
-                ax2.set(xlabel="$\\beta$ $1/J_2$", ylabel="Susceptibility fit relative residual", title="$J=$ "+ J_str + ", $N=$ " + str(int(N)))
+                ax2.set(xlabel="$\\beta$ $1/J_1$", ylabel="Susceptibility fit relative residual")
                 ax2.semilogy()
                 fig2.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/QTResidRel/relresidN"+str(N)+"J"+J_str+".png")
                 plt.close(fig2)
+                """
             print(str(N) + " " + J_str + " " + str(perr[1]))
 
         j += 1
@@ -188,6 +208,7 @@ for N in np.linspace(nMin, nMax, nNum):
     gapsQTdev[i].append(gapsQT[i][0][0])
     gapsQTdev[i].append([])
 
+    """
     for n in range(len(gapsQT[i][0][0])):
         avg = 0.0
         dev = 0.0
@@ -203,6 +224,36 @@ for N in np.linspace(nMin, nMax, nNum):
         writeFile = open(writePath, "w")
         for n in range(len(gapsQTavg[i][0])):
             writeFile.write(str(gapsQTavg[i][0][n]) + " " + str(gapsQTavg[i][1][n]) + " " + str(gapsQTdev[i][1][n]) + "\n")
+    """
+    i += 1
+
+
+
+i = 0
+for N in np.linspace(6,24,10):
+
+    for j in range(20):
+        fig, ax = plt.subplots()
+        for k in range(numOfRuns):
+            plt.gca().set_prop_cycle(None)
+            if k == 0:
+                ax.plot(1/np.asarray(fullBetas[1:]), fullCsGlobal[i][k][j][1:], label="QT", alpha=0.4, lw=0.7)
+                ax.plot(1/np.asarray(fullBetas[1:]), fullCsFittedGlobal[i][k][j][1:], label="Anpassung $\propto \\beta \\text{e}^{-\\beta\\Delta}$", lw=0.7)
+            else:
+                ax.plot(1/np.asarray(fullBetas[1:]), fullCsGlobal[i][k][j][1:], alpha=0.4, lw=0.7)
+                ax.plot(1/np.asarray(fullBetas[1:]), fullCsFittedGlobal[i][k][j][1:], lw=0.7)
+        ax.legend(fontsize=14)
+        ax.semilogy()
+        ax.semilogx()
+        ax.set(xlabel="Temperatur $T$ $(J_1)$", ylabel="Suszeptibilität pro Spin $\\chi/N$")
+        ax.set_ylim(1e-16, 1)
+        ax.set_xlim(1/50, 1)
+        fig.tight_layout()
+        plt.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Fits/QTnew/"+str(int(N))+str(j*1.25/20)+".pdf")
+        #plt.show()
+
+
+        plt.close(fig)
     i += 1
 
 fig, ax = plt.subplots()

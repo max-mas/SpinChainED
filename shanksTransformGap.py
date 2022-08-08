@@ -9,9 +9,11 @@ import natsort
 import copy
 
 plt.rcParams['text.usetex'] = True
+plt.rcParams['text.latex.preamble'] = [r'\usepackage{amsmath}']
 plt.rc('font', family='serif')
-plt.rc('axes', labelsize=16)
-plt.rc('axes', titlesize=20)
+plt.rc('axes', labelsize=24)
+plt.rc('xtick', labelsize=16)
+plt.rc('ytick', labelsize=16)
 
 
 def shanks(a0, a1, a2):
@@ -216,12 +218,13 @@ for j in range(dataPointNum):
         offsetErrs.append(np.sqrt(covariance[2][2]))
         ax.errorbar(1/np.asarray(Ns), np.asarray(jGaps)/(1+fullJs[j]), fmt=".-", xerr=None, yerr=np.asarray(jErrs)/(1+fullJs[j]), capsize=2)
         ax.plot(RecipNsPlot, np.asarray(quad(RecipNsPlot, parameters[0], parameters[1], parameters[2]))/(1+fullJs[j]), "--")
-    ax.set(xlabel="$1/N$", ylabel="Reduzierte Spinlücke $\\Delta/(J_1+J_2)$")
+    ax.set(xlabel="$1/N$", ylabel="Red. Spinlücke $\\Delta/(J_1+J_2)$")
     ax.set_ylim(0, 0.8)
     ax.set_xlim(0, 0.2)
     #ax.semilogy()
     #ax.set_xlim(0, 2)
-    #fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Extrap/Single_pointsED/J" + str(fullJs[j]).replace(".", "_") + ".pdf")
+    fig.tight_layout()
+    fig.savefig("/home/mmaschke/BA_Code/Data/plots/GapFit/spin/Extrap/Single_pointsQT/J" + str(fullJs[j]).replace(".", "_") + ".pdf")
     #plt.show()
     plt.close(fig)
 
@@ -236,12 +239,13 @@ for gapErr in zip(fullGaps, fullErrs):
     N += 2
 ax.plot(fullJs, weird_transform(fullJs, offsets), "r.--", label="Fit-Extrapolation", lw=1)
 ax.fill_between(fullJs,  weird_transform(fullJs, np.asarray(offsets) - np.asarray(offsetErrs)),  weird_transform(fullJs, np.asarray(offsets) + np.asarray(offsetErrs)), color="r", alpha=0.1)
-ax.set(xlabel="$j$", ylabel="Reduzierte Spinlücke $\\Delta/(J_1+J_2)$")
+ax.set(xlabel="$j$", ylabel="Red. Spinlücke $\\Delta/(J_1+J_2)$")
 ax.set_ylim(-0.05, 0.75)
 ax.set_xlim(0, 1.25)
 
 ax.axhline(0, 0, 1, color="grey", ls="--", alpha=0.3, lw=0.8)
 ax.axvline(0.2411676, 0, 1, color="green", ls="--", alpha=0.5, lw=1)
 
-ax.legend(fontsize=6)
+fig.tight_layout()
+ax.legend(fontsize=8)
 plt.show()
